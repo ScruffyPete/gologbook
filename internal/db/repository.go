@@ -1,21 +1,28 @@
 package db
 
+import "github.com/ScruffyPete/gologbook/api"
+
 type ProjectReporitory interface {
 	ListProjects() []Project
-	GetProjectByID(id string) *Project
+	GetProject(id string) *Project
 	CreateProject(title string) error
-	LogEntry(id string) error
+	UpdateProject(id string, updates *api.ProjectRequestBody) error
 	DeleteProject(id string) error
 
-	SetupRepository() error
+	init() error
 }
 
-func NewRepository() (ProjectReporitory, error) {
-	var repo ProjectReporitory = &mockProjectRepository{}
+type EntryRepository interface {
+	ListEntries(projectID string) []Entry
+	AddEntry(body string) error
 
-	if err := repo.SetupRepository(); err != nil {
-		return nil, err
+	init() error
+}
+
+func NewProjectRepository() ProjectReporitory {
+	projectRepo := &mockProjectRepository{}
+	if err := projectRepo.init(); err != nil {
+		panic("Failed to init project repository") // TODO internal external error handling
 	}
-
-	return repo, nil
+	return projectRepo
 }

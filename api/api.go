@@ -1,6 +1,6 @@
 package api
 
-type CreateProjectRequest struct {
+type ProjectRequestBody struct {
 	Title string `json:"title"`
 }
 

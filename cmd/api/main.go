@@ -12,22 +12,15 @@ import (
 func main() {
 	fmt.Println("LOGBOOK!")
 
-	port := os.Getenv("PORT")
-
 	mux := http.NewServeMux()
-	repo, err := db.NewRepository()
-	if err != nil {
-		fmt.Println(err.Error())
+	h := &handlers.Handler{
+		Projects: db.NewProjectRepository(),
 	}
-
-	if repo == nil {
-		panic("Couln't setup the storage...")
-	}
-
-	handlers.HandleProjectRoutes(mux, repo)
+	handlers.RegisterProjectRoutes(mux, h)
 
 	fmt.Println("Starting GoLogbook service...")
 
+	port := os.Getenv("PORT")
 	if err := http.ListenAndServe(":"+port, mux); err != nil {
 		fmt.Println(err.Error())
 	}

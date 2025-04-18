@@ -1,6 +1,10 @@
 package db
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/ScruffyPete/gologbook/api"
+)
 
 type mockProjectRepository struct {
 	projects map[string]Project
@@ -16,7 +20,7 @@ func (repo *mockProjectRepository) ListProjects() []Project {
 	return projects
 }
 
-func (repo *mockProjectRepository) GetProjectByID(id string) *Project {
+func (repo *mockProjectRepository) GetProject(id string) *Project {
 	projectData, ok := repo.projects[id]
 	if !ok {
 		return nil
@@ -36,7 +40,7 @@ func (repo *mockProjectRepository) CreateProject(title string) error {
 	return nil
 }
 
-func (repo *mockProjectRepository) LogEntry(id string) error {
+func (repo *mockProjectRepository) UpdateProject(id string, updates *api.ProjectRequestBody) error {
 	return nil // TODO
 }
 
@@ -45,7 +49,7 @@ func (repo *mockProjectRepository) DeleteProject(id string) error {
 	return nil
 }
 
-func (repo *mockProjectRepository) SetupRepository() error {
+func (repo *mockProjectRepository) init() error {
 	repo.projects = map[string]Project{
 		"project-1": {
 			ID:    "project-1",
