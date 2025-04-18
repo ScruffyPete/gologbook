@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/ScruffyPete/gologbook/internal/db"
 	"github.com/ScruffyPete/gologbook/internal/handlers"
 )
 
@@ -13,14 +14,21 @@ func main() {
 
 	port := os.Getenv("PORT")
 
-	var mux *http.ServeMux = http.NewServeMux()
+	mux := http.NewServeMux()
+	repo, err := db.NewRepository()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 
-	handlers.Handler(mux)
+	if repo == nil {
+		panic("Couln't setup the storage...")
+	}
+
+	handlers.HandleProjectRoutes(mux, repo)
 
 	fmt.Println("Starting GoLogbook service...")
 
-	err := http.ListenAndServe(":"+port, mux)
-	if err != nil {
+	if err := http.ListenAndServe(":"+port, mux); err != nil {
 		fmt.Println(err.Error())
 	}
 }
