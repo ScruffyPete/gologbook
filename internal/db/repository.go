@@ -1,28 +1,25 @@
 package db
 
-import "github.com/ScruffyPete/gologbook/api"
-
 type ProjectReporitory interface {
 	ListProjects() []Project
 	GetProject(id string) *Project
-	CreateProject(title string) error
-	UpdateProject(id string, updates *api.ProjectRequestBody) error
+	CreateProject(project Project) error
+	UpdateProject(project Project) error
 	DeleteProject(id string) error
-
-	init() error
 }
 
 type EntryRepository interface {
 	ListEntries(projectID string) []Entry
 	AddEntry(body string) error
-
-	init() error
 }
 
 func NewProjectRepository() ProjectReporitory {
-	projectRepo := &mockProjectRepository{}
-	if err := projectRepo.init(); err != nil {
-		panic("Failed to init project repository") // TODO internal external error handling
-	}
-	return projectRepo
+	return newInMemoryProjectRepository(
+		// FIXME
+		map[string]Project{
+			"project-1": {ID: "project-1", Title: "Project 1"},
+			"project-2": {ID: "project-2", Title: "Project 2"},
+			"project-3": {ID: "project-3", Title: "Project 3"},
+		},
+	)
 }

@@ -14,7 +14,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	h := &handlers.Handler{
-		Projects: db.NewProjectRepository(),
+		ProjectRepo: db.NewProjectRepository(),
 	}
 	handlers.RegisterProjectRoutes(mux, h)
 

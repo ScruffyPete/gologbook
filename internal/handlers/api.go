@@ -6,10 +6,11 @@ import (
 
 	"github.com/ScruffyPete/gologbook/api"
 	"github.com/ScruffyPete/gologbook/internal/db"
+	"github.com/google/uuid"
 )
 
 type Handler struct {
-	Projects db.ProjectReporitory
+	ProjectRepo db.ProjectReporitory
 }
 
 func RegisterProjectRoutes(mux *http.ServeMux, h *Handler) {
@@ -21,13 +22,13 @@ func RegisterProjectRoutes(mux *http.ServeMux, h *Handler) {
 }
 
 func (h *Handler) listProjects(w http.ResponseWriter, r *http.Request) {
-	projects := h.Projects.ListProjects()
+	projects := h.ProjectRepo.ListProjects()
 	json.NewEncoder(w).Encode(projects)
 }
 
 func (h *Handler) getProjectById(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	project := h.Projects.GetProject(id)
+	project := h.ProjectRepo.GetProject(id)
 	if project == nil {
 		http.Error(w, "project not found", http.StatusNotFound)
 		return
@@ -42,7 +43,12 @@ func (h *Handler) createProjet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.Projects.CreateProject(input.Title); err != nil {
+	project := db.Project{
+		ID:    uuid.NewString(),
+		Title: input.Title,
+	}
+
+	if err := h.ProjectRepo.CreateProject(project); err != nil {
 		http.Error(w, "failed to create project", http.StatusInternalServerError)
 		return
 	}
@@ -57,7 +63,11 @@ func (h *Handler) updateProjectDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.Projects.UpdateProject(id, &input); err != nil {
+	project := db.Project{
+		ID:    id,
+		Title: input.Title,
+	} // FIXME
+	if err := h.ProjectRepo.UpdateProject(project); err != nil {
 		http.Error(w, "failed to update project", http.StatusInternalServerError)
 		return
 	}
@@ -67,7 +77,7 @@ func (h *Handler) updateProjectDetails(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) deleteProject(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
-	if err := h.Projects.DeleteProject(id); err != nil {
+	if err := h.ProjectRepo.DeleteProject(id); err != nil {
 		http.Error(w, "failed to delete project", http.StatusInternalServerError)
 		return
 	}
