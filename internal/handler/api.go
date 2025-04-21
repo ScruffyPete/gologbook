@@ -1,16 +1,16 @@
-package handlers
+package handler
 
 import (
 	"encoding/json"
 	"net/http"
 
 	"github.com/ScruffyPete/gologbook/api"
-	"github.com/ScruffyPete/gologbook/internal/db"
+	"github.com/ScruffyPete/gologbook/internal/domain"
 	"github.com/google/uuid"
 )
 
 type Handler struct {
-	ProjectRepo db.ProjectReporitory
+	ProjectRepo domain.ProjectReporitory
 }
 
 func RegisterProjectRoutes(mux *http.ServeMux, h *Handler) {
@@ -28,11 +28,12 @@ func (h *Handler) listProjects(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) getProjectById(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	project := h.ProjectRepo.GetProject(id)
-	if project == nil {
+	project, err := h.ProjectRepo.GetProject(id)
+	if err != nil {
 		http.Error(w, "project not found", http.StatusNotFound)
 		return
 	}
+
 	json.NewEncoder(w).Encode(project)
 }
 
@@ -43,7 +44,7 @@ func (h *Handler) createProjet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	project := db.Project{
+	project := domain.Project{
 		ID:    uuid.NewString(),
 		Title: input.Title,
 	}
@@ -63,7 +64,7 @@ func (h *Handler) updateProjectDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	project := db.Project{
+	project := domain.Project{
 		ID:    id,
 		Title: input.Title,
 	} // FIXME

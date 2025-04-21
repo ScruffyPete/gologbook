@@ -3,189 +3,92 @@ package db
 import (
 	"testing"
 
+	"github.com/ScruffyPete/gologbook/internal/domain"
+	"github.com/ScruffyPete/gologbook/internal/testutil"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
-func makeProject(title string) Project {
-	return Project{
-		ID:    uuid.NewString(),
-		Title: title,
-	}
-}
-
-func makeProjectMap() map[string]Project {
-	projectA := makeProject("Build a treehouse")
-	projectB := makeProject("Paint the garage")
-	projectC := makeProject("Cook a feast")
-
-	return map[string]Project{
-		projectA.ID: projectA,
-		projectB.ID: projectB,
-		projectC.ID: projectC,
-	}
-}
-
 func TestListProjects(t *testing.T) {
-	testCases := []struct {
-		name     string
-		data     map[string]Project
-		expected []Project
-	}{
-		{
-			name: "valid data",
-			data: makeProjectMap(),
-		},
-		{
-			name: "empty data",
-			data: map[string]Project{},
-		},
-	}
+	t.Run("valid data", func(t *testing.T) {
+		projects := testutil.MakeDummyProjects()
+		repo := NewInMemoryProjectRepository(projects)
 
-	for _, tc := range testCases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			repo := newInMemoryProjectRepository(tc.data)
-			projects := repo.ListProjects()
+		repo_projects := repo.ListProjects()
 
-			expected := make([]Project, 0, len(tc.data))
-			for _, p := range tc.data {
-				expected = append(expected, p)
-			}
+		assert.ElementsMatch(t, repo_projects, projects)
+	})
 
-			assert.ElementsMatch(t, expected, projects)
-		})
-	}
+	t.Run("empty data", func(t *testing.T) {
+		projects := []domain.Project{}
+		repo := NewInMemoryProjectRepository(projects)
+		repo_projects := repo.ListProjects()
+		assert.ElementsMatch(t, repo_projects, projects)
+	})
 }
 
 func TestGetProject(t *testing.T) {
-	project := makeProject("Build a treehouse")
 
-	testCases := []struct {
-		name     string
-		data     map[string]Project
-		id       string
-		expected *Project
-	}{
-		{
-			name:     "valid project",
-			data:     map[string]Project{project.ID: project},
-			id:       project.ID,
-			expected: &project,
-		},
-		{
-			name:     "invalid project",
-			data:     makeProjectMap(),
-			id:       uuid.NewString(),
-			expected: nil,
-		},
-	}
+	t.Run("valid project", func(t *testing.T) {
+		project := domain.MakeProject("Build a treehouse")
+		repo := NewInMemoryProjectRepository([]domain.Project{project})
+		repo_project, err := repo.GetProject(project.ID)
+		assert.Equal(t, repo_project, &project)
+		assert.ErrorIs(t, err, nil)
+	})
 
-	for _, tc := range testCases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			repo := newInMemoryProjectRepository(tc.data)
-			project := repo.GetProject(tc.id)
-			assert.Equal(t, tc.expected, project)
-		})
-	}
+	t.Run("invalid project", func(t *testing.T) {
+		repo := NewInMemoryProjectRepository(testutil.MakeDummyProjects())
+		repo_project, err := repo.GetProject(uuid.NewString())
+		assert.Nil(t, repo_project)
+		assert.ErrorIs(t, err, ErrProjectDoesNotExist)
+	})
 }
 
 func TestCreateProject(t *testing.T) {
-	project := makeProject("Write a novel")
+	project := domain.MakeProject("Write a novel")
 
-	testCases := []struct {
-		name    string
-		data    map[string]Project
-		project Project
-		err     error
-	}{
-		{
-			name:    "new project",
-			data:    makeProjectMap(),
-			project: project,
-			err:     nil,
-		},
-		{
-			name:    "existing project",
-			data:    map[string]Project{project.ID: project},
-			project: project,
-			err:     ErrProjectExists,
-		},
-	}
+	t.Run("new project", func(t *testing.T) {
+		repo := NewInMemoryProjectRepository(nil)
+		err := repo.CreateProject(project)
+		assert.ErrorIs(t, err, nil)
+	})
 
-	for _, tc := range testCases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			repo := newInMemoryProjectRepository(tc.data)
-			err := repo.CreateProject(tc.project)
-			assert.ErrorIs(t, err, tc.err)
-		})
-	}
+	t.Run("existing project", func(t *testing.T) {
+		repo := NewInMemoryProjectRepository([]domain.Project{project})
+		err := repo.CreateProject(project)
+		assert.ErrorIs(t, err, ErrDuplicateProject)
+	})
 }
 
 func TestUpdateProject(t *testing.T) {
-	project := makeProject("Throw a ball")
+	project := domain.MakeProject("Throw a ball")
 
-	testCases := []struct {
-		name    string
-		data    map[string]Project
-		project Project
-		err     error
-	}{
-		{
-			name:    "existing project",
-			data:    map[string]Project{project.ID: project},
-			project: Project{ID: project.ID, Title: "Throw THE ball"},
-			err:     nil,
-		},
-		{
-			name:    "missing project",
-			data:    makeProjectMap(),
-			project: project,
-			err:     ErrProjectDoesNotExist,
-		},
-	}
+	t.Run("existing project", func(t *testing.T) {
+		repo := NewInMemoryProjectRepository([]domain.Project{project})
+		err := repo.UpdateProject(domain.Project{ID: project.ID, Title: "Throw THE ball"})
+		assert.ErrorIs(t, err, nil)
+	})
 
-	for _, tc := range testCases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			repo := newInMemoryProjectRepository(tc.data)
-			err := repo.UpdateProject(tc.project)
-			assert.ErrorIs(t, err, tc.err)
-		})
-	}
+	t.Run("missing project", func(t *testing.T) {
+		repo := NewInMemoryProjectRepository(testutil.MakeDummyProjects())
+		err := repo.UpdateProject(project)
+		assert.ErrorIs(t, err, ErrProjectDoesNotExist)
+	})
 }
 
 func TestDeleteProject(t *testing.T) {
-	project := makeProject("Earn a million")
+	project := domain.MakeProject("Earn a million")
 
-	testCases := []struct {
-		name string
-		data map[string]Project
-		id   string
-		err  error
-	}{
-		{
-			name: "existing project",
-			data: map[string]Project{project.ID: project},
-			id:   project.ID,
-			err:  nil,
-		},
-		{
-			name: "missing project",
-			data: makeProjectMap(),
-			id:   project.ID,
-			err:  ErrProjectDoesNotExist,
-		},
-	}
+	t.Run("existing project", func(t *testing.T) {
+		repo := NewInMemoryProjectRepository([]domain.Project{project})
+		err := repo.DeleteProject(project.ID)
+		assert.ErrorIs(t, err, nil)
+	})
 
-	for _, tc := range testCases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			repo := newInMemoryProjectRepository(tc.data)
-			err := repo.DeleteProject(tc.id)
-			assert.ErrorIs(t, err, tc.err)
-		})
-	}
+	t.Run("invalid project", func(t *testing.T) {
+		repo := NewInMemoryProjectRepository(testutil.MakeDummyProjects())
+		err := repo.DeleteProject(project.ID)
+		assert.ErrorIs(t, err, ErrProjectDoesNotExist)
+	})
 }

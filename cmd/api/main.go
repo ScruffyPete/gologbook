@@ -6,17 +6,17 @@ import (
 	"os"
 
 	"github.com/ScruffyPete/gologbook/internal/db"
-	"github.com/ScruffyPete/gologbook/internal/handlers"
+	"github.com/ScruffyPete/gologbook/internal/handler"
 )
 
 func main() {
 	fmt.Println("LOGBOOK!")
 
 	mux := http.NewServeMux()
-	h := &handlers.Handler{
-		ProjectRepo: db.NewProjectRepository(),
+	h := &handler.Handler{
+		ProjectRepo: db.NewInMemoryProjectRepository(nil),
 	}
-	handlers.RegisterProjectRoutes(mux, h)
+	handler.RegisterProjectRoutes(mux, h)
 
 	fmt.Println("Starting GoLogbook service...")
 
