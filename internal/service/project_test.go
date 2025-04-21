@@ -29,7 +29,7 @@ func TestListProjects(t *testing.T) {
 		service_projects, err := service.ListProjects()
 
 		assert.Nil(t, err)
-		assert.Equal(t, []domain.Project{}, service_projects)
+		assert.Equal(t, []*domain.Project{}, service_projects)
 	})
 
 	t.Run("repository error", func(t *testing.T) {
@@ -47,13 +47,13 @@ func TestListProjects(t *testing.T) {
 func TestGetProject(t *testing.T) {
 	t.Run("valid project", func(t *testing.T) {
 		project := domain.MakeProject("Build a treehouse")
-		repo := in_memory.NewProjectRepository([]domain.Project{project})
+		repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		service := NewProjectService(repo)
 
 		service_project, err := service.GetProject(project.ID)
 
 		assert.Nil(t, err)
-		assert.Equal(t, &project, service_project)
+		assert.Equal(t, project, service_project)
 	})
 
 	t.Run("repository error", func(t *testing.T) {
@@ -92,7 +92,7 @@ func TestCreateProject(t *testing.T) {
 func TestUpdateProject(t *testing.T) {
 	t.Run("valid project", func(t *testing.T) {
 		project := domain.MakeProject("Build a treehouse")
-		repo := in_memory.NewProjectRepository([]domain.Project{project})
+		repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		service := NewProjectService(repo)
 
 		input := CreateProjectInput{Title: "Build a tree-fortress"}
@@ -116,7 +116,7 @@ func TestUpdateProject(t *testing.T) {
 func TestDeleteProject(t *testing.T) {
 	t.Run("valid project", func(t *testing.T) {
 		project := domain.MakeProject("Build a treehouse")
-		repo := in_memory.NewProjectRepository([]domain.Project{project})
+		repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		service := NewProjectService(repo)
 
 		err := service.DeleteProject(project.ID)

@@ -7,21 +7,15 @@ import (
 )
 
 type Project struct {
-	ID    string
-	Title string
-}
-
-type Entry struct {
 	ID        string
-	ProjectID string
-	Author    string // TODO proabably needs a user reference
-	Body      string
-	CratedAt  time.Time
+	CreatedAt time.Time
+	Title     string
 }
 
-func MakeProject(title string) Project {
-	return Project{
-		ID:    uuid.NewString(),
-		Title: title,
+func MakeProject(title string) *Project {
+	return &Project{
+		ID:        uuid.NewString(),
+		CreatedAt: time.Now(),
+		Title:     title,
 	}
 }

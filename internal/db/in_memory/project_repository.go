@@ -7,7 +7,7 @@ import (
 )
 
 type projectRepository struct {
-	projects map[string]domain.Project
+	projects map[string]*domain.Project
 }
 
 var (
@@ -15,24 +15,21 @@ var (
 	ErrProjectDoesNotExist = errors.New("project doesn't exist")
 )
 
-func NewProjectRepository(projects []domain.Project) *projectRepository {
-	data := make(map[string]domain.Project)
+func NewProjectRepository(projects []*domain.Project) *projectRepository {
+	data := make(map[string]*domain.Project)
 
 	for _, p := range projects {
-		data[p.ID] = domain.Project{
-			ID:    p.ID,
-			Title: p.Title,
-		}
+		data[p.ID] = p
 	}
 
 	return &projectRepository{projects: data}
 }
 
-func (repo *projectRepository) ListProjects() ([]domain.Project, error) {
-	projects := make([]domain.Project, 0, len(repo.projects))
+func (repo *projectRepository) ListProjects() ([]*domain.Project, error) {
+	projects := make([]*domain.Project, 0, len(repo.projects))
 
-	for _, project := range repo.projects {
-		projects = append(projects, project)
+	for _, p := range repo.projects {
+		projects = append(projects, p)
 	}
 
 	return projects, nil
@@ -40,13 +37,13 @@ func (repo *projectRepository) ListProjects() ([]domain.Project, error) {
 
 func (repo *projectRepository) GetProject(id string) (*domain.Project, error) {
 	if projectData, exists := repo.projects[id]; exists {
-		return &projectData, nil
+		return projectData, nil
 	}
 
 	return nil, ErrProjectDoesNotExist
 }
 
-func (repo *projectRepository) CreateProject(project domain.Project) error {
+func (repo *projectRepository) CreateProject(project *domain.Project) error {
 	if _, exists := repo.projects[project.ID]; exists {
 		return ErrDuplicateProject
 	}
@@ -54,7 +51,7 @@ func (repo *projectRepository) CreateProject(project domain.Project) error {
 	return nil
 }
 
-func (repo *projectRepository) UpdateProject(project domain.Project) error {
+func (repo *projectRepository) UpdateProject(project *domain.Project) error {
 	if _, exists := repo.projects[project.ID]; !exists {
 		return ErrProjectDoesNotExist
 	}

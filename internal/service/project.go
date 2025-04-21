@@ -24,7 +24,7 @@ func NewProjectService(repo domain.ProjectReporitory) *ProjectService {
 	return &ProjectService{repo: repo}
 }
 
-func (s *ProjectService) ListProjects() ([]domain.Project, error) {
+func (s *ProjectService) ListProjects() ([]*domain.Project, error) {
 	projects, err := s.repo.ListProjects()
 	if err != nil {
 		return nil, fmt.Errorf("list projecs: %w", err)
@@ -49,10 +49,11 @@ func (s *ProjectService) CreateProject(input *CreateProjectInput) error {
 }
 
 func (s *ProjectService) UpdateProject(id string, input *CreateProjectInput) error {
-	project := domain.Project{
-		ID:    id,
-		Title: input.Title,
+	project, err := s.repo.GetProject(id)
+	if err != nil {
+		return fmt.Errorf("get project: %w", err)
 	}
+
 	if err := s.repo.UpdateProject(project); err != nil {
 		return fmt.Errorf("update project: %w", err)
 	}
