@@ -21,3 +21,13 @@ func (f *FailingProjectRepo) UpdateProject(*domain.Project) error {
 	return ErrRepoFailed
 }
 func (f *FailingProjectRepo) DeleteProject(id string) error { return ErrRepoFailed }
+
+type FailingEntryRepo struct{}
+
+func (f *FailingEntryRepo) ListEntries(projectID string) ([]*domain.Entry, error) {
+	return nil, ErrRepoFailed
+}
+
+func (f *FailingEntryRepo) CreateEntry(entry *domain.Entry) error {
+	return ErrRepoFailed
+}
