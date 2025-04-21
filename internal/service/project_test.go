@@ -3,7 +3,7 @@ package service
 import (
 	"testing"
 
-	"github.com/ScruffyPete/gologbook/internal/db"
+	"github.com/ScruffyPete/gologbook/internal/db/in_memory"
 	"github.com/ScruffyPete/gologbook/internal/domain"
 	"github.com/ScruffyPete/gologbook/internal/testutil"
 	"github.com/google/uuid"
@@ -13,7 +13,7 @@ import (
 func TestListProjects(t *testing.T) {
 	t.Run("valid data", func(t *testing.T) {
 		projects := testutil.MakeDummyProjects()
-		repo := db.NewInMemoryProjectRepository(projects)
+		repo := in_memory.NewProjectRepository(projects)
 		service := NewProjectService(repo)
 
 		service_projects, err := service.ListProjects()
@@ -23,7 +23,7 @@ func TestListProjects(t *testing.T) {
 	})
 
 	t.Run("empty data", func(t *testing.T) {
-		repo := db.NewInMemoryProjectRepository(nil)
+		repo := in_memory.NewProjectRepository(nil)
 		service := NewProjectService(repo)
 
 		service_projects, err := service.ListProjects()
@@ -47,7 +47,7 @@ func TestListProjects(t *testing.T) {
 func TestGetProject(t *testing.T) {
 	t.Run("valid project", func(t *testing.T) {
 		project := domain.MakeProject("Build a treehouse")
-		repo := db.NewInMemoryProjectRepository([]domain.Project{project})
+		repo := in_memory.NewProjectRepository([]domain.Project{project})
 		service := NewProjectService(repo)
 
 		service_project, err := service.GetProject(project.ID)
@@ -69,7 +69,7 @@ func TestGetProject(t *testing.T) {
 
 func TestCreateProject(t *testing.T) {
 	t.Run("new project", func(t *testing.T) {
-		repo := db.NewInMemoryProjectRepository(nil)
+		repo := in_memory.NewProjectRepository(nil)
 		service := NewProjectService(repo)
 		input := CreateProjectInput{Title: "Buy a horse"}
 
@@ -92,7 +92,7 @@ func TestCreateProject(t *testing.T) {
 func TestUpdateProject(t *testing.T) {
 	t.Run("valid project", func(t *testing.T) {
 		project := domain.MakeProject("Build a treehouse")
-		repo := db.NewInMemoryProjectRepository([]domain.Project{project})
+		repo := in_memory.NewProjectRepository([]domain.Project{project})
 		service := NewProjectService(repo)
 
 		input := CreateProjectInput{Title: "Build a tree-fortress"}
@@ -116,7 +116,7 @@ func TestUpdateProject(t *testing.T) {
 func TestDeleteProject(t *testing.T) {
 	t.Run("valid project", func(t *testing.T) {
 		project := domain.MakeProject("Build a treehouse")
-		repo := db.NewInMemoryProjectRepository([]domain.Project{project})
+		repo := in_memory.NewProjectRepository([]domain.Project{project})
 		service := NewProjectService(repo)
 
 		err := service.DeleteProject(project.ID)

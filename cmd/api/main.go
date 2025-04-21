@@ -5,14 +5,14 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/ScruffyPete/gologbook/internal/db"
+	"github.com/ScruffyPete/gologbook/internal/db/in_memory"
 	"github.com/ScruffyPete/gologbook/internal/handler"
 )
 
 func main() {
 	fmt.Println("LOGBOOK!")
 
-	repo := db.NewInMemoryProjectRepository(nil)
+	repo := in_memory.NewProjectRepository(nil)
 	h := handler.NewHandler(repo)
 	mux := h.NewRouter()
 

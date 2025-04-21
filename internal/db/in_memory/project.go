@@ -1,4 +1,4 @@
-package db
+package in_memory
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 	"github.com/ScruffyPete/gologbook/internal/domain"
 )
 
-type inMemoryProjectRepository struct {
+type projectRepository struct {
 	projects map[string]domain.Project
 }
 
@@ -15,7 +15,7 @@ var (
 	ErrProjectDoesNotExist = errors.New("project doesn't exist")
 )
 
-func NewInMemoryProjectRepository(projects []domain.Project) *inMemoryProjectRepository {
+func NewProjectRepository(projects []domain.Project) *projectRepository {
 	data := make(map[string]domain.Project)
 
 	for _, p := range projects {
@@ -25,10 +25,10 @@ func NewInMemoryProjectRepository(projects []domain.Project) *inMemoryProjectRep
 		}
 	}
 
-	return &inMemoryProjectRepository{projects: data}
+	return &projectRepository{projects: data}
 }
 
-func (repo *inMemoryProjectRepository) ListProjects() ([]domain.Project, error) {
+func (repo *projectRepository) ListProjects() ([]domain.Project, error) {
 	projects := make([]domain.Project, 0, len(repo.projects))
 
 	for _, project := range repo.projects {
@@ -38,7 +38,7 @@ func (repo *inMemoryProjectRepository) ListProjects() ([]domain.Project, error) 
 	return projects, nil
 }
 
-func (repo *inMemoryProjectRepository) GetProject(id string) (*domain.Project, error) {
+func (repo *projectRepository) GetProject(id string) (*domain.Project, error) {
 	if projectData, exists := repo.projects[id]; exists {
 		return &projectData, nil
 	}
@@ -46,7 +46,7 @@ func (repo *inMemoryProjectRepository) GetProject(id string) (*domain.Project, e
 	return nil, ErrProjectDoesNotExist
 }
 
-func (repo *inMemoryProjectRepository) CreateProject(project domain.Project) error {
+func (repo *projectRepository) CreateProject(project domain.Project) error {
 	if _, exists := repo.projects[project.ID]; exists {
 		return ErrDuplicateProject
 	}
@@ -54,7 +54,7 @@ func (repo *inMemoryProjectRepository) CreateProject(project domain.Project) err
 	return nil
 }
 
-func (repo *inMemoryProjectRepository) UpdateProject(project domain.Project) error {
+func (repo *projectRepository) UpdateProject(project domain.Project) error {
 	if _, exists := repo.projects[project.ID]; !exists {
 		return ErrProjectDoesNotExist
 	}
@@ -62,7 +62,7 @@ func (repo *inMemoryProjectRepository) UpdateProject(project domain.Project) err
 	return nil
 }
 
-func (repo *inMemoryProjectRepository) DeleteProject(id string) error {
+func (repo *projectRepository) DeleteProject(id string) error {
 	if _, exists := repo.projects[id]; !exists {
 		return ErrProjectDoesNotExist
 	}

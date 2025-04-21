@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ScruffyPete/gologbook/internal/db"
 	"github.com/ScruffyPete/gologbook/internal/domain"
 )
 
@@ -62,9 +61,6 @@ func (s *ProjectService) UpdateProject(id string, input *CreateProjectInput) err
 
 func (s *ProjectService) DeleteProject(id string) error {
 	if err := s.repo.DeleteProject(id); err != nil {
-		if errors.Is(err, db.ErrProjectDoesNotExist) {
-			return ErrProjectNotFound
-		}
 		return fmt.Errorf("get project: %w", err)
 	}
 	return nil

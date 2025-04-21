@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ScruffyPete/gologbook/internal/db"
+	"github.com/ScruffyPete/gologbook/internal/db/in_memory"
 	"github.com/ScruffyPete/gologbook/internal/domain"
 	"github.com/ScruffyPete/gologbook/internal/testutil"
 	"github.com/google/uuid"
@@ -17,7 +17,7 @@ import (
 func TestListProjects(t *testing.T) {
 	t.Run("valid status ok", func(t *testing.T) {
 		project := domain.MakeProject("Buid a shed")
-		project_repo := db.NewInMemoryProjectRepository([]domain.Project{project})
+		project_repo := in_memory.NewProjectRepository([]domain.Project{project})
 		hand := NewHandler(project_repo)
 		mux := hand.NewRouter()
 
@@ -30,7 +30,7 @@ func TestListProjects(t *testing.T) {
 	})
 
 	t.Run("empty status ok", func(t *testing.T) {
-		project_repo := db.NewInMemoryProjectRepository(nil)
+		project_repo := in_memory.NewProjectRepository(nil)
 		hand := NewHandler(project_repo)
 		mux := hand.NewRouter()
 
@@ -59,7 +59,7 @@ func TestListProjects(t *testing.T) {
 func TestGetPoject(t *testing.T) {
 	t.Run("valid project", func(t *testing.T) {
 		project := domain.MakeProject("Buid a shed")
-		project_repo := db.NewInMemoryProjectRepository([]domain.Project{project})
+		project_repo := in_memory.NewProjectRepository([]domain.Project{project})
 		hand := NewHandler(project_repo)
 		mux := hand.NewRouter()
 
@@ -74,7 +74,7 @@ func TestGetPoject(t *testing.T) {
 
 	t.Run("invalid project", func(t *testing.T) {
 		project := domain.MakeProject("Buid a shed")
-		project_repo := db.NewInMemoryProjectRepository([]domain.Project{project})
+		project_repo := in_memory.NewProjectRepository([]domain.Project{project})
 		hand := NewHandler(project_repo)
 		mux := hand.NewRouter()
 
@@ -90,7 +90,7 @@ func TestGetPoject(t *testing.T) {
 
 func TestCreateProject(t *testing.T) {
 	t.Run("new project", func(t *testing.T) {
-		project_repo := db.NewInMemoryProjectRepository(nil)
+		project_repo := in_memory.NewProjectRepository(nil)
 		hand := NewHandler(project_repo)
 		mux := hand.NewRouter()
 
@@ -105,7 +105,7 @@ func TestCreateProject(t *testing.T) {
 	})
 
 	t.Run("invalid data", func(t *testing.T) {
-		project_repo := db.NewInMemoryProjectRepository(nil)
+		project_repo := in_memory.NewProjectRepository(nil)
 		hand := NewHandler(project_repo)
 		mux := hand.NewRouter()
 
@@ -123,7 +123,7 @@ func TestCreateProject(t *testing.T) {
 func TestUpdateProject(t *testing.T) {
 	t.Run("valid project", func(t *testing.T) {
 		project := domain.MakeProject("Cook a hog")
-		project_repo := db.NewInMemoryProjectRepository([]domain.Project{project})
+		project_repo := in_memory.NewProjectRepository([]domain.Project{project})
 		hand := NewHandler(project_repo)
 		mux := hand.NewRouter()
 
@@ -140,7 +140,7 @@ func TestUpdateProject(t *testing.T) {
 
 	t.Run("invalid project", func(t *testing.T) {
 		project := domain.MakeProject("Cook a hog")
-		project_repo := db.NewInMemoryProjectRepository([]domain.Project{project})
+		project_repo := in_memory.NewProjectRepository([]domain.Project{project})
 		hand := NewHandler(project_repo)
 		mux := hand.NewRouter()
 
@@ -157,7 +157,7 @@ func TestUpdateProject(t *testing.T) {
 
 	t.Run("invalid data", func(t *testing.T) {
 		project := domain.MakeProject("Cook a hog")
-		project_repo := db.NewInMemoryProjectRepository([]domain.Project{project})
+		project_repo := in_memory.NewProjectRepository([]domain.Project{project})
 		hand := NewHandler(project_repo)
 		mux := hand.NewRouter()
 
@@ -176,7 +176,7 @@ func TestUpdateProject(t *testing.T) {
 func TestDeleteProject(t *testing.T) {
 	t.Run("valid project", func(t *testing.T) {
 		project := domain.MakeProject("Dig a hole")
-		project_repo := db.NewInMemoryProjectRepository([]domain.Project{project})
+		project_repo := in_memory.NewProjectRepository([]domain.Project{project})
 		hand := NewHandler(project_repo)
 		mux := hand.NewRouter()
 
@@ -192,7 +192,7 @@ func TestDeleteProject(t *testing.T) {
 
 	t.Run("invalid project", func(t *testing.T) {
 		project := domain.MakeProject("Dig a hole")
-		project_repo := db.NewInMemoryProjectRepository([]domain.Project{project})
+		project_repo := in_memory.NewProjectRepository([]domain.Project{project})
 		hand := NewHandler(project_repo)
 		mux := hand.NewRouter()
 
