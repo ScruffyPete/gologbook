@@ -28,14 +28,14 @@ func NewInMemoryProjectRepository(projects []domain.Project) *inMemoryProjectRep
 	return &inMemoryProjectRepository{projects: data}
 }
 
-func (repo *inMemoryProjectRepository) ListProjects() []domain.Project {
+func (repo *inMemoryProjectRepository) ListProjects() ([]domain.Project, error) {
 	projects := make([]domain.Project, 0, len(repo.projects))
 
 	for _, project := range repo.projects {
 		projects = append(projects, project)
 	}
 
-	return projects
+	return projects, nil
 }
 
 func (repo *inMemoryProjectRepository) GetProject(id string) (*domain.Project, error) {

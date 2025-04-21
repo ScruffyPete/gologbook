@@ -16,8 +16,9 @@ func TestListProjects(t *testing.T) {
 		repo := db.NewInMemoryProjectRepository(projects)
 		service := NewProjectService(repo)
 
-		service_projects, _ := service.ListProjects()
+		service_projects, err := service.ListProjects()
 
+		assert.Nil(t, err)
 		assert.ElementsMatch(t, projects, service_projects)
 	})
 
@@ -25,9 +26,21 @@ func TestListProjects(t *testing.T) {
 		repo := db.NewInMemoryProjectRepository(nil)
 		service := NewProjectService(repo)
 
-		service_projects, _ := service.ListProjects()
+		service_projects, err := service.ListProjects()
 
+		assert.Nil(t, err)
 		assert.Equal(t, []domain.Project{}, service_projects)
+	})
+
+	t.Run("repository error", func(t *testing.T) {
+		repo := &testutil.FailingProjectRepo{}
+		service := NewProjectService(repo)
+
+		service_projects, err := service.ListProjects()
+
+		assert.Nil(t, service_projects)
+		assert.NotNil(t, err)
+		assert.ErrorIs(t, err, testutil.ErrRepoFailed)
 	})
 }
 

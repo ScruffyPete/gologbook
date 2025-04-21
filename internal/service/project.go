@@ -18,7 +18,7 @@ type ProjectService struct {
 }
 
 type CreateProjectInput struct {
-	Title string
+	Title string `json:"title"`
 }
 
 func NewProjectService(repo domain.ProjectReporitory) *ProjectService {
@@ -26,7 +26,11 @@ func NewProjectService(repo domain.ProjectReporitory) *ProjectService {
 }
 
 func (s *ProjectService) ListProjects() ([]domain.Project, error) {
-	return s.repo.ListProjects(), nil
+	projects, err := s.repo.ListProjects()
+	if err != nil {
+		return nil, fmt.Errorf("list projecs: %w", err)
+	}
+	return projects, nil
 }
 
 func (s *ProjectService) GetProject(id string) (*domain.Project, error) {

@@ -14,15 +14,18 @@ func TestListProjects(t *testing.T) {
 		projects := testutil.MakeDummyProjects()
 		repo := NewInMemoryProjectRepository(projects)
 
-		repo_projects := repo.ListProjects()
+		repo_projects, err := repo.ListProjects()
 
+		assert.Nil(t, err)
 		assert.ElementsMatch(t, repo_projects, projects)
 	})
 
 	t.Run("empty data", func(t *testing.T) {
 		projects := []domain.Project{}
 		repo := NewInMemoryProjectRepository(projects)
-		repo_projects := repo.ListProjects()
+		repo_projects, err := repo.ListProjects()
+
+		assert.Nil(t, err)
 		assert.ElementsMatch(t, repo_projects, projects)
 	})
 }
