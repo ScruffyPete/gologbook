@@ -1,6 +1,8 @@
 package testutil
 
 import (
+	"sort"
+
 	"github.com/ScruffyPete/gologbook/internal/domain"
 )
 
@@ -21,5 +23,14 @@ func MakeDummyEntries(project *domain.Project) []*domain.Entry {
 	entryB := domain.MakeEntry(project.ID, "Build traps")
 	entryC := domain.MakeEntry(project.ID, "Sharpen knives")
 
-	return []*domain.Entry{entryA, entryB, entryC}
+	entries := []*domain.Entry{entryA, entryB, entryC}
+
+	sorted := make([]*domain.Entry, len(entries))
+	copy(sorted, entries)
+
+	sort.Slice(sorted, func(i, j int) bool {
+		return sorted[i].CratedAt.Before(sorted[j].CratedAt)
+	})
+
+	return sorted
 }

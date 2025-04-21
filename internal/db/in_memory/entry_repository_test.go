@@ -14,17 +14,18 @@ func TestListEntries(t *testing.T) {
 		entries := testutil.MakeDummyEntries(project)
 		repo := NewEntryRepository(entries)
 
-		repo_entries, err := repo.ListEntries()
+		repo_entries, err := repo.ListEntries(project.ID)
 
 		assert.Nil(t, err)
 		assert.ElementsMatch(t, repo_entries, entries)
 	})
 
 	t.Run("empty data", func(t *testing.T) {
+		project := domain.MakeProject("Hunt a boar")
 		entries := []*domain.Entry{}
 		repo := NewEntryRepository(entries)
 
-		repo_entries, err := repo.ListEntries()
+		repo_entries, err := repo.ListEntries(project.ID)
 
 		assert.Nil(t, err)
 		assert.ElementsMatch(t, repo_entries, entries)

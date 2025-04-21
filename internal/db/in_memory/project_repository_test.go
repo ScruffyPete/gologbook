@@ -51,7 +51,7 @@ func TestCreateProject(t *testing.T) {
 	project := domain.MakeProject("Write a novel")
 	repo := NewProjectRepository(nil)
 	err := repo.CreateProject(project)
-	assert.ErrorIs(t, err, nil)
+	assert.Nil(t, err)
 }
 
 func TestUpdateProject(t *testing.T) {

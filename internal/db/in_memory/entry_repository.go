@@ -1,32 +1,41 @@
 package in_memory
 
-import "github.com/ScruffyPete/gologbook/internal/domain"
+import (
+	"sort"
+
+	"github.com/ScruffyPete/gologbook/internal/domain"
+)
 
 type entryRepository struct {
-	entries map[string]*domain.Entry
+	entries map[string][]*domain.Entry
 }
 
 func NewEntryRepository(entries []*domain.Entry) *entryRepository {
-	data := make(map[string]*domain.Entry)
+	data := make(map[string][]*domain.Entry)
 
 	for _, e := range entries {
-		data[e.ID] = e
+		data[e.ProjectID] = append(data[e.ProjectID], e)
 	}
 
 	return &entryRepository{entries: data}
 }
 
-func (repo *entryRepository) ListEntries() ([]*domain.Entry, error) {
-	entries := make([]*domain.Entry, 0, len(repo.entries))
+func (repo *entryRepository) ListEntries(projectID string) ([]*domain.Entry, error) {
+	entries := repo.entries[projectID]
 
-	for _, e := range repo.entries {
-		entries = append(entries, e)
-	}
+	sorted := make([]*domain.Entry, len(entries))
+	copy(sorted, entries)
 
-	return entries, nil
+	sort.Slice(sorted, func(i, j int) bool {
+		return sorted[i].CratedAt.Before(sorted[j].CratedAt)
+	})
+
+	return sorted, nil
 }
 
 func (repo *entryRepository) CreateEntry(entry *domain.Entry) error {
-	repo.entries[entry.ID] = entry
+	entries := repo.entries[entry.ProjectID]
+	entries = append(entries, entry)
+	repo.entries[entry.ProjectID] = entries
 	return nil
 }
