@@ -8,27 +8,25 @@ import (
 	"github.com/ScruffyPete/gologbook/internal/service"
 )
 
-type Handler struct {
+type ProjectHandler struct {
 	projectService *service.ProjectService
 }
 
-func NewHandler(repo domain.ProjectReporitory) *Handler {
-	return &Handler{
-		projectService: service.NewProjectService(repo),
+func NewProjectHandler(projectRepo domain.ProjectReporitory) *ProjectHandler {
+	return &ProjectHandler{
+		projectService: service.NewProjectService(projectRepo),
 	}
 }
 
-func (h *Handler) NewRouter() *http.ServeMux {
-	mux := http.NewServeMux()
+func (h *ProjectHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("GET /projects", h.listProjects)
 	mux.HandleFunc("GET /projects/{id}", h.getProjectById)
 	mux.HandleFunc("POST /projects", h.createProjet)
 	mux.HandleFunc("PATCH /projects/{id}", h.updateProjectDetails)
 	mux.HandleFunc("DELETE /projects/{id}", h.deleteProject)
-	return mux
 }
 
-func (h *Handler) listProjects(w http.ResponseWriter, r *http.Request) {
+func (h *ProjectHandler) listProjects(w http.ResponseWriter, r *http.Request) {
 	projects, err := h.projectService.ListProjects()
 	if err != nil {
 		http.Error(w, "failed to list projects", http.StatusInternalServerError)
@@ -37,7 +35,7 @@ func (h *Handler) listProjects(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(projects)
 }
 
-func (h *Handler) getProjectById(w http.ResponseWriter, r *http.Request) {
+func (h *ProjectHandler) getProjectById(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	project, err := h.projectService.GetProject(id)
 	if err != nil {
@@ -48,7 +46,7 @@ func (h *Handler) getProjectById(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(project)
 }
 
-func (h *Handler) createProjet(w http.ResponseWriter, r *http.Request) {
+func (h *ProjectHandler) createProjet(w http.ResponseWriter, r *http.Request) {
 	var input service.CreateProjectInput
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		http.Error(w, "invalid input", http.StatusBadRequest)
@@ -62,7 +60,7 @@ func (h *Handler) createProjet(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func (h *Handler) updateProjectDetails(w http.ResponseWriter, r *http.Request) {
+func (h *ProjectHandler) updateProjectDetails(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	var input service.CreateProjectInput
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
@@ -77,7 +75,7 @@ func (h *Handler) updateProjectDetails(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (h *Handler) deleteProject(w http.ResponseWriter, r *http.Request) {
+func (h *ProjectHandler) deleteProject(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
 	if err := h.projectService.DeleteProject(id); err != nil {

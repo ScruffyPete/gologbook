@@ -18,8 +18,9 @@ func TestListProjects(t *testing.T) {
 	t.Run("valid status ok", func(t *testing.T) {
 		project := domain.MakeProject("Buid a shed")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
-		hand := NewHandler(project_repo)
-		mux := hand.NewRouter()
+		hand := NewProjectHandler(project_repo)
+		mux := http.NewServeMux()
+		hand.Register(mux)
 
 		req := httptest.NewRequest(http.MethodGet, "/projects", nil)
 		w := httptest.NewRecorder()
@@ -31,8 +32,9 @@ func TestListProjects(t *testing.T) {
 
 	t.Run("empty status ok", func(t *testing.T) {
 		project_repo := in_memory.NewProjectRepository(nil)
-		hand := NewHandler(project_repo)
-		mux := hand.NewRouter()
+		hand := NewProjectHandler(project_repo)
+		mux := http.NewServeMux()
+		hand.Register(mux)
 
 		req := httptest.NewRequest(http.MethodGet, "/projects", nil)
 		w := httptest.NewRecorder()
@@ -44,8 +46,9 @@ func TestListProjects(t *testing.T) {
 
 	t.Run("internal error", func(t *testing.T) {
 		project_repo := &testutil.FailingProjectRepo{}
-		hand := NewHandler(project_repo)
-		mux := hand.NewRouter()
+		hand := NewProjectHandler(project_repo)
+		mux := http.NewServeMux()
+		hand.Register(mux)
 
 		req := httptest.NewRequest(http.MethodGet, "/projects", nil)
 		w := httptest.NewRecorder()
@@ -60,8 +63,9 @@ func TestGetPoject(t *testing.T) {
 	t.Run("valid project", func(t *testing.T) {
 		project := domain.MakeProject("Buid a shed")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
-		hand := NewHandler(project_repo)
-		mux := hand.NewRouter()
+		hand := NewProjectHandler(project_repo)
+		mux := http.NewServeMux()
+		hand.Register(mux)
 
 		url := fmt.Sprintf("/projects/%s", project.ID)
 		req := httptest.NewRequest(http.MethodGet, url, nil)
@@ -75,8 +79,9 @@ func TestGetPoject(t *testing.T) {
 	t.Run("invalid project", func(t *testing.T) {
 		project := domain.MakeProject("Buid a shed")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
-		hand := NewHandler(project_repo)
-		mux := hand.NewRouter()
+		hand := NewProjectHandler(project_repo)
+		mux := http.NewServeMux()
+		hand.Register(mux)
 
 		url := fmt.Sprintf("/projects/%s", uuid.NewString())
 		req := httptest.NewRequest(http.MethodGet, url, nil)
@@ -91,8 +96,9 @@ func TestGetPoject(t *testing.T) {
 func TestCreateProject(t *testing.T) {
 	t.Run("new project", func(t *testing.T) {
 		project_repo := in_memory.NewProjectRepository(nil)
-		hand := NewHandler(project_repo)
-		mux := hand.NewRouter()
+		hand := NewProjectHandler(project_repo)
+		mux := http.NewServeMux()
+		hand.Register(mux)
 
 		payload := `{"title": "Buy a horse"}`
 		req := httptest.NewRequest(http.MethodPost, "/projects", strings.NewReader(payload))
@@ -106,8 +112,9 @@ func TestCreateProject(t *testing.T) {
 
 	t.Run("invalid data", func(t *testing.T) {
 		project_repo := in_memory.NewProjectRepository(nil)
-		hand := NewHandler(project_repo)
-		mux := hand.NewRouter()
+		hand := NewProjectHandler(project_repo)
+		mux := http.NewServeMux()
+		hand.Register(mux)
 
 		payload := `{"title": 1234}`
 		req := httptest.NewRequest(http.MethodPost, "/projects", strings.NewReader(payload))
@@ -124,8 +131,9 @@ func TestUpdateProject(t *testing.T) {
 	t.Run("valid project", func(t *testing.T) {
 		project := domain.MakeProject("Cook a hog")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
-		hand := NewHandler(project_repo)
-		mux := hand.NewRouter()
+		hand := NewProjectHandler(project_repo)
+		mux := http.NewServeMux()
+		hand.Register(mux)
 
 		payload := `{"title": "Buy a horse"}`
 		url := fmt.Sprintf("/projects/%s", project.ID)
@@ -141,8 +149,9 @@ func TestUpdateProject(t *testing.T) {
 	t.Run("invalid project", func(t *testing.T) {
 		project := domain.MakeProject("Cook a hog")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
-		hand := NewHandler(project_repo)
-		mux := hand.NewRouter()
+		hand := NewProjectHandler(project_repo)
+		mux := http.NewServeMux()
+		hand.Register(mux)
 
 		payload := `{"title": "Buy a horse"}`
 		url := fmt.Sprintf("/projects/%s", uuid.NewString())
@@ -158,8 +167,9 @@ func TestUpdateProject(t *testing.T) {
 	t.Run("invalid data", func(t *testing.T) {
 		project := domain.MakeProject("Cook a hog")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
-		hand := NewHandler(project_repo)
-		mux := hand.NewRouter()
+		hand := NewProjectHandler(project_repo)
+		mux := http.NewServeMux()
+		hand.Register(mux)
 
 		payload := `{"title": 1234}`
 		url := fmt.Sprintf("/projects/%s", project.ID)
@@ -177,8 +187,9 @@ func TestDeleteProject(t *testing.T) {
 	t.Run("valid project", func(t *testing.T) {
 		project := domain.MakeProject("Dig a hole")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
-		hand := NewHandler(project_repo)
-		mux := hand.NewRouter()
+		hand := NewProjectHandler(project_repo)
+		mux := http.NewServeMux()
+		hand.Register(mux)
 
 		url := fmt.Sprintf("/projects/%s", project.ID)
 		req := httptest.NewRequest(http.MethodDelete, url, nil)
@@ -193,8 +204,9 @@ func TestDeleteProject(t *testing.T) {
 	t.Run("invalid project", func(t *testing.T) {
 		project := domain.MakeProject("Dig a hole")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
-		hand := NewHandler(project_repo)
-		mux := hand.NewRouter()
+		hand := NewProjectHandler(project_repo)
+		mux := http.NewServeMux()
+		hand.Register(mux)
 
 		url := fmt.Sprintf("/projects/%s", uuid.NewString())
 		req := httptest.NewRequest(http.MethodDelete, url, nil)

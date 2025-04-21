@@ -15,7 +15,10 @@ type CreateEntryInput struct {
 	Body string `json:"body"`
 }
 
-func NewEntryService(entryRepo domain.EntryRepository, projectRepo domain.ProjectReporitory) *EntryService {
+func NewEntryService(
+	entryRepo domain.EntryRepository,
+	projectRepo domain.ProjectReporitory,
+) *EntryService {
 	return &EntryService{entryRepo, projectRepo}
 }
 
@@ -32,8 +35,8 @@ func (s *EntryService) CreateEntry(projectID string, input *CreateEntryInput) er
 	if err != nil {
 		return fmt.Errorf("crete entry: %w", err)
 	}
-	entry := domain.MakeEntry(projectID, input.Body)
 
+	entry := domain.MakeEntry(projectID, input.Body)
 	if err := s.entryRepo.CreateEntry(entry); err != nil {
 		return fmt.Errorf("crete entry: %w", err)
 	}

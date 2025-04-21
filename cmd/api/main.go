@@ -12,9 +12,14 @@ import (
 func main() {
 	fmt.Println("LOGBOOK!")
 
-	repo := in_memory.NewProjectRepository(nil)
-	h := handler.NewHandler(repo)
-	mux := h.NewRouter()
+	projectRepo := in_memory.NewProjectRepository(nil)
+	entryRepo := in_memory.NewEntryRepository(nil)
+	projectHandler := handler.NewProjectHandler(projectRepo)
+	entryHandler := handler.NewEntryHandler(entryRepo, projectRepo)
+
+	mux := http.NewServeMux()
+	projectHandler.Register(mux)
+	entryHandler.Register(mux)
 
 	fmt.Println("Starting GoLogbook service...")
 
