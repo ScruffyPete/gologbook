@@ -10,10 +10,7 @@ type projectRepository struct {
 	projects map[string]*domain.Project
 }
 
-var (
-	ErrDuplicateProject    = errors.New("project already exists")
-	ErrProjectDoesNotExist = errors.New("project doesn't exist")
-)
+var ErrProjectDoesNotExist = errors.New("project doesn't exist")
 
 func NewProjectRepository(projects []*domain.Project) *projectRepository {
 	data := make(map[string]*domain.Project)
@@ -44,9 +41,6 @@ func (repo *projectRepository) GetProject(id string) (*domain.Project, error) {
 }
 
 func (repo *projectRepository) CreateProject(project *domain.Project) error {
-	if _, exists := repo.projects[project.ID]; exists {
-		return ErrDuplicateProject
-	}
 	repo.projects[project.ID] = project
 	return nil
 }

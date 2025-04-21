@@ -9,6 +9,6 @@ type ProjectReporitory interface {
 }
 
 type EntryRepository interface {
-	ListEntries(projectID string) []Entry
-	AddEntry(body string) error
+	ListEntries(projectID string) ([]*Entry, error)
+	CreateEntry(entry *Entry) error
 }

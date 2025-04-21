@@ -15,3 +15,11 @@ func MakeDummyProjects() []*domain.Project {
 		projectC,
 	}
 }
+
+func MakeDummyEntries(project *domain.Project) []*domain.Entry {
+	entryA := domain.MakeEntry(project.ID, "Get spear")
+	entryB := domain.MakeEntry(project.ID, "Build traps")
+	entryC := domain.MakeEntry(project.ID, "Sharpen knives")
+
+	return []*domain.Entry{entryA, entryB, entryC}
+}

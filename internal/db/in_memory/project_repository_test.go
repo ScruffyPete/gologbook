@@ -48,19 +48,10 @@ func TestGetProject(t *testing.T) {
 }
 
 func TestCreateProject(t *testing.T) {
-	t.Run("new project", func(t *testing.T) {
-		project := domain.MakeProject("Write a novel")
-		repo := NewProjectRepository(nil)
-		err := repo.CreateProject(project)
-		assert.ErrorIs(t, err, nil)
-	})
-
-	t.Run("existing project", func(t *testing.T) {
-		project := domain.MakeProject("Write a novel")
-		repo := NewProjectRepository([]*domain.Project{project})
-		err := repo.CreateProject(project)
-		assert.ErrorIs(t, err, ErrDuplicateProject)
-	})
+	project := domain.MakeProject("Write a novel")
+	repo := NewProjectRepository(nil)
+	err := repo.CreateProject(project)
+	assert.ErrorIs(t, err, nil)
 }
 
 func TestUpdateProject(t *testing.T) {

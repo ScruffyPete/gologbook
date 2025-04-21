@@ -19,3 +19,19 @@ func MakeProject(title string) *Project {
 		Title:     title,
 	}
 }
+
+type Entry struct {
+	ID        string
+	CratedAt  time.Time
+	ProjectID string
+	Body      string
+}
+
+func MakeEntry(projectID string, body string) *Entry {
+	return &Entry{
+		ID:        uuid.NewString(),
+		CratedAt:  time.Now(),
+		ProjectID: projectID,
+		Body:      body,
+	}
+}
