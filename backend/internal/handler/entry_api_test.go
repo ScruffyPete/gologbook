@@ -28,7 +28,7 @@ func TestListEntries(t *testing.T) {
 		projectHandler.Register(mux)
 		entryHandler.Register(mux)
 
-		url := fmt.Sprintf("/projects/{%s}/entries", project.ID)
+		url := fmt.Sprintf("/api/projects/{%s}/entries", project.ID)
 		req := httptest.NewRequest(http.MethodGet, url, nil)
 		w := httptest.NewRecorder()
 
@@ -49,7 +49,7 @@ func TestListEntries(t *testing.T) {
 		projectHandler.Register(mux)
 		entryHandler.Register(mux)
 
-		url := fmt.Sprintf("/projects/{%s}/entries", project.ID)
+		url := fmt.Sprintf("/api/projects/{%s}/entries", project.ID)
 		req := httptest.NewRequest(http.MethodGet, url, nil)
 		w := httptest.NewRecorder()
 
@@ -70,7 +70,7 @@ func TestListEntries(t *testing.T) {
 		projectHandler.Register(mux)
 		entryHandler.Register(mux)
 
-		url := fmt.Sprintf("/projects/{%s}/entries", project.ID)
+		url := fmt.Sprintf("/api/projects/{%s}/entries", project.ID)
 		req := httptest.NewRequest(http.MethodGet, url, nil)
 		w := httptest.NewRecorder()
 
@@ -94,7 +94,7 @@ func TestCreateEntry(t *testing.T) {
 		entryHandler.Register(mux)
 
 		payload := `{"body": "Get a shovel"}`
-		url := fmt.Sprintf("/projects/%s/entries", project.ID)
+		url := fmt.Sprintf("/api/projects/%s/entries", project.ID)
 		req := httptest.NewRequest(http.MethodPost, url, strings.NewReader(payload))
 		w := httptest.NewRecorder()
 
@@ -116,7 +116,7 @@ func TestCreateEntry(t *testing.T) {
 		entryHandler.Register(mux)
 
 		payload := `{"body": "Get a shovel"}`
-		url := fmt.Sprintf("/projects/%s/entries", uuid.NewString())
+		url := fmt.Sprintf("/api/projects/%s/entries", uuid.NewString())
 		req := httptest.NewRequest(http.MethodPost, url, strings.NewReader(payload))
 		w := httptest.NewRecorder()
 
@@ -138,7 +138,7 @@ func TestCreateEntry(t *testing.T) {
 		entryHandler.Register(mux)
 
 		payload := `{"body": 123}`
-		url := fmt.Sprintf("/projects/%s/entries", project.ID)
+		url := fmt.Sprintf("/api/projects/%s/entries", project.ID)
 		req := httptest.NewRequest(http.MethodPost, url, strings.NewReader(payload))
 		w := httptest.NewRecorder()
 

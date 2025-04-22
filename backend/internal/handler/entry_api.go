@@ -22,8 +22,8 @@ func NewEntryHandler(
 }
 
 func (h *EntryHandler) Register(mux *http.ServeMux) {
-	mux.HandleFunc("GET /projects/{id}/entries", h.listEntries)
-	mux.HandleFunc("POST /projects/{id}/entries", h.createEntry)
+	mux.HandleFunc("GET /api/projects/{id}/entries", h.listEntries)
+	mux.HandleFunc("POST /api/projects/{id}/entries", h.createEntry)
 }
 
 func (h *EntryHandler) listEntries(w http.ResponseWriter, r *http.Request) {

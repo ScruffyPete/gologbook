@@ -7,9 +7,9 @@ import (
 )
 
 type Project struct {
-	ID        string
-	CreatedAt time.Time
-	Title     string
+	ID        string    `json:"id"`
+	CreatedAt time.Time `json:"createdAt"`
+	Title     string    `json:"title"`
 }
 
 func MakeProject(title string) *Project {
@@ -21,10 +21,10 @@ func MakeProject(title string) *Project {
 }
 
 type Entry struct {
-	ID        string
-	CratedAt  time.Time
-	ProjectID string
-	Body      string
+	ID        string    `json:"id"`
+	CratedAt  time.Time `json:"createdAt"`
+	ProjectID string    `json:"projectId"`
+	Body      string    `json:"body"`
 }
 
 func MakeEntry(projectID string, body string) *Entry {

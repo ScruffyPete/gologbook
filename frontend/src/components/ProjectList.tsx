@@ -9,7 +9,7 @@ export default function ProjectList({ onSelect }: ProjectListProps) {
     const [projects, setProjects] = useState<Project[]>([])
 
     useEffect(() => {
-        fetch('projects/')
+        fetch('/api/projects')
             .then(res => res.json())
             .then(setProjects)
             .catch(err => console.error('Failed to load projects:', err))

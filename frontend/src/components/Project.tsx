@@ -7,7 +7,7 @@ export default function Project({ project }: { project: ProjectType }) {
     const [entries, setEntries] = useState<Entry[]>([])
 
     useEffect(() => {
-        fetch(`/projects/${project.id}/entries`)
+        fetch(`/api/projects/${project.id}/entries`)
             .then(res => res.json())
             .then(setEntries)
             .catch(err => console.error('Failed to fetch entries:', err))

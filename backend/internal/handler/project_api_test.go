@@ -22,7 +22,7 @@ func TestListProjects(t *testing.T) {
 		mux := http.NewServeMux()
 		hand.Register(mux)
 
-		req := httptest.NewRequest(http.MethodGet, "/projects", nil)
+		req := httptest.NewRequest(http.MethodGet, "/api/projects", nil)
 		w := httptest.NewRecorder()
 
 		mux.ServeHTTP(w, req)
@@ -36,7 +36,7 @@ func TestListProjects(t *testing.T) {
 		mux := http.NewServeMux()
 		hand.Register(mux)
 
-		req := httptest.NewRequest(http.MethodGet, "/projects", nil)
+		req := httptest.NewRequest(http.MethodGet, "/api/projects", nil)
 		w := httptest.NewRecorder()
 
 		mux.ServeHTTP(w, req)
@@ -50,7 +50,7 @@ func TestListProjects(t *testing.T) {
 		mux := http.NewServeMux()
 		hand.Register(mux)
 
-		req := httptest.NewRequest(http.MethodGet, "/projects", nil)
+		req := httptest.NewRequest(http.MethodGet, "/api/projects", nil)
 		w := httptest.NewRecorder()
 
 		mux.ServeHTTP(w, req)
@@ -67,7 +67,7 @@ func TestGetPoject(t *testing.T) {
 		mux := http.NewServeMux()
 		hand.Register(mux)
 
-		url := fmt.Sprintf("/projects/%s", project.ID)
+		url := fmt.Sprintf("/api/projects/%s", project.ID)
 		req := httptest.NewRequest(http.MethodGet, url, nil)
 		w := httptest.NewRecorder()
 
@@ -83,7 +83,7 @@ func TestGetPoject(t *testing.T) {
 		mux := http.NewServeMux()
 		hand.Register(mux)
 
-		url := fmt.Sprintf("/projects/%s", uuid.NewString())
+		url := fmt.Sprintf("/api/projects/%s", uuid.NewString())
 		req := httptest.NewRequest(http.MethodGet, url, nil)
 		w := httptest.NewRecorder()
 
@@ -101,7 +101,7 @@ func TestCreateProject(t *testing.T) {
 		hand.Register(mux)
 
 		payload := `{"title": "Buy a horse"}`
-		req := httptest.NewRequest(http.MethodPost, "/projects", strings.NewReader(payload))
+		req := httptest.NewRequest(http.MethodPost, "/api/projects", strings.NewReader(payload))
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 
@@ -117,7 +117,7 @@ func TestCreateProject(t *testing.T) {
 		hand.Register(mux)
 
 		payload := `{"title": 1234}`
-		req := httptest.NewRequest(http.MethodPost, "/projects", strings.NewReader(payload))
+		req := httptest.NewRequest(http.MethodPost, "/api/projects", strings.NewReader(payload))
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 
@@ -136,7 +136,7 @@ func TestUpdateProject(t *testing.T) {
 		hand.Register(mux)
 
 		payload := `{"title": "Buy a horse"}`
-		url := fmt.Sprintf("/projects/%s", project.ID)
+		url := fmt.Sprintf("/api/projects/%s", project.ID)
 		req := httptest.NewRequest(http.MethodPatch, url, strings.NewReader(payload))
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
@@ -154,7 +154,7 @@ func TestUpdateProject(t *testing.T) {
 		hand.Register(mux)
 
 		payload := `{"title": "Buy a horse"}`
-		url := fmt.Sprintf("/projects/%s", uuid.NewString())
+		url := fmt.Sprintf("/api/projects/%s", uuid.NewString())
 		req := httptest.NewRequest(http.MethodPatch, url, strings.NewReader(payload))
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
@@ -172,7 +172,7 @@ func TestUpdateProject(t *testing.T) {
 		hand.Register(mux)
 
 		payload := `{"title": 1234}`
-		url := fmt.Sprintf("/projects/%s", project.ID)
+		url := fmt.Sprintf("/api/projects/%s", project.ID)
 		req := httptest.NewRequest(http.MethodPatch, url, strings.NewReader(payload))
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
@@ -191,7 +191,7 @@ func TestDeleteProject(t *testing.T) {
 		mux := http.NewServeMux()
 		hand.Register(mux)
 
-		url := fmt.Sprintf("/projects/%s", project.ID)
+		url := fmt.Sprintf("/api/projects/%s", project.ID)
 		req := httptest.NewRequest(http.MethodDelete, url, nil)
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
@@ -208,7 +208,7 @@ func TestDeleteProject(t *testing.T) {
 		mux := http.NewServeMux()
 		hand.Register(mux)
 
-		url := fmt.Sprintf("/projects/%s", uuid.NewString())
+		url := fmt.Sprintf("/api/projects/%s", uuid.NewString())
 		req := httptest.NewRequest(http.MethodDelete, url, nil)
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
