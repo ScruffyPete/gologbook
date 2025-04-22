@@ -1,34 +1,46 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import ProjectList from './components/ProjectList'
+import Project from './components/Project'
+import { Project as ProjectType } from './types/Project'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [selectedProject, setSelectedProject] = useState<ProjectType | null>(null)
+
+  async function handleNewProject() {
+    const title = prompt('Enter project title:')
+    if (!title) return
+
+    try {
+      const res = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'applicatio/json' },
+        body: JSON.stringify({ title }),
+      })
+
+      if (!res.ok) throw new Error('Failed to cretae project')
+
+      const newProject = await res.json()
+      setSelectedProject(newProject)
+    } catch (err) {
+      console.error(err)
+      alert('Could not create project')
+    }
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <main style={{ padding: '1rem', maxWidth: '600px', margin: '0 auto' }}>
+      {!selectedProject ? (
+        <>
+          <button onClick={handleNewProject} style={{ marginBottom: '1rem' }}>
+            + New Project
+          </button>
+          <ProjectList onSelect={setSelectedProject} />
+        </>
+      ) : (
+        <Project project={selectedProject} />
+      )}
+    </main>
   )
 }
 
