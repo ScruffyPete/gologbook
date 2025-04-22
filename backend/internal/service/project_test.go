@@ -71,11 +71,14 @@ func TestCreateProject(t *testing.T) {
 	t.Run("new project", func(t *testing.T) {
 		repo := in_memory.NewProjectRepository(nil)
 		service := NewProjectService(repo)
-		input := CreateProjectInput{Title: "Buy a horse"}
 
-		err := service.CreateProject(&input)
+		title := "Buy a horse"
+		input := CreateProjectInput{Title: title}
+
+		project, err := service.CreateProject(&input)
 
 		assert.Nil(t, err)
+		assert.Equal(t, title, project.Title)
 	})
 
 	t.Run("repository error", func(t *testing.T) {
@@ -83,8 +86,9 @@ func TestCreateProject(t *testing.T) {
 		service := NewProjectService(repo)
 		input := CreateProjectInput{Title: "Buy a horse"}
 
-		err := service.CreateProject(&input)
+		project, err := service.CreateProject(&input)
 
+		assert.Nil(t, project)
 		assert.ErrorIs(t, err, testutil.ErrRepoFailed)
 	})
 }

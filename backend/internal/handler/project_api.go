@@ -53,11 +53,13 @@ func (h *ProjectHandler) createProjet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.projectService.CreateProject(&input); err != nil {
+	project, err := h.projectService.CreateProject(&input)
+	if err != nil {
 		http.Error(w, "failed to create project", http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(project)
 }
 
 func (h *ProjectHandler) updateProjectDetails(w http.ResponseWriter, r *http.Request) {

@@ -10,8 +10,8 @@ type FailingProjectRepo struct{}
 
 var ErrRepoFailed = errors.New("simulated failure")
 
-func (f *FailingProjectRepo) CreateProject(project *domain.Project) error {
-	return ErrRepoFailed
+func (f *FailingProjectRepo) CreateProject(project *domain.Project) (*domain.Project, error) {
+	return nil, ErrRepoFailed
 }
 func (f *FailingProjectRepo) ListProjects() ([]*domain.Project, error) { return nil, ErrRepoFailed }
 func (f *FailingProjectRepo) GetProject(id string) (*domain.Project, error) {

@@ -40,12 +40,14 @@ func (s *ProjectService) GetProject(id string) (*domain.Project, error) {
 	return project, nil
 }
 
-func (s *ProjectService) CreateProject(input *CreateProjectInput) error {
-	project := domain.MakeProject(input.Title)
-	if err := s.repo.CreateProject(project); err != nil {
-		return fmt.Errorf("create project: %w", err)
+func (s *ProjectService) CreateProject(input *CreateProjectInput) (*domain.Project, error) {
+	new_project := domain.MakeProject(input.Title)
+	project, err := s.repo.CreateProject(new_project)
+	if err != nil {
+		return nil, fmt.Errorf("create project: %w", err)
 	}
-	return nil
+
+	return project, nil
 }
 
 func (s *ProjectService) UpdateProject(id string, input *CreateProjectInput) error {

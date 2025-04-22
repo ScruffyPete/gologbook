@@ -50,8 +50,9 @@ func TestGetProject(t *testing.T) {
 func TestCreateProject(t *testing.T) {
 	project := domain.MakeProject("Write a novel")
 	repo := NewProjectRepository(nil)
-	err := repo.CreateProject(project)
+	repo_project, err := repo.CreateProject(project)
 	assert.Nil(t, err)
+	assert.Equal(t, project, repo_project)
 }
 
 func TestUpdateProject(t *testing.T) {

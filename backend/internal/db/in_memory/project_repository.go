@@ -40,9 +40,9 @@ func (repo *projectRepository) GetProject(id string) (*domain.Project, error) {
 	return nil, ErrProjectDoesNotExist
 }
 
-func (repo *projectRepository) CreateProject(project *domain.Project) error {
+func (repo *projectRepository) CreateProject(project *domain.Project) (*domain.Project, error) {
 	repo.projects[project.ID] = project
-	return nil
+	return project, nil
 }
 
 func (repo *projectRepository) UpdateProject(project *domain.Project) error {
