@@ -33,9 +33,9 @@ func (repo *entryRepository) ListEntries(projectID string) ([]*domain.Entry, err
 	return sorted, nil
 }
 
-func (repo *entryRepository) CreateEntry(entry *domain.Entry) error {
+func (repo *entryRepository) CreateEntry(entry *domain.Entry) (*domain.Entry, error) {
 	entries := repo.entries[entry.ProjectID]
 	entries = append(entries, entry)
 	repo.entries[entry.ProjectID] = entries
-	return nil
+	return entry, nil
 }

@@ -28,6 +28,6 @@ func (f *FailingEntryRepo) ListEntries(projectID string) ([]*domain.Entry, error
 	return nil, ErrRepoFailed
 }
 
-func (f *FailingEntryRepo) CreateEntry(entry *domain.Entry) error {
-	return ErrRepoFailed
+func (f *FailingEntryRepo) CreateEntry(entry *domain.Entry) (*domain.Entry, error) {
+	return nil, ErrRepoFailed
 }

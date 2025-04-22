@@ -56,9 +56,10 @@ func TestCreateEntry(t *testing.T) {
 		svc := NewEntryService(entryRepo, projectRepo)
 		input := CreateEntryInput{Body: "get a venue"}
 
-		err := svc.CreateEntry(project.ID, &input)
+		entry, err := svc.CreateEntry(project.ID, &input)
 
 		assert.Nil(t, err)
+		assert.Equal(t, input.Body, entry.Body)
 	})
 
 	t.Run("missing project", func(t *testing.T) {
@@ -66,8 +67,9 @@ func TestCreateEntry(t *testing.T) {
 		svc := NewEntryService(entryRepo, projectRepo)
 		input := CreateEntryInput{Body: "get a venue"}
 
-		err := svc.CreateEntry(uuid.NewString(), &input)
+		entry, err := svc.CreateEntry(uuid.NewString(), &input)
 
+		assert.Nil(t, entry)
 		assert.NotNil(t, err)
 		assert.ErrorIs(t, err, in_memory.ErrProjectDoesNotExist)
 	})
@@ -77,8 +79,9 @@ func TestCreateEntry(t *testing.T) {
 		svc := NewEntryService(entryRepo, projectRepo)
 		input := CreateEntryInput{Body: "get a venue"}
 
-		err := svc.CreateEntry(project.ID, &input)
+		entry, err := svc.CreateEntry(project.ID, &input)
 
+		assert.Nil(t, entry)
 		assert.NotNil(t, err)
 		assert.ErrorIs(t, err, testutil.ErrRepoFailed)
 	})

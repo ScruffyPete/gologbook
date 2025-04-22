@@ -30,16 +30,17 @@ func (s *EntryService) ListEntries(projectID string) ([]*domain.Entry, error) {
 	return entries, nil
 }
 
-func (s *EntryService) CreateEntry(projectID string, input *CreateEntryInput) error {
+func (s *EntryService) CreateEntry(projectID string, input *CreateEntryInput) (*domain.Entry, error) {
 	_, err := s.projectRepo.GetProject(projectID)
 	if err != nil {
-		return fmt.Errorf("crete entry: %w", err)
+		return nil, fmt.Errorf("crete entry: %w", err)
 	}
 
-	entry := domain.MakeEntry(projectID, input.Body)
-	if err := s.entryRepo.CreateEntry(entry); err != nil {
-		return fmt.Errorf("crete entry: %w", err)
+	new_entry := domain.MakeEntry(projectID, input.Body)
+	entry, err := s.entryRepo.CreateEntry(new_entry)
+	if err != nil {
+		return nil, fmt.Errorf("crete entry: %w", err)
 	}
 
-	return nil
+	return entry, nil
 }

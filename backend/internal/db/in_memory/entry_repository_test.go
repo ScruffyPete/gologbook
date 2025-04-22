@@ -37,7 +37,8 @@ func TestCreateEntry(t *testing.T) {
 	entry := domain.MakeEntry(project.ID, "Get an axe")
 	repo := NewEntryRepository([]*domain.Entry{entry})
 
-	err := repo.CreateEntry(entry)
+	repo_entry, err := repo.CreateEntry(entry)
 
 	assert.Nil(t, err)
+	assert.Equal(t, entry, repo_entry)
 }

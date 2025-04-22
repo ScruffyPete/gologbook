@@ -47,9 +47,11 @@ func (h *EntryHandler) createEntry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.entryService.CreateEntry(id, &input); err != nil {
+	entry, err := h.entryService.CreateEntry(id, &input)
+	if err != nil {
 		http.Error(w, "failed to create entry", http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(entry)
 }
