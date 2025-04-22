@@ -1,6 +1,6 @@
 import './App.css'
-import ProjectWrapper from './components/Project'
-import ProjectList from './components/ProjectList'
+import ProjectWrapper from './Project'
+import ProjectList from './ProjectList'
 import { Route, Routes } from 'react-router-dom'
 
 function App() {
