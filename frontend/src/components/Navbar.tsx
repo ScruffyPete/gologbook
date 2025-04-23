@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react"
 import { Project } from "../types/Project"
 import { Link, useNavigate } from "react-router-dom"
+import { Button } from "@/components/ui/button"
 
 
-export default function ProjectList() {
+export default function Navbar() {
     const [projects, setProjects] = useState<Project[]>([])
     const navigate = useNavigate()
 
@@ -38,9 +39,9 @@ export default function ProjectList() {
 
     return (
         <>
-            <button onClick={handleNewProject} style={{ marginBottom: '1rem' }}>
-                + New Project
-            </button>
+            <div className="flex flex-col items-center justify-center min-h-svh" >
+                <Button onClick={handleNewProject} >+ New Project</Button>
+            </div>
             <div>
                 <h2>Select a project:</h2>
                 <ul>

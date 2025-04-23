@@ -1,19 +1,32 @@
 import './App.css'
-import ProjectWrapper from './Project'
-import ProjectList from './ProjectList'
-import { Route, Routes } from 'react-router-dom'
+import { AppSidebar } from './AppSidebar'
+import { SidebarProvider, SidebarTrigger } from './ui/sidebar'
+import { ThemeProvider } from './ui/theme-provider'
 
 function App() {
 
   return (
-    <main style={{ padding: '1rem', maxWidth: '600px', margin: '0 auto' }}>
-      <Routes>
-        <Route path='/' element={<ProjectList />} />
-        <Route path='projects/:projectId' element={<ProjectWrapper />} />
-      </Routes>
+    <ThemeProvider defaultTheme='dark' storageKey="vite-ui-theme">
+      <SidebarProvider>
+        <AppSidebar />
+        <main>
+          <SidebarTrigger>
 
-    </main>
+          </SidebarTrigger>
+        </main>
+      </SidebarProvider>
+    </ThemeProvider>
   )
+
+  // return (
+  //   <main style={{ padding: '1rem', maxWidth: '600px', margin: '0 auto' }}>
+  //     <Routes>
+  //       <Route path='/' element={<Navbar />} />
+  //       <Route path='projects/:projectId' element={<ProjectWrapper />} />
+  //     </Routes>
+
+  //   </main>
+  // )
 }
 
 export default App
