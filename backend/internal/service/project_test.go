@@ -30,6 +30,8 @@ func TestNewProjectService(t *testing.T) {
 func TestListProjects(t *testing.T) {
 	ctx := context.Background()
 
+	// TODO test ordering
+
 	t.Run("valid data", func(t *testing.T) {
 		projects := testutil.MakeDummyProjects()
 		uow := in_memory.InMemoryUnitOfWork{

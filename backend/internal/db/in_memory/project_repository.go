@@ -2,6 +2,7 @@ package in_memory
 
 import (
 	"errors"
+	"sort"
 
 	"github.com/ScruffyPete/gologbook/internal/domain"
 )
@@ -28,6 +29,10 @@ func (repo *projectRepository) ListProjects() ([]*domain.Project, error) {
 	for _, p := range repo.projects {
 		projects = append(projects, p)
 	}
+
+	sort.Slice(projects, func(i, j int) bool {
+		return projects[j].CreatedAt.Before(projects[i].CreatedAt)
+	})
 
 	return projects, nil
 }

@@ -28,6 +28,18 @@ func TestListProjects(t *testing.T) {
 		assert.Nil(t, err)
 		assert.ElementsMatch(t, repo_projects, projects)
 	})
+
+	t.Run("ordered by CreatedAt", func(t *testing.T) {
+		older := domain.MakeProject("Old project")
+		newer := domain.MakeProject("New project")
+		repo := NewProjectRepository([]*domain.Project{older, newer})
+
+		repo_projects, err := repo.ListProjects()
+
+		assert.Nil(t, err)
+		assert.Equal(t, newer.Title, repo_projects[0].Title)
+		assert.Equal(t, older.Title, repo_projects[1].Title)
+	})
 }
 
 func TestGetProject(t *testing.T) {
