@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/sidebar"
 import { Project } from "@/types/Project"
 import { Plus } from "lucide-react"
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { Link } from "react-router-dom"
 import { Input } from "./ui/input"
 
@@ -20,7 +20,15 @@ export function AppSidebar() {
     const [newProjectTitle, setNewProjectTitle] = useState('')
     const [isCreating, setIsCreating] = useState(false)
 
+    const inputRef = useRef<HTMLInputElement>(null)
+
     useEffect(() => { loadProjects() }, [])
+
+    useEffect(() => {
+        if (isCreating && inputRef.current) {
+            inputRef.current.focus()
+        }
+    }, [isCreating])
 
     async function loadProjects() {
         try {
@@ -74,6 +82,7 @@ export function AppSidebar() {
                                 <SidebarMenuItem>
                                     <form onSubmit={handleCreateProject}>
                                         <Input
+                                            ref={inputRef}
                                             value={newProjectTitle}
                                             onChange={(e) => setNewProjectTitle(e.target.value)}
                                         />
