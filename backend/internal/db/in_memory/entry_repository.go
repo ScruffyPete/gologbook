@@ -39,3 +39,11 @@ func (repo *entryRepository) CreateEntry(entry *domain.Entry) (*domain.Entry, er
 	repo.entries[entry.ProjectID] = entries
 	return entry, nil
 }
+
+func (repo *entryRepository) DeleteEntries(projectID string) error {
+	if _, exists := repo.entries[projectID]; !exists {
+		return ErrProjectDoesNotExist
+	}
+	delete(repo.entries, projectID)
+	return nil
+}

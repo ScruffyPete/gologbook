@@ -19,8 +19,19 @@ export default function ProjectWrapper() {
     if (!projectId) return <div>Missing project ID</div>
     if (!project) return <div>Loading...</div>
 
+    async function handleDeleteProject() {
+        try {
+            await fetch(`/api/projects/${projectId}`, { method: 'DELETE' })
+            navigate('/')
+        } catch (err) {
+            console.error('Failed to delete project:', err)
+            alert('Could not delete project')
+        }
+    }
+
     return <>
         <button onClick={() => navigate(-1)}>← Back</button>
+        <button onClick={handleDeleteProject}>Delete</button>
         <Project project={project}></Project>
     </>
 }

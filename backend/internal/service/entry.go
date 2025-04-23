@@ -1,46 +1,62 @@
 package service
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/ScruffyPete/gologbook/internal/domain"
 )
 
 type EntryService struct {
-	entryRepo   domain.EntryRepository
-	projectRepo domain.ProjectReporitory
+	uow domain.UnitOfWork
 }
 
 type CreateEntryInput struct {
 	Body string `json:"body"`
 }
 
-func NewEntryService(
-	entryRepo domain.EntryRepository,
-	projectRepo domain.ProjectReporitory,
-) *EntryService {
-	return &EntryService{entryRepo, projectRepo}
+func NewEntryService(uow domain.UnitOfWork) *EntryService {
+	if uow == nil {
+		panic("EntryService: unit of work cannot be nil")
+	}
+	return &EntryService{uow: uow}
 }
 
-func (s *EntryService) ListEntries(projectID string) ([]*domain.Entry, error) {
-	entries, err := s.entryRepo.ListEntries(projectID)
+func (s *EntryService) ListEntries(ctx context.Context, projectID string) ([]*domain.Entry, error) {
+	var result []*domain.Entry
+
+	err := s.uow.WithTx(ctx, func(repos domain.RepoBundle) error {
+		var err error
+		result, err = repos.Entries.ListEntries(projectID)
+		return err
+	})
 	if err != nil {
 		return nil, fmt.Errorf("list entries: %w", err)
 	}
-	return entries, nil
+	return result, nil
 }
 
-func (s *EntryService) CreateEntry(projectID string, input *CreateEntryInput) (*domain.Entry, error) {
-	_, err := s.projectRepo.GetProject(projectID)
+func (s *EntryService) CreateEntry(
+	ctx context.Context,
+	projectID string,
+	input *CreateEntryInput,
+) (*domain.Entry, error) {
+	var result *domain.Entry
+
+	err := s.uow.WithTx(ctx, func(repos domain.RepoBundle) error {
+		var err error
+		if _, err = repos.Projects.GetProject(projectID); err != nil {
+			return err
+		}
+
+		new_entry := domain.MakeEntry(projectID, input.Body)
+		result, err = repos.Entries.CreateEntry(new_entry)
+		return err
+	})
+
 	if err != nil {
-		return nil, fmt.Errorf("crete entry: %w", err)
+		return nil, fmt.Errorf("create entry: %w", err)
 	}
 
-	new_entry := domain.MakeEntry(projectID, input.Body)
-	entry, err := s.entryRepo.CreateEntry(new_entry)
-	if err != nil {
-		return nil, fmt.Errorf("crete entry: %w", err)
-	}
-
-	return entry, nil
+	return result, nil
 }

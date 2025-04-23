@@ -5,6 +5,7 @@ import (
 
 	"github.com/ScruffyPete/gologbook/internal/domain"
 	"github.com/ScruffyPete/gologbook/internal/testutil"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -41,4 +42,26 @@ func TestCreateEntry(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, entry, repo_entry)
+}
+
+func TestDeleteEntiries(t *testing.T) {
+	t.Run("valid data", func(t *testing.T) {
+		project := domain.MakeProject("Hunt a boar")
+		entries := testutil.MakeDummyEntries(project)
+		repo := NewEntryRepository(entries)
+
+		err := repo.DeleteEntries(project.ID)
+
+		assert.Nil(t, err)
+	})
+
+	t.Run("missing project", func(t *testing.T) {
+		project := domain.MakeProject("Hunt a boar")
+		entries := testutil.MakeDummyEntries(project)
+		repo := NewEntryRepository(entries)
+
+		err := repo.DeleteEntries(uuid.NewString())
+
+		assert.ErrorIs(t, err, ErrProjectDoesNotExist)
+	})
 }

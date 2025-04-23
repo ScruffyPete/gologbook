@@ -11,4 +11,10 @@ type ProjectReporitory interface {
 type EntryRepository interface {
 	ListEntries(projectID string) ([]*Entry, error)
 	CreateEntry(entry *Entry) (*Entry, error)
+	DeleteEntries(projectID string) error
+}
+
+type RepoBundle struct {
+	Projects ProjectReporitory
+	Entries  EntryRepository
 }

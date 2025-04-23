@@ -12,10 +12,9 @@ import (
 func main() {
 	fmt.Println("LOGBOOK!")
 
-	projectRepo := in_memory.NewProjectRepository(nil)
-	entryRepo := in_memory.NewEntryRepository(nil)
-	projectHandler := handler.NewProjectHandler(projectRepo)
-	entryHandler := handler.NewEntryHandler(entryRepo, projectRepo)
+	uow := in_memory.NewInMemoryUnitOfWork()
+	projectHandler := handler.NewProjectAPIHandler(uow)
+	entryHandler := handler.NewEntryAPIHandler(uow)
 
 	mux := http.NewServeMux()
 	projectHandler.Register(mux)

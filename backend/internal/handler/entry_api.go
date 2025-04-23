@@ -8,28 +8,28 @@ import (
 	"github.com/ScruffyPete/gologbook/internal/service"
 )
 
-type EntryHandler struct {
+type EntryAPIHandler struct {
 	entryService *service.EntryService
 }
 
-func NewEntryHandler(
-	entryRepo domain.EntryRepository,
-	projectRepo domain.ProjectReporitory,
-) *EntryHandler {
-	return &EntryHandler{
-		entryService: service.NewEntryService(entryRepo, projectRepo),
+func NewEntryAPIHandler(uow domain.UnitOfWork) *EntryAPIHandler {
+	if uow == nil {
+		panic("ProjectAPIHandler: unit of work cannot be nil")
+	}
+	return &EntryAPIHandler{
+		entryService: service.NewEntryService(uow),
 	}
 }
 
-func (h *EntryHandler) Register(mux *http.ServeMux) {
+func (h *EntryAPIHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/projects/{id}/entries", h.listEntries)
 	mux.HandleFunc("POST /api/projects/{id}/entries", h.createEntry)
 }
 
-func (h *EntryHandler) listEntries(w http.ResponseWriter, r *http.Request) {
+func (h *EntryAPIHandler) listEntries(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
-	entries, err := h.entryService.ListEntries(id)
+	entries, err := h.entryService.ListEntries(r.Context(), id)
 	if err != nil {
 		http.Error(w, "failed to load entries", http.StatusInternalServerError)
 		return
@@ -38,7 +38,7 @@ func (h *EntryHandler) listEntries(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(entries)
 }
 
-func (h *EntryHandler) createEntry(w http.ResponseWriter, r *http.Request) {
+func (h *EntryAPIHandler) createEntry(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
 	var input service.CreateEntryInput
@@ -47,7 +47,7 @@ func (h *EntryHandler) createEntry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	entry, err := h.entryService.CreateEntry(id, &input)
+	entry, err := h.entryService.CreateEntry(r.Context(), id, &input)
 	if err != nil {
 		http.Error(w, "failed to create entry", http.StatusInternalServerError)
 		return

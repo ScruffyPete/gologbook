@@ -8,17 +8,21 @@ import (
 	"github.com/ScruffyPete/gologbook/internal/service"
 )
 
-type ProjectHandler struct {
+type ProjectAPIHandler struct {
 	projectService *service.ProjectService
 }
 
-func NewProjectHandler(projectRepo domain.ProjectReporitory) *ProjectHandler {
-	return &ProjectHandler{
-		projectService: service.NewProjectService(projectRepo),
+func NewProjectAPIHandler(uow domain.UnitOfWork) *ProjectAPIHandler {
+	if uow == nil {
+		panic("ProjectAPIHandler: unit of work cannot be nil")
+	}
+
+	return &ProjectAPIHandler{
+		projectService: service.NewProjectService(uow),
 	}
 }
 
-func (h *ProjectHandler) Register(mux *http.ServeMux) {
+func (h *ProjectAPIHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/projects", h.listProjects)
 	mux.HandleFunc("GET /api/projects/{id}", h.getProjectById)
 	mux.HandleFunc("POST /api/projects", h.createProjet)
@@ -26,8 +30,8 @@ func (h *ProjectHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("DELETE /api/projects/{id}", h.deleteProject)
 }
 
-func (h *ProjectHandler) listProjects(w http.ResponseWriter, r *http.Request) {
-	projects, err := h.projectService.ListProjects()
+func (h *ProjectAPIHandler) listProjects(w http.ResponseWriter, r *http.Request) {
+	projects, err := h.projectService.ListProjects(r.Context())
 	if err != nil {
 		http.Error(w, "failed to list projects", http.StatusInternalServerError)
 		return
@@ -35,9 +39,9 @@ func (h *ProjectHandler) listProjects(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(projects)
 }
 
-func (h *ProjectHandler) getProjectById(w http.ResponseWriter, r *http.Request) {
+func (h *ProjectAPIHandler) getProjectById(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	project, err := h.projectService.GetProject(id)
+	project, err := h.projectService.GetProject(r.Context(), id)
 	if err != nil {
 		http.Error(w, "project not found", http.StatusNotFound)
 		return
@@ -46,14 +50,14 @@ func (h *ProjectHandler) getProjectById(w http.ResponseWriter, r *http.Request) 
 	json.NewEncoder(w).Encode(project)
 }
 
-func (h *ProjectHandler) createProjet(w http.ResponseWriter, r *http.Request) {
+func (h *ProjectAPIHandler) createProjet(w http.ResponseWriter, r *http.Request) {
 	var input service.CreateProjectInput
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		http.Error(w, "invalid input", http.StatusBadRequest)
 		return
 	}
 
-	project, err := h.projectService.CreateProject(&input)
+	project, err := h.projectService.CreateProject(r.Context(), &input)
 	if err != nil {
 		http.Error(w, "failed to create project", http.StatusInternalServerError)
 		return
@@ -62,7 +66,7 @@ func (h *ProjectHandler) createProjet(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(project)
 }
 
-func (h *ProjectHandler) updateProjectDetails(w http.ResponseWriter, r *http.Request) {
+func (h *ProjectAPIHandler) updateProjectDetails(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	var input service.CreateProjectInput
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
@@ -70,17 +74,17 @@ func (h *ProjectHandler) updateProjectDetails(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	if err := h.projectService.UpdateProject(id, &input); err != nil {
+	if err := h.projectService.UpdateProject(r.Context(), id, &input); err != nil {
 		http.Error(w, "failed to update project", http.StatusNotFound)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
 }
 
-func (h *ProjectHandler) deleteProject(w http.ResponseWriter, r *http.Request) {
+func (h *ProjectAPIHandler) deleteProject(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
-	if err := h.projectService.DeleteProject(id); err != nil {
+	if err := h.projectService.DeleteProject(r.Context(), id); err != nil {
 		http.Error(w, "failed to delete project", http.StatusNotFound)
 		return
 	}

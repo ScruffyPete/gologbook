@@ -12,20 +12,36 @@ import (
 	"github.com/ScruffyPete/gologbook/internal/testutil"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func TestNewEntryAPIHanlder(t *testing.T) {
+	t.Run("valid uow", func(t *testing.T) {
+		uow := in_memory.NewInMemoryUnitOfWork()
+		require.NotPanics(t, func() {
+			NewEntryAPIHandler(uow)
+		})
+	})
+
+	t.Run("invalid uow", func(t *testing.T) {
+		require.Panics(t, func() {
+			NewEntryAPIHandler(nil)
+		})
+	})
+}
 
 func TestListEntries(t *testing.T) {
 	t.Run("valid data", func(t *testing.T) {
 		project := domain.MakeProject("Dig a hole")
-		projectRepo := in_memory.NewProjectRepository([]*domain.Project{project})
-		projectHandler := NewProjectHandler(projectRepo)
-
 		entries := testutil.MakeDummyEntries(project)
 		entryRepo := in_memory.NewEntryRepository(entries)
-		entryHandler := NewEntryHandler(entryRepo, projectRepo)
+		uow := in_memory.InMemoryUnitOfWork{
+			Entries: entryRepo,
+		}
+
+		entryHandler := NewEntryAPIHandler(&uow)
 
 		mux := http.NewServeMux()
-		projectHandler.Register(mux)
 		entryHandler.Register(mux)
 
 		url := fmt.Sprintf("/api/projects/{%s}/entries", project.ID)
@@ -39,14 +55,10 @@ func TestListEntries(t *testing.T) {
 
 	t.Run("empty data", func(t *testing.T) {
 		project := domain.MakeProject("Dig a hole")
-		projectRepo := in_memory.NewProjectRepository([]*domain.Project{project})
-		projectHandler := NewProjectHandler(projectRepo)
-
-		entryRepo := in_memory.NewEntryRepository(nil)
-		entryHandler := NewEntryHandler(entryRepo, projectRepo)
+		uow := in_memory.NewInMemoryUnitOfWork()
+		entryHandler := NewEntryAPIHandler(uow)
 
 		mux := http.NewServeMux()
-		projectHandler.Register(mux)
 		entryHandler.Register(mux)
 
 		url := fmt.Sprintf("/api/projects/{%s}/entries", project.ID)
@@ -60,14 +72,13 @@ func TestListEntries(t *testing.T) {
 
 	t.Run("reposirotry error", func(t *testing.T) {
 		project := domain.MakeProject("Dig a hole")
-		projectRepo := in_memory.NewProjectRepository([]*domain.Project{project})
-		projectHandler := NewProjectHandler(projectRepo)
-
 		entryRepo := &testutil.FailingEntryRepo{}
-		entryHandler := NewEntryHandler(entryRepo, projectRepo)
+		uow := in_memory.InMemoryUnitOfWork{
+			Entries: entryRepo,
+		}
+		entryHandler := NewEntryAPIHandler(&uow)
 
 		mux := http.NewServeMux()
-		projectHandler.Register(mux)
 		entryHandler.Register(mux)
 
 		url := fmt.Sprintf("/api/projects/{%s}/entries", project.ID)
@@ -84,13 +95,14 @@ func TestCreateEntry(t *testing.T) {
 	t.Run("valid data", func(t *testing.T) {
 		project := domain.MakeProject("Dig a hole")
 		projectRepo := in_memory.NewProjectRepository([]*domain.Project{project})
-		projectHandler := NewProjectHandler(projectRepo)
-
 		entryRepo := in_memory.NewEntryRepository(nil)
-		entryHandler := NewEntryHandler(entryRepo, projectRepo)
+		uow := in_memory.InMemoryUnitOfWork{
+			Projects: projectRepo,
+			Entries:  entryRepo,
+		}
+		entryHandler := NewEntryAPIHandler(&uow)
 
 		mux := http.NewServeMux()
-		projectHandler.Register(mux)
 		entryHandler.Register(mux)
 
 		payload := `{"body": "Get a shovel"}`
@@ -104,15 +116,10 @@ func TestCreateEntry(t *testing.T) {
 	})
 
 	t.Run("invalid project", func(t *testing.T) {
-		project := domain.MakeProject("Dig a hole")
-		projectRepo := in_memory.NewProjectRepository([]*domain.Project{project})
-		projectHandler := NewProjectHandler(projectRepo)
-
-		entryRepo := in_memory.NewEntryRepository(nil)
-		entryHandler := NewEntryHandler(entryRepo, projectRepo)
+		uow := in_memory.NewInMemoryUnitOfWork()
+		entryHandler := NewEntryAPIHandler(uow)
 
 		mux := http.NewServeMux()
-		projectHandler.Register(mux)
 		entryHandler.Register(mux)
 
 		payload := `{"body": "Get a shovel"}`
@@ -127,14 +134,10 @@ func TestCreateEntry(t *testing.T) {
 
 	t.Run("invalid input", func(t *testing.T) {
 		project := domain.MakeProject("Dig a hole")
-		projectRepo := in_memory.NewProjectRepository([]*domain.Project{project})
-		projectHandler := NewProjectHandler(projectRepo)
-
-		entryRepo := in_memory.NewEntryRepository(nil)
-		entryHandler := NewEntryHandler(entryRepo, projectRepo)
+		uow := in_memory.NewInMemoryUnitOfWork()
+		entryHandler := NewEntryAPIHandler(uow)
 
 		mux := http.NewServeMux()
-		projectHandler.Register(mux)
 		entryHandler.Register(mux)
 
 		payload := `{"body": 123}`

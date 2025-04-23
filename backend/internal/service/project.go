@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -13,58 +14,96 @@ var (
 )
 
 type ProjectService struct {
-	repo domain.ProjectReporitory
+	uow domain.UnitOfWork
 }
 
 type CreateProjectInput struct {
 	Title string `json:"title"`
 }
 
-func NewProjectService(repo domain.ProjectReporitory) *ProjectService {
-	return &ProjectService{repo: repo}
+func NewProjectService(uow domain.UnitOfWork) *ProjectService {
+	if uow == nil {
+		panic("ProjectService: unit of work cannot be nil")
+	}
+	return &ProjectService{uow: uow}
 }
 
-func (s *ProjectService) ListProjects() ([]*domain.Project, error) {
-	projects, err := s.repo.ListProjects()
+func (s *ProjectService) ListProjects(ctx context.Context) ([]*domain.Project, error) {
+	var result []*domain.Project
+
+	err := s.uow.WithTx(ctx, func(repos domain.RepoBundle) error {
+		var err error
+		result, err = repos.Projects.ListProjects()
+		return err
+	})
+
 	if err != nil {
 		return nil, fmt.Errorf("list projecs: %w", err)
 	}
-	return projects, nil
+	return result, nil
 }
 
-func (s *ProjectService) GetProject(id string) (*domain.Project, error) {
-	project, err := s.repo.GetProject(id)
+func (s *ProjectService) GetProject(ctx context.Context, id string) (*domain.Project, error) {
+	var result *domain.Project
+
+	err := s.uow.WithTx(ctx, func(repos domain.RepoBundle) error {
+		var err error
+		result, err = repos.Projects.GetProject(id)
+		return err
+	})
+
 	if err != nil {
 		return nil, fmt.Errorf("get project: %w", err)
 	}
-	return project, nil
+	return result, nil
 }
 
-func (s *ProjectService) CreateProject(input *CreateProjectInput) (*domain.Project, error) {
-	new_project := domain.MakeProject(input.Title)
-	project, err := s.repo.CreateProject(new_project)
+func (s *ProjectService) CreateProject(ctx context.Context, input *CreateProjectInput) (*domain.Project, error) {
+	var result *domain.Project
+
+	err := s.uow.WithTx(ctx, func(repos domain.RepoBundle) error {
+		var err error
+		new_project := domain.MakeProject(input.Title)
+		result, err = repos.Projects.CreateProject(new_project)
+		return err
+	})
+
 	if err != nil {
 		return nil, fmt.Errorf("create project: %w", err)
 	}
 
-	return project, nil
+	return result, nil
 }
 
-func (s *ProjectService) UpdateProject(id string, input *CreateProjectInput) error {
-	project, err := s.repo.GetProject(id)
-	if err != nil {
-		return fmt.Errorf("get project: %w", err)
-	}
+func (s *ProjectService) UpdateProject(
+	ctx context.Context,
+	id string,
+	input *CreateProjectInput,
+) error {
+	err := s.uow.WithTx(ctx, func(repos domain.RepoBundle) error {
+		if project, err := repos.Projects.GetProject(id); err != nil {
+			return err
+		} else {
+			project.Title = input.Title
+			return repos.Projects.UpdateProject(project)
+		}
 
-	if err := s.repo.UpdateProject(project); err != nil {
+	})
+
+	if err != nil {
 		return fmt.Errorf("update project: %w", err)
 	}
+
 	return nil
 }
 
-func (s *ProjectService) DeleteProject(id string) error {
-	if err := s.repo.DeleteProject(id); err != nil {
-		return fmt.Errorf("get project: %w", err)
+func (s *ProjectService) DeleteProject(ctx context.Context, id string) error {
+	err := s.uow.WithTx(ctx, func(repos domain.RepoBundle) error {
+		return repos.Projects.DeleteProject(id)
+	})
+
+	if err != nil {
+		return fmt.Errorf("delete project: %w", err)
 	}
 	return nil
 }
