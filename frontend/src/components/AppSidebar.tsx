@@ -6,19 +6,21 @@ import {
     SidebarGroupContent,
     SidebarGroupLabel,
     SidebarMenu,
-    SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { Project } from "@/types/Project"
 import { Plus } from "lucide-react"
 import React, { useEffect, useRef, useState } from "react"
-import { Link } from "react-router-dom"
 import { Input } from "./ui/input"
+import { ProjectItem } from "./ProjectList"
+import { useNavigate } from "react-router-dom"
 
 export function AppSidebar() {
     const [projects, setProjects] = useState<Project[]>([])
     const [newProjectTitle, setNewProjectTitle] = useState('')
     const [isCreating, setIsCreating] = useState(false)
+
+    const navigate = useNavigate()
 
     const inputRef = useRef<HTMLInputElement>(null)
 
@@ -58,6 +60,8 @@ export function AppSidebar() {
             const newProject = await res.json()
             setProjects(prev => [...prev, newProject])
 
+            navigate(`/projects/${newProject.id}`)
+
             await loadProjects()
 
             setNewProjectTitle('')
@@ -90,10 +94,8 @@ export function AppSidebar() {
                                 </SidebarMenuItem>
                             )}
                             {projects.map((project) => (
-                                <SidebarMenuItem key={project.id}>
-                                    <SidebarMenuButton asChild>
-                                        <Link to={`/projects/${project.id}`}>{project.title}</Link>
-                                    </SidebarMenuButton>
+                                <SidebarMenuItem className="h-9" key={project.id}>
+                                    <ProjectItem project={project} />
                                 </SidebarMenuItem>
                             ))}
                         </SidebarMenu>

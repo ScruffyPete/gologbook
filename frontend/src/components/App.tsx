@@ -1,3 +1,4 @@
+import { Outlet } from 'react-router-dom'
 import './App.css'
 import { AppSidebar } from './AppSidebar'
 import { SidebarProvider, SidebarTrigger } from './ui/sidebar'
@@ -10,23 +11,12 @@ function App() {
       <SidebarProvider>
         <AppSidebar />
         <main>
-          <SidebarTrigger>
-
-          </SidebarTrigger>
+          <SidebarTrigger />
+          <Outlet />
         </main>
       </SidebarProvider>
     </ThemeProvider>
   )
-
-  // return (
-  //   <main style={{ padding: '1rem', maxWidth: '600px', margin: '0 auto' }}>
-  //     <Routes>
-  //       <Route path='/' element={<Navbar />} />
-  //       <Route path='projects/:projectId' element={<ProjectWrapper />} />
-  //     </Routes>
-
-  //   </main>
-  // )
 }
 
 export default App
