@@ -1,13 +1,14 @@
-FROM golang:1.24
+FROM golang:1.24-alpine
 
 WORKDIR /app
 
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY . ./
-RUN go build -o app ./cmd/api
+COPY cmd/ ./cmd/
+COPY internal/ ./internal/
 
-EXPOSE 8080
+RUN go build -o migrate cmd/db/migrate.go
+RUN go build -o api cmd/api/main.go
 
-ENTRYPOINT [ "./app" ]
+ENTRYPOINT ["./api"]

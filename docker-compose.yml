@@ -1,7 +1,39 @@
 services:
-  app:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: gologbook
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
     build: ./backend
     ports:
       - "8080:8080"
     environment:
       - PORT=8080
+      # Database configuration
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=gologbook
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_SSLMODE=disable
+      # Constructed DATABASE_URL using above variables
+      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=${DB_SSLMODE}
+    command: sh -c "./migrate '${DATABASE_URL}' && ./api"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
