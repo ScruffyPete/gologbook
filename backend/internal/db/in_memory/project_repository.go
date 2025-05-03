@@ -28,7 +28,7 @@ func (repo *projectRepository) ListProjects() ([]*domain.Project, error) {
 	}
 
 	sort.Slice(projects, func(i, j int) bool {
-		return projects[j].CreatedAt.Before(projects[i].CreatedAt)
+		return projects[i].CreatedAt > projects[j].CreatedAt
 	})
 
 	return projects, nil

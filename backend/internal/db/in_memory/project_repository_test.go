@@ -1,7 +1,9 @@
 package in_memory
 
 import (
+	"sort"
 	"testing"
+	"time"
 
 	"github.com/ScruffyPete/gologbook/internal/domain"
 	"github.com/ScruffyPete/gologbook/internal/testutil"
@@ -30,9 +32,22 @@ func TestListProjects(t *testing.T) {
 	})
 
 	t.Run("ordered by CreatedAt", func(t *testing.T) {
-		older := domain.MakeProject("Old project")
-		newer := domain.MakeProject("New project")
-		repo := NewProjectRepository([]*domain.Project{older, newer})
+		baseTime := time.Now().UTC()
+		older := &domain.Project{
+			ID:        uuid.NewString(),
+			CreatedAt: baseTime.Add(-time.Minute).Format(time.RFC3339Nano),
+			Title:     "Old project",
+		}
+		newer := &domain.Project{
+			ID:        uuid.NewString(),
+			CreatedAt: baseTime.Format(time.RFC3339Nano),
+			Title:     "New project",
+		}
+		projects := []*domain.Project{older, newer}
+		sort.Slice(projects, func(i, j int) bool {
+			return projects[i].CreatedAt > projects[j].CreatedAt
+		})
+		repo := NewProjectRepository(projects)
 
 		repo_projects, err := repo.ListProjects()
 

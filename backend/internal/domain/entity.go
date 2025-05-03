@@ -7,30 +7,30 @@ import (
 )
 
 type Project struct {
-	ID        string    `json:"id"`
-	CreatedAt time.Time `json:"createdAt"`
-	Title     string    `json:"title"`
+	ID        string `json:"id"`
+	CreatedAt string `json:"createdAt"`
+	Title     string `json:"title"`
 }
 
 func MakeProject(title string) *Project {
 	return &Project{
 		ID:        uuid.NewString(),
-		CreatedAt: time.Now(),
+		CreatedAt: time.Now().UTC().Format("2006-01-02T15:04:05.999999Z"),
 		Title:     title,
 	}
 }
 
 type Entry struct {
-	ID        string    `json:"id"`
-	CratedAt  time.Time `json:"createdAt"`
-	ProjectID string    `json:"projectId"`
-	Body      string    `json:"body"`
+	ID        string `json:"id"`
+	CreatedAt string `json:"createdAt"`
+	ProjectID string `json:"projectId"`
+	Body      string `json:"body"`
 }
 
 func MakeEntry(projectID string, body string) *Entry {
 	return &Entry{
 		ID:        uuid.NewString(),
-		CratedAt:  time.Now(),
+		CreatedAt: time.Now().UTC().Format("2006-01-02T15:04:05.999999Z"),
 		ProjectID: projectID,
 		Body:      body,
 	}

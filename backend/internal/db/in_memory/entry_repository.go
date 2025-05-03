@@ -27,7 +27,7 @@ func (repo *entryRepository) ListEntries(projectID string) ([]*domain.Entry, err
 	copy(sorted, entries)
 
 	sort.Slice(sorted, func(i, j int) bool {
-		return sorted[i].CratedAt.Before(sorted[j].CratedAt)
+		return sorted[i].CreatedAt > sorted[j].CreatedAt
 	})
 
 	return sorted, nil

@@ -26,7 +26,9 @@ services:
 
   test-integration:
     build: ./backend
-    command: sh -c "go test -tags=integration ./..."
+    environment:
+      - DATABASE_URL=postgres://${TEST_DB_USER}:${TEST_DB_PASSWORD}@${TEST_DB_HOST}:${TEST_DB_PORT}/${TEST_DB_NAME}?sslmode=${TEST_DB_SSLMODE}
+    command: sh -c "./migrate && go test -tags=integration ./..."
     depends_on:
       testdb:
         condition: service_healthy
@@ -34,9 +36,9 @@ services:
   db:
     image: postgres:15-alpine
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: gologbook
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
       - "5432:5432"
     volumes:
@@ -50,9 +52,9 @@ services:
   testdb:
     image: postgres:15-alpine
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: gologbook_test
+      POSTGRES_USER: ${TEST_DB_USER}
+      POSTGRES_PASSWORD: ${TEST_DB_PASSWORD}
+      POSTGRES_DB: ${TEST_DB_NAME}
     ports:
       - "5433:5432"
     healthcheck:
