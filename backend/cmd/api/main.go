@@ -5,14 +5,20 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/ScruffyPete/gologbook/internal/db/in_memory"
+	"github.com/ScruffyPete/gologbook/internal/db/postgres"
 	"github.com/ScruffyPete/gologbook/internal/handler"
 )
 
 func main() {
 	fmt.Println("LOGBOOK!")
 
-	uow := in_memory.NewInMemoryUnitOfWork()
+	uow, err := postgres.NewPostgresUnitOfWork()
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+	defer uow.Close()
+
 	projectHandler := handler.NewProjectAPIHandler(uow)
 	entryHandler := handler.NewEntryAPIHandler(uow)
 

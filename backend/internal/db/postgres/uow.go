@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/ScruffyPete/gologbook/internal/domain"
+	_ "github.com/lib/pq"
 )
 
 type PostgresUnitOfWork struct {
