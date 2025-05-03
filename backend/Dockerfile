@@ -7,8 +7,7 @@ RUN go mod download
 
 COPY cmd/ ./cmd/
 COPY internal/ ./internal/
+COPY migrations/ ./migrations/
 
 RUN go build -o migrate cmd/db/migrate.go
 RUN go build -o api cmd/api/main.go
-
-ENTRYPOINT ["./api"]

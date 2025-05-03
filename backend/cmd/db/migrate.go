@@ -151,15 +151,6 @@ func applyMigrations(db *sql.DB, migrations []string, applied map[string]bool) {
 			log.Fatalf("Failed to apply migration %s: %v", fname, err)
 		}
 
-		// Record migration
-		if _, err := tx.ExecContext(ctx,
-			"INSERT INTO migrations (name) VALUES ($1)",
-			fname,
-		); err != nil {
-			tx.Rollback()
-			log.Fatalf("Failed to record migration %s: %v", fname, err)
-		}
-
 		// Commit transaction
 		if err := tx.Commit(); err != nil {
 			log.Fatalf("Failed to commit migration %s: %v", fname, err)
