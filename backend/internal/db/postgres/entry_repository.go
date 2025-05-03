@@ -15,13 +15,50 @@ func NewEntryRepository(db *sql.DB) *entryRepository {
 }
 
 func (repo *entryRepository) ListEntries(projectID string) ([]*domain.Entry, error) {
-	return nil, nil
+	rows, err := repo.db.Query(
+		"SELECT id, created_at, project_id, body FROM entries WHERE project_id = $1 ORDER BY created_at DESC",
+		projectID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	entries := make([]*domain.Entry, 0)
+	for rows.Next() {
+		var entry domain.Entry
+		if err := rows.Scan(&entry.ID, &entry.CreatedAt, &entry.ProjectID, &entry.Body); err != nil {
+			return nil, err
+		}
+		entries = append(entries, &entry)
+	}
+
+	return entries, nil
 }
 
 func (repo *entryRepository) CreateEntry(entry *domain.Entry) (*domain.Entry, error) {
-	return nil, nil
+	_, err := repo.db.Exec(
+		"INSERT INTO entries (id, created_at, project_id, body) VALUES ($1, $2, $3, $4)",
+		entry.ID,
+		entry.CreatedAt,
+		entry.ProjectID,
+		entry.Body,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return entry, nil
 }
 
 func (repo *entryRepository) DeleteEntries(projectID string) error {
+	_, err := repo.db.Exec(
+		"DELETE FROM entries WHERE project_id = $1",
+		projectID,
+	)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

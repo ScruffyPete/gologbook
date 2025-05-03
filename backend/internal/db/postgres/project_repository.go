@@ -15,7 +15,9 @@ func NewProjectRepository(db *sql.DB) *projectRepository {
 }
 
 func (repo *projectRepository) ListProjects() ([]*domain.Project, error) {
-	rows, err := repo.db.Query("SELECT id, title, created_at FROM projects ORDER BY created_at DESC")
+	rows, err := repo.db.Query(
+		"SELECT id, title, created_at FROM projects ORDER BY created_at DESC",
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +36,10 @@ func (repo *projectRepository) ListProjects() ([]*domain.Project, error) {
 }
 
 func (repo *projectRepository) GetProject(id string) (*domain.Project, error) {
-	row, err := repo.db.Query("SELECT id, title, created_at FROM projects WHERE id = $1", id)
+	row, err := repo.db.Query(
+		"SELECT id, title, created_at FROM projects WHERE id = $1",
+		id,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -53,13 +58,55 @@ func (repo *projectRepository) GetProject(id string) (*domain.Project, error) {
 }
 
 func (repo *projectRepository) CreateProject(project *domain.Project) (*domain.Project, error) {
-	return nil, nil
+	_, err := repo.db.Exec(
+		"INSERT INTO projects (id, title, created_at) VALUES ($1, $2, $3)",
+		project.ID,
+		project.Title,
+		project.CreatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return project, nil
 }
 
 func (repo *projectRepository) UpdateProject(project *domain.Project) error {
+	result, err := repo.db.Exec(
+		"UPDATE projects SET title = $1 WHERE id = $2",
+		project.Title,
+		project.ID,
+	)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return domain.NewErrProjectDoesNotExist(project.ID)
+	}
+
 	return nil
 }
 
 func (repo *projectRepository) DeleteProject(id string) error {
+	result, err := repo.db.Exec("DELETE FROM projects WHERE id = $1", id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return domain.NewErrProjectDoesNotExist(id)
+	}
+
 	return nil
 }
