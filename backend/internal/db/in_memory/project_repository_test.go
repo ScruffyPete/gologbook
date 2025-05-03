@@ -53,9 +53,10 @@ func TestGetProject(t *testing.T) {
 
 	t.Run("invalid project", func(t *testing.T) {
 		repo := NewProjectRepository(testutil.MakeDummyProjects())
-		repo_project, err := repo.GetProject(uuid.NewString())
+		non_existent_id := uuid.NewString()
+		repo_project, err := repo.GetProject(non_existent_id)
 		assert.Nil(t, repo_project)
-		assert.ErrorIs(t, err, ErrProjectDoesNotExist)
+		assert.ErrorIs(t, err, domain.NewErrProjectDoesNotExist(non_existent_id))
 	})
 }
 
@@ -79,7 +80,7 @@ func TestUpdateProject(t *testing.T) {
 		project := domain.MakeProject("Throw a ball")
 		repo := NewProjectRepository(testutil.MakeDummyProjects())
 		err := repo.UpdateProject(project)
-		assert.ErrorIs(t, err, ErrProjectDoesNotExist)
+		assert.ErrorIs(t, err, domain.NewErrProjectDoesNotExist(project.ID))
 	})
 }
 
@@ -95,6 +96,6 @@ func TestDeleteProject(t *testing.T) {
 	t.Run("invalid project", func(t *testing.T) {
 		repo := NewProjectRepository(testutil.MakeDummyProjects())
 		err := repo.DeleteProject(project.ID)
-		assert.ErrorIs(t, err, ErrProjectDoesNotExist)
+		assert.ErrorIs(t, err, domain.NewErrProjectDoesNotExist(project.ID))
 	})
 }

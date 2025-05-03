@@ -27,3 +27,7 @@ func (uow *InMemoryUnitOfWork) WithTx(
 		Entries:  uow.Entries,
 	})
 }
+
+func (uow *InMemoryUnitOfWork) Close() error {
+	return nil
+}

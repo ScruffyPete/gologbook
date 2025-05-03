@@ -1,7 +1,6 @@
 package in_memory
 
 import (
-	"errors"
 	"sort"
 
 	"github.com/ScruffyPete/gologbook/internal/domain"
@@ -10,8 +9,6 @@ import (
 type projectRepository struct {
 	projects map[string]*domain.Project
 }
-
-var ErrProjectDoesNotExist = errors.New("project doesn't exist")
 
 func NewProjectRepository(projects []*domain.Project) *projectRepository {
 	data := make(map[string]*domain.Project)
@@ -42,7 +39,7 @@ func (repo *projectRepository) GetProject(id string) (*domain.Project, error) {
 		return projectData, nil
 	}
 
-	return nil, ErrProjectDoesNotExist
+	return nil, domain.NewErrProjectDoesNotExist(id)
 }
 
 func (repo *projectRepository) CreateProject(project *domain.Project) (*domain.Project, error) {
@@ -52,7 +49,7 @@ func (repo *projectRepository) CreateProject(project *domain.Project) (*domain.P
 
 func (repo *projectRepository) UpdateProject(project *domain.Project) error {
 	if _, exists := repo.projects[project.ID]; !exists {
-		return ErrProjectDoesNotExist
+		return domain.NewErrProjectDoesNotExist(project.ID)
 	}
 	repo.projects[project.ID] = project
 	return nil
@@ -60,7 +57,7 @@ func (repo *projectRepository) UpdateProject(project *domain.Project) error {
 
 func (repo *projectRepository) DeleteProject(id string) error {
 	if _, exists := repo.projects[id]; !exists {
-		return ErrProjectDoesNotExist
+		return domain.NewErrProjectDoesNotExist(id)
 	}
 	delete(repo.projects, id)
 	return nil

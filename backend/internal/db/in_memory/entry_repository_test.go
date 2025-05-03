@@ -60,8 +60,9 @@ func TestDeleteEntiries(t *testing.T) {
 		entries := testutil.MakeDummyEntries(project)
 		repo := NewEntryRepository(entries)
 
-		err := repo.DeleteEntries(uuid.NewString())
+		non_existent_id := uuid.NewString()
+		err := repo.DeleteEntries(non_existent_id)
 
-		assert.ErrorIs(t, err, ErrProjectDoesNotExist)
+		assert.ErrorIs(t, err, domain.NewErrProjectDoesNotExist(non_existent_id))
 	})
 }

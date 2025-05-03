@@ -103,11 +103,12 @@ func TestCreateEntry(t *testing.T) {
 		svc := NewEntryService(&uow)
 		input := CreateEntryInput{Body: "get a venue"}
 
-		entry, err := svc.CreateEntry(ctx, uuid.NewString(), &input)
+		non_existent_id := uuid.NewString()
+		entry, err := svc.CreateEntry(ctx, non_existent_id, &input)
 
 		assert.Nil(t, entry)
 		assert.NotNil(t, err)
-		assert.ErrorIs(t, err, in_memory.ErrProjectDoesNotExist)
+		assert.ErrorIs(t, err, domain.NewErrProjectDoesNotExist(non_existent_id))
 	})
 
 	t.Run("repository error", func(t *testing.T) {
