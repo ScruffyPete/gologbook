@@ -21,7 +21,7 @@ func TestProjectRepository_ListProjects(t *testing.T) {
 			return projects[i].CreatedAt > projects[j].CreatedAt
 		})
 
-		db, _ := testutil.NewTestDB(projects, nil)
+		db, _ := testutil.NewTestDB(nil, projects, nil)
 		defer db.Close()
 
 		repo := NewProjectRepository(db)
@@ -32,7 +32,7 @@ func TestProjectRepository_ListProjects(t *testing.T) {
 	})
 
 	t.Run("returns an error if the query fails", func(t *testing.T) {
-		db, _ := testutil.NewTestDB(nil, nil)
+		db, _ := testutil.NewTestDB(nil, nil, nil)
 		db.Close() // Close immediately to force an error
 		repo := NewProjectRepository(db)
 		_, err := repo.ListProjects()
@@ -40,7 +40,7 @@ func TestProjectRepository_ListProjects(t *testing.T) {
 	})
 
 	t.Run("returns an empty slice if no projects are found", func(t *testing.T) {
-		db, _ := testutil.NewTestDB(nil, nil)
+		db, _ := testutil.NewTestDB(nil, nil, nil)
 		defer db.Close()
 		repo := NewProjectRepository(db)
 		repo_projects, err := repo.ListProjects()
@@ -52,7 +52,7 @@ func TestProjectRepository_ListProjects(t *testing.T) {
 func TestProjectRepository_GetProject(t *testing.T) {
 	t.Run("returns a project", func(t *testing.T) {
 		project := domain.MakeProject("Buy a farm")
-		db, _ := testutil.NewTestDB([]*domain.Project{project}, nil)
+		db, _ := testutil.NewTestDB(nil, []*domain.Project{project}, nil)
 		defer db.Close()
 
 		repo := NewProjectRepository(db)
@@ -62,7 +62,7 @@ func TestProjectRepository_GetProject(t *testing.T) {
 	})
 
 	t.Run("returns an error if the project does not exist", func(t *testing.T) {
-		db, _ := testutil.NewTestDB(nil, nil)
+		db, _ := testutil.NewTestDB(nil, nil, nil)
 		defer db.Close()
 		repo := NewProjectRepository(db)
 		_, err := repo.GetProject("non-existent-id")
@@ -70,7 +70,7 @@ func TestProjectRepository_GetProject(t *testing.T) {
 	})
 
 	t.Run("returns an error if the query fails", func(t *testing.T) {
-		db, _ := testutil.NewTestDB(nil, nil)
+		db, _ := testutil.NewTestDB(nil, nil, nil)
 		db.Close() // Close immediately to force an error
 		repo := NewProjectRepository(db)
 		_, err := repo.GetProject("non-existent-id")
@@ -81,7 +81,7 @@ func TestProjectRepository_GetProject(t *testing.T) {
 func TestProjectRepository_CreateProject(t *testing.T) {
 	t.Run("creates a project", func(t *testing.T) {
 		project := domain.MakeProject("Start a company")
-		db, _ := testutil.NewTestDB(nil, nil)
+		db, _ := testutil.NewTestDB(nil, nil, nil)
 		defer db.Close()
 
 		repo := NewProjectRepository(db)
@@ -92,7 +92,7 @@ func TestProjectRepository_CreateProject(t *testing.T) {
 
 	t.Run("returns an error if the query fails", func(t *testing.T) {
 		project := domain.MakeProject("Start a company")
-		db, _ := testutil.NewTestDB(nil, nil)
+		db, _ := testutil.NewTestDB(nil, nil, nil)
 		db.Close() // Close immediately to force an error
 		repo := NewProjectRepository(db)
 		_, err := repo.CreateProject(project)
@@ -101,7 +101,7 @@ func TestProjectRepository_CreateProject(t *testing.T) {
 
 	t.Run("returns an error if the project already exists", func(t *testing.T) {
 		project := domain.MakeProject("Start a company")
-		db, _ := testutil.NewTestDB([]*domain.Project{project}, nil)
+		db, _ := testutil.NewTestDB(nil, []*domain.Project{project}, nil)
 		defer db.Close()
 
 		repo := NewProjectRepository(db)
@@ -113,7 +113,7 @@ func TestProjectRepository_CreateProject(t *testing.T) {
 func TestProjectRepository_UpdateProject(t *testing.T) {
 	t.Run("updates a project", func(t *testing.T) {
 		project := domain.MakeProject("Start a company")
-		db, _ := testutil.NewTestDB([]*domain.Project{project}, nil)
+		db, _ := testutil.NewTestDB(nil, []*domain.Project{project}, nil)
 		defer db.Close()
 
 		repo := NewProjectRepository(db)
@@ -129,7 +129,7 @@ func TestProjectRepository_UpdateProject(t *testing.T) {
 
 	t.Run("returns an error if the query fails", func(t *testing.T) {
 		project := domain.MakeProject("Start a company")
-		db, _ := testutil.NewTestDB([]*domain.Project{project}, nil)
+		db, _ := testutil.NewTestDB(nil, []*domain.Project{project}, nil)
 		db.Close() // Close immediately to force an error
 		repo := NewProjectRepository(db)
 		err := repo.UpdateProject(project)
@@ -138,7 +138,7 @@ func TestProjectRepository_UpdateProject(t *testing.T) {
 
 	t.Run("returns an error if the project does not exist", func(t *testing.T) {
 		project := domain.MakeProject("Start a company")
-		db, _ := testutil.NewTestDB(nil, nil)
+		db, _ := testutil.NewTestDB(nil, nil, nil)
 		defer db.Close()
 
 		repo := NewProjectRepository(db)
@@ -152,7 +152,7 @@ func TestProjectRepository_UpdateProject(t *testing.T) {
 func TestProjectRepository_DeleteProject(t *testing.T) {
 	t.Run("deletes a project", func(t *testing.T) {
 		project := domain.MakeProject("Start a company")
-		db, _ := testutil.NewTestDB([]*domain.Project{project}, nil)
+		db, _ := testutil.NewTestDB(nil, []*domain.Project{project}, nil)
 		defer db.Close()
 
 		repo := NewProjectRepository(db)
@@ -166,7 +166,7 @@ func TestProjectRepository_DeleteProject(t *testing.T) {
 
 	t.Run("returns an error if the query fails", func(t *testing.T) {
 		project := domain.MakeProject("Start a company")
-		db, _ := testutil.NewTestDB([]*domain.Project{project}, nil)
+		db, _ := testutil.NewTestDB(nil, []*domain.Project{project}, nil)
 		db.Close() // Close immediately to force an error
 		repo := NewProjectRepository(db)
 		err := repo.DeleteProject(project.ID)

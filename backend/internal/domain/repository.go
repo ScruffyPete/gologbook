@@ -14,7 +14,13 @@ type EntryRepository interface {
 	DeleteEntries(projectID string) error
 }
 
+type UserRepository interface {
+	CreateUser(user *User) (*User, error)
+	GetUserByEmail(email string) (*User, error)
+}
+
 type RepoBundle struct {
+	Users    UserRepository
 	Projects ProjectReporitory
 	Entries  EntryRepository
 }

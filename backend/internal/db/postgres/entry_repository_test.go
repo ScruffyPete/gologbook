@@ -15,7 +15,7 @@ func TestEntryRepository_ListEntries(t *testing.T) {
 		project := domain.MakeProject("Hunt a boar")
 		entries := testutil.MakeDummyEntries(project)
 
-		db, _ := testutil.NewTestDB([]*domain.Project{project}, entries)
+		db, _ := testutil.NewTestDB(nil, []*domain.Project{project}, entries)
 		defer db.Close()
 
 		repo := NewEntryRepository(db)
@@ -27,7 +27,7 @@ func TestEntryRepository_ListEntries(t *testing.T) {
 
 	t.Run("returns an error if the database connection fails", func(t *testing.T) {
 		project := domain.MakeProject("Hunt a boar")
-		db, _ := testutil.NewTestDB([]*domain.Project{project}, nil)
+		db, _ := testutil.NewTestDB(nil, []*domain.Project{project}, nil)
 		db.Close()
 
 		repo := NewEntryRepository(db)
@@ -37,7 +37,7 @@ func TestEntryRepository_ListEntries(t *testing.T) {
 
 	t.Run("returns an error if the query fails", func(t *testing.T) {
 		project := domain.MakeProject("Hunt a boar")
-		db, _ := testutil.NewTestDB([]*domain.Project{project}, nil)
+		db, _ := testutil.NewTestDB(nil, []*domain.Project{project}, nil)
 		db.Close()
 
 		repo := NewEntryRepository(db)
@@ -47,7 +47,7 @@ func TestEntryRepository_ListEntries(t *testing.T) {
 
 	t.Run("returns an empty slice if no entries are found", func(t *testing.T) {
 		project := domain.MakeProject("Hunt a boar")
-		db, _ := testutil.NewTestDB([]*domain.Project{project}, nil)
+		db, _ := testutil.NewTestDB(nil, []*domain.Project{project}, nil)
 		defer db.Close()
 
 		repo := NewEntryRepository(db)
@@ -62,7 +62,7 @@ func TestEntryRepository_CreateEntry(t *testing.T) {
 		project := domain.MakeProject("Hunt a boar")
 		entry := domain.MakeEntry(project.ID, "Get an axe")
 
-		db, _ := testutil.NewTestDB([]*domain.Project{project}, nil)
+		db, _ := testutil.NewTestDB(nil, []*domain.Project{project}, nil)
 		defer db.Close()
 
 		repo := NewEntryRepository(db)
@@ -76,7 +76,7 @@ func TestEntryRepository_CreateEntry(t *testing.T) {
 		project := domain.MakeProject("Hunt a boar")
 		entry := domain.MakeEntry(project.ID, "Get an axe")
 
-		db, _ := testutil.NewTestDB([]*domain.Project{project}, nil)
+		db, _ := testutil.NewTestDB(nil, []*domain.Project{project}, nil)
 		db.Close()
 
 		repo := NewEntryRepository(db)
@@ -89,7 +89,7 @@ func TestEntryRepository_CreateEntry(t *testing.T) {
 		project := domain.MakeProject("Hunt a boar")
 		entry := domain.MakeEntry(project.ID, "Get an axe")
 
-		db, _ := testutil.NewTestDB([]*domain.Project{project}, nil)
+		db, _ := testutil.NewTestDB(nil, []*domain.Project{project}, nil)
 		db.Close()
 
 		repo := NewEntryRepository(db)
@@ -106,7 +106,7 @@ func TestEntryRepository_DeleteEntries(t *testing.T) {
 		entry_2 := domain.MakeEntry(project.ID, "Get a bow")
 		entries := []*domain.Entry{entry_1, entry_2}
 
-		db, _ := testutil.NewTestDB([]*domain.Project{project}, entries)
+		db, _ := testutil.NewTestDB(nil, []*domain.Project{project}, entries)
 		defer db.Close()
 
 		repo := NewEntryRepository(db)
@@ -125,7 +125,7 @@ func TestEntryRepository_DeleteEntries(t *testing.T) {
 		entry_2 := domain.MakeEntry(project.ID, "Get a bow")
 		entries := []*domain.Entry{entry_1, entry_2}
 
-		db, _ := testutil.NewTestDB([]*domain.Project{project}, entries)
+		db, _ := testutil.NewTestDB(nil, []*domain.Project{project}, entries)
 		db.Close()
 
 		repo := NewEntryRepository(db)
@@ -140,7 +140,7 @@ func TestEntryRepository_DeleteEntries(t *testing.T) {
 		entry_2 := domain.MakeEntry(project.ID, "Get a bow")
 		entries := []*domain.Entry{entry_1, entry_2}
 
-		db, _ := testutil.NewTestDB([]*domain.Project{project}, entries)
+		db, _ := testutil.NewTestDB(nil, []*domain.Project{project}, entries)
 		db.Close()
 
 		repo := NewEntryRepository(db)
