@@ -7,12 +7,14 @@ import (
 )
 
 type InMemoryUnitOfWork struct {
+	Users    domain.UserRepository
 	Projects domain.ProjectReporitory
 	Entries  domain.EntryRepository
 }
 
 func NewInMemoryUnitOfWork() *InMemoryUnitOfWork {
 	return &InMemoryUnitOfWork{
+		Users:    NewUserRepository(nil),
 		Projects: NewProjectRepository(nil),
 		Entries:  NewEntryRepository(nil),
 	}
