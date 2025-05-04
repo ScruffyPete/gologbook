@@ -31,6 +31,7 @@ func TestNewEntryAPIHanlder(t *testing.T) {
 }
 
 func TestListEntries(t *testing.T) {
+
 	t.Run("valid data", func(t *testing.T) {
 		project := domain.MakeProject("Dig a hole")
 		entries := testutil.MakeDummyEntries(project)
@@ -39,10 +40,10 @@ func TestListEntries(t *testing.T) {
 			Entries: entryRepo,
 		}
 
-		entryHandler := NewEntryAPIHandler(&uow)
+		apiHandler := NewAPIHandler(&uow)
 
 		mux := http.NewServeMux()
-		entryHandler.Register(mux)
+		apiHandler.Register(mux)
 
 		url := fmt.Sprintf("/api/projects/{%s}/entries", project.ID)
 		req := httptest.NewRequest(http.MethodGet, url, nil)
@@ -56,10 +57,10 @@ func TestListEntries(t *testing.T) {
 	t.Run("empty data", func(t *testing.T) {
 		project := domain.MakeProject("Dig a hole")
 		uow := in_memory.NewInMemoryUnitOfWork()
-		entryHandler := NewEntryAPIHandler(uow)
+		apiHandler := NewAPIHandler(uow)
 
 		mux := http.NewServeMux()
-		entryHandler.Register(mux)
+		apiHandler.Register(mux)
 
 		url := fmt.Sprintf("/api/projects/{%s}/entries", project.ID)
 		req := httptest.NewRequest(http.MethodGet, url, nil)
@@ -76,10 +77,10 @@ func TestListEntries(t *testing.T) {
 		uow := in_memory.InMemoryUnitOfWork{
 			Entries: entryRepo,
 		}
-		entryHandler := NewEntryAPIHandler(&uow)
+		apiHandler := NewAPIHandler(&uow)
 
 		mux := http.NewServeMux()
-		entryHandler.Register(mux)
+		apiHandler.Register(mux)
 
 		url := fmt.Sprintf("/api/projects/{%s}/entries", project.ID)
 		req := httptest.NewRequest(http.MethodGet, url, nil)
@@ -100,10 +101,10 @@ func TestCreateEntry(t *testing.T) {
 			Projects: projectRepo,
 			Entries:  entryRepo,
 		}
-		entryHandler := NewEntryAPIHandler(&uow)
+		apiHandler := NewAPIHandler(&uow)
 
 		mux := http.NewServeMux()
-		entryHandler.Register(mux)
+		apiHandler.Register(mux)
 
 		payload := `{"body": "Get a shovel"}`
 		url := fmt.Sprintf("/api/projects/%s/entries", project.ID)
@@ -117,10 +118,10 @@ func TestCreateEntry(t *testing.T) {
 
 	t.Run("invalid project", func(t *testing.T) {
 		uow := in_memory.NewInMemoryUnitOfWork()
-		entryHandler := NewEntryAPIHandler(uow)
+		apiHandler := NewAPIHandler(uow)
 
 		mux := http.NewServeMux()
-		entryHandler.Register(mux)
+		apiHandler.Register(mux)
 
 		payload := `{"body": "Get a shovel"}`
 		url := fmt.Sprintf("/api/projects/%s/entries", uuid.NewString())
@@ -135,10 +136,10 @@ func TestCreateEntry(t *testing.T) {
 	t.Run("invalid input", func(t *testing.T) {
 		project := domain.MakeProject("Dig a hole")
 		uow := in_memory.NewInMemoryUnitOfWork()
-		entryHandler := NewEntryAPIHandler(uow)
+		apiHandler := NewAPIHandler(uow)
 
 		mux := http.NewServeMux()
-		entryHandler.Register(mux)
+		apiHandler.Register(mux)
 
 		payload := `{"body": 123}`
 		url := fmt.Sprintf("/api/projects/%s/entries", project.ID)

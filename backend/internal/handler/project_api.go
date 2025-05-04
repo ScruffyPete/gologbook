@@ -22,14 +22,6 @@ func NewProjectAPIHandler(uow domain.UnitOfWork) *ProjectAPIHandler {
 	}
 }
 
-func (h *ProjectAPIHandler) Register(mux *http.ServeMux) {
-	mux.HandleFunc("GET /api/projects", h.listProjects)
-	mux.HandleFunc("GET /api/projects/{id}", h.getProjectById)
-	mux.HandleFunc("POST /api/projects", h.createProjet)
-	mux.HandleFunc("PATCH /api/projects/{id}", h.updateProjectDetails)
-	mux.HandleFunc("DELETE /api/projects/{id}", h.deleteProject)
-}
-
 func (h *ProjectAPIHandler) listProjects(w http.ResponseWriter, r *http.Request) {
 	projects, err := h.projectService.ListProjects(r.Context())
 	if err != nil {

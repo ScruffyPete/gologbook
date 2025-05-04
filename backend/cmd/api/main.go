@@ -19,19 +19,15 @@ func main() {
 	}
 	defer uow.Close()
 
-	projectHandler := handler.NewProjectAPIHandler(uow)
-	entryHandler := handler.NewEntryAPIHandler(uow)
-
 	mux := http.NewServeMux()
-	projectHandler.Register(mux)
-	entryHandler.Register(mux)
-
-	wrappedMux := handler.JSONMiddleware(mux)
+	apiHandler := handler.NewAPIHandler(uow)
+	apiHandler.Register(mux)
+	// apiHandler.Register(mux, handler.AuthMiddleware)
 
 	fmt.Println("Starting GoLogbook service...")
 
 	port := os.Getenv("PORT")
-	if err := http.ListenAndServe(":"+port, wrappedMux); err != nil {
+	if err := http.ListenAndServe(":"+port, mux); err != nil {
 		fmt.Println(err.Error())
 	}
 }

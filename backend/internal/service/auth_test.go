@@ -90,7 +90,7 @@ func TestValidateToken(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEmpty(t, tokenString)
 
-	token, err := validateToken(tokenString)
+	token, err := ValidateToken(tokenString)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, token)
 

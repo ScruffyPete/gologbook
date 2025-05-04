@@ -79,7 +79,7 @@ func createToken(user *domain.User) (string, error) {
 	return tokenString, nil
 }
 
-func validateToken(tokenString string) (*jwt.Token, error) {
+func ValidateToken(tokenString string) (*jwt.Token, error) {
 	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})

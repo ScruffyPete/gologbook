@@ -21,11 +21,6 @@ func NewEntryAPIHandler(uow domain.UnitOfWork) *EntryAPIHandler {
 	}
 }
 
-func (h *EntryAPIHandler) Register(mux *http.ServeMux) {
-	mux.HandleFunc("GET /api/projects/{id}/entries", h.listEntries)
-	mux.HandleFunc("POST /api/projects/{id}/entries", h.createEntry)
-}
-
 func (h *EntryAPIHandler) listEntries(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 

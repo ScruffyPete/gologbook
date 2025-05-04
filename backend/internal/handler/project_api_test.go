@@ -36,9 +36,9 @@ func TestListProjects(t *testing.T) {
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		uow := in_memory.InMemoryUnitOfWork{Projects: project_repo}
 
-		hand := NewProjectAPIHandler(&uow)
+		apiHandler := NewAPIHandler(&uow)
 		mux := http.NewServeMux()
-		hand.Register(mux)
+		apiHandler.Register(mux)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/projects", nil)
 		w := httptest.NewRecorder()
@@ -51,9 +51,9 @@ func TestListProjects(t *testing.T) {
 	t.Run("empty status ok", func(t *testing.T) {
 		uow := in_memory.NewInMemoryUnitOfWork()
 
-		hand := NewProjectAPIHandler(uow)
+		apiHandler := NewAPIHandler(uow)
 		mux := http.NewServeMux()
-		hand.Register(mux)
+		apiHandler.Register(mux)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/projects", nil)
 		w := httptest.NewRecorder()
@@ -67,9 +67,9 @@ func TestListProjects(t *testing.T) {
 		project_repo := &testutil.FailingProjectRepo{}
 		uow := in_memory.InMemoryUnitOfWork{Projects: project_repo}
 
-		hand := NewProjectAPIHandler(&uow)
+		apiHandler := NewAPIHandler(&uow)
 		mux := http.NewServeMux()
-		hand.Register(mux)
+		apiHandler.Register(mux)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/projects", nil)
 		w := httptest.NewRecorder()
@@ -85,9 +85,9 @@ func TestGetPoject(t *testing.T) {
 		project := domain.MakeProject("Buid a shed")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		uow := in_memory.InMemoryUnitOfWork{Projects: project_repo}
-		hand := NewProjectAPIHandler(&uow)
+		apiHandler := NewAPIHandler(&uow)
 		mux := http.NewServeMux()
-		hand.Register(mux)
+		apiHandler.Register(mux)
 
 		url := fmt.Sprintf("/api/projects/%s", project.ID)
 		req := httptest.NewRequest(http.MethodGet, url, nil)
@@ -102,9 +102,9 @@ func TestGetPoject(t *testing.T) {
 		project := domain.MakeProject("Buid a shed")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		uow := in_memory.InMemoryUnitOfWork{Projects: project_repo}
-		hand := NewProjectAPIHandler(&uow)
+		apiHandler := NewAPIHandler(&uow)
 		mux := http.NewServeMux()
-		hand.Register(mux)
+		apiHandler.Register(mux)
 
 		url := fmt.Sprintf("/api/projects/%s", uuid.NewString())
 		req := httptest.NewRequest(http.MethodGet, url, nil)
@@ -119,9 +119,9 @@ func TestGetPoject(t *testing.T) {
 func TestCreateProject(t *testing.T) {
 	t.Run("new project", func(t *testing.T) {
 		uow := in_memory.NewInMemoryUnitOfWork()
-		hand := NewProjectAPIHandler(uow)
+		apiHandler := NewAPIHandler(uow)
 		mux := http.NewServeMux()
-		hand.Register(mux)
+		apiHandler.Register(mux)
 
 		payload := `{"title": "Buy a horse"}`
 		req := httptest.NewRequest(http.MethodPost, "/api/projects", strings.NewReader(payload))
@@ -135,9 +135,9 @@ func TestCreateProject(t *testing.T) {
 
 	t.Run("invalid data", func(t *testing.T) {
 		uow := in_memory.NewInMemoryUnitOfWork()
-		hand := NewProjectAPIHandler(uow)
+		apiHandler := NewAPIHandler(uow)
 		mux := http.NewServeMux()
-		hand.Register(mux)
+		apiHandler.Register(mux)
 
 		payload := `{"title": 1234}`
 		req := httptest.NewRequest(http.MethodPost, "/api/projects", strings.NewReader(payload))
@@ -155,9 +155,9 @@ func TestUpdateProject(t *testing.T) {
 		project := domain.MakeProject("Cook a hog")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		uow := in_memory.InMemoryUnitOfWork{Projects: project_repo}
-		hand := NewProjectAPIHandler(&uow)
+		apiHandler := NewAPIHandler(&uow)
 		mux := http.NewServeMux()
-		hand.Register(mux)
+		apiHandler.Register(mux)
 
 		payload := `{"title": "Buy a horse"}`
 		url := fmt.Sprintf("/api/projects/%s", project.ID)
@@ -174,9 +174,9 @@ func TestUpdateProject(t *testing.T) {
 		project := domain.MakeProject("Cook a hog")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		uow := in_memory.InMemoryUnitOfWork{Projects: project_repo}
-		hand := NewProjectAPIHandler(&uow)
+		apiHandler := NewAPIHandler(&uow)
 		mux := http.NewServeMux()
-		hand.Register(mux)
+		apiHandler.Register(mux)
 
 		payload := `{"title": "Buy a horse"}`
 		url := fmt.Sprintf("/api/projects/%s", uuid.NewString())
@@ -193,9 +193,9 @@ func TestUpdateProject(t *testing.T) {
 		project := domain.MakeProject("Cook a hog")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		uow := in_memory.InMemoryUnitOfWork{Projects: project_repo}
-		hand := NewProjectAPIHandler(&uow)
+		apiHandler := NewAPIHandler(&uow)
 		mux := http.NewServeMux()
-		hand.Register(mux)
+		apiHandler.Register(mux)
 
 		payload := `{"title": 1234}`
 		url := fmt.Sprintf("/api/projects/%s", project.ID)
@@ -214,9 +214,9 @@ func TestDeleteProject(t *testing.T) {
 		project := domain.MakeProject("Dig a hole")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		uow := in_memory.InMemoryUnitOfWork{Projects: project_repo}
-		hand := NewProjectAPIHandler(&uow)
+		apiHandler := NewAPIHandler(&uow)
 		mux := http.NewServeMux()
-		hand.Register(mux)
+		apiHandler.Register(mux)
 
 		url := fmt.Sprintf("/api/projects/%s", project.ID)
 		req := httptest.NewRequest(http.MethodDelete, url, nil)
@@ -232,9 +232,9 @@ func TestDeleteProject(t *testing.T) {
 		project := domain.MakeProject("Dig a hole")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		uow := in_memory.InMemoryUnitOfWork{Projects: project_repo}
-		hand := NewProjectAPIHandler(&uow)
+		apiHandler := NewAPIHandler(&uow)
 		mux := http.NewServeMux()
-		hand.Register(mux)
+		apiHandler.Register(mux)
 
 		url := fmt.Sprintf("/api/projects/%s", uuid.NewString())
 		req := httptest.NewRequest(http.MethodDelete, url, nil)
