@@ -4,6 +4,11 @@ import './index.css'
 import App from './components/App.tsx'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { loader as projectLoader, ProjectPage } from './components/ProjectPage.tsx'
+import { LoginPage } from './components/LoginPage.tsx'
+import { SignupPage } from './components/SignupPage.tsx'
+import { Layout } from './components/Layout.tsx'
+import { RootPage } from './components/RootPage.tsx'
+import { requireAuthLoader } from '@/lib/auth.ts'
 
 const router = createBrowserRouter([
   {
@@ -11,14 +16,32 @@ const router = createBrowserRouter([
     Component: App,
     children: [
       {
-        path: '/projects/:projectId',
-        Component: ProjectPage,
-        loader: projectLoader,
+        index: true,
+        Component: RootPage,
+      },
+      {
+        path: '/login',
+        Component: LoginPage,
+      },
+      {
+        path: '/signup',
+        Component: SignupPage,
+      },
+      {
+        path: '/projects',
+        Component: Layout,
+        loader: requireAuthLoader,
+        children: [
+          {
+            path: '/projects/:projectId',
+            Component: ProjectPage,
+            loader: projectLoader,
+          },
+        ]
       }
     ]
-  },
-
-]);
+  }
+])
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

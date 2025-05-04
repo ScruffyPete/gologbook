@@ -14,9 +14,9 @@ type AuthAPIHandler struct {
 }
 
 type RegisterInput struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Confirm  string `json:"confirm"`
+	Email           string `json:"email"`
+	Password        string `json:"password"`
+	ConfirmPassword string `json:"confirmPassword"`
 }
 
 type LoginInput struct {
@@ -43,7 +43,7 @@ func (h *AuthAPIHandler) signUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if input.Password != input.Confirm {
+	if input.Password != input.ConfirmPassword {
 		http.Error(w, "password and confirm do not match", http.StatusBadRequest)
 		return
 	}

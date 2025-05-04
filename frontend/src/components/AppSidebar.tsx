@@ -14,6 +14,7 @@ import React, { useEffect, useRef, useState } from "react"
 import { Input } from "./ui/input"
 import { ProjectItem } from "./ProjectList"
 import { useNavigate } from "react-router-dom"
+import { Button } from "./ui/button"
 
 export function AppSidebar() {
     const [projects, setProjects] = useState<Project[]>([])
@@ -34,7 +35,11 @@ export function AppSidebar() {
 
     async function loadProjects() {
         try {
-            const res = await fetch("/api/projects")
+            const res = await fetch("/api/projects", {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
             if (!res.ok) throw new Error("Failed to fetch projects")
 
             const data = await res.json()
@@ -51,7 +56,10 @@ export function AppSidebar() {
         try {
             const res = await fetch('/api/projects', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify({ title: newProjectTitle }),
             })
 
@@ -72,9 +80,24 @@ export function AppSidebar() {
         }
     }
 
+    async function handleLogout() {
+        localStorage.removeItem('token')
+        navigate('/login')
+    }
+
     return (
         <Sidebar>
             <SidebarContent>
+                <SidebarGroup>
+                    <SidebarGroupLabel>User</SidebarGroupLabel>
+                    <SidebarGroupContent>
+                        <SidebarMenu>
+                            <SidebarMenuItem>
+                                <Button variant="outline" onClick={handleLogout}>Logout</Button>
+                            </SidebarMenuItem>
+                        </SidebarMenu>
+                    </SidebarGroupContent>
+                </SidebarGroup>
                 <SidebarGroup>
                     <SidebarGroupLabel>Projects</SidebarGroupLabel>
                     <SidebarGroupAction onClick={() => setIsCreating(true)}>

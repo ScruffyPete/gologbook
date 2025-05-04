@@ -11,8 +11,16 @@ import { ArrowUpCircle } from "lucide-react";
 export async function loader({ params }: LoaderFunctionArgs) {
     try {
         const [projectRes, entriesRes] = await Promise.all([
-            fetch(`/api/projects/${params.projectId}`),
-            fetch(`/api/projects/${params.projectId}/entries`)
+            fetch(`/api/projects/${params.projectId}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            }),
+            fetch(`/api/projects/${params.projectId}/entries`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
         ]);
 
         if (!projectRes.ok || !entriesRes.ok) {
@@ -53,7 +61,10 @@ export function ProjectPage() {
         try {
             const res = await fetch(`/api/projects/${project.id}/entries`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify({ body: entry })
             })
             const newEntry = await res.json()

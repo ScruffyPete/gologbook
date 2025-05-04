@@ -21,8 +21,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	apiHandler := handler.NewAPIHandler(uow)
-	apiHandler.Register(mux)
-	// apiHandler.Register(mux, handler.AuthMiddleware)
+	apiHandler.Register(mux, handler.AuthMiddleware)
 
 	fmt.Println("Starting GoLogbook service...")
 

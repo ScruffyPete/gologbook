@@ -21,8 +21,8 @@ func NewAPIHandler(uow domain.UnitOfWork) *APIHandler {
 }
 
 func (h *APIHandler) Register(mux *http.ServeMux, middlewares ...func(http.Handler) http.Handler) {
-	mux.HandleFunc("POST /api/auth/signup", h.authHandler.signUp)
-	mux.HandleFunc("POST /api/auth/login", h.authHandler.login)
+	mux.HandleFunc("POST /api/signup", h.authHandler.signUp)
+	mux.HandleFunc("POST /api/login", h.authHandler.login)
 
 	wrappedMux := NewMiddlewareMux(middlewares...)
 
