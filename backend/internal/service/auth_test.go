@@ -11,25 +11,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAuthService_Register(t *testing.T) {
+func TestAuthService_SignUp(t *testing.T) {
 	t.Run("returns a user", func(t *testing.T) {
 		uow := in_memory.NewInMemoryUnitOfWork()
 		authService := NewAuthService(uow)
-		user, err := authService.Register(context.Background(), "test@example.com", "password")
+		err := authService.SignUp(context.Background(), "test@example.com", "password")
 		assert.NoError(t, err)
-		assert.NotNil(t, user)
 	})
 
 	t.Run("returns an error if the user already exists", func(t *testing.T) {
 		uow := in_memory.NewInMemoryUnitOfWork()
 		authService := NewAuthService(uow)
-		user, err := authService.Register(context.Background(), "test@example.com", "password")
+		err := authService.SignUp(context.Background(), "test@example.com", "password")
 		assert.NoError(t, err)
-		assert.NotNil(t, user)
 
-		user, err = authService.Register(context.Background(), "test@example.com", "password")
+		err = authService.SignUp(context.Background(), "test@example.com", "password")
 		assert.Error(t, err)
-		assert.Nil(t, user)
 	})
 }
 
@@ -37,9 +34,8 @@ func TestAuthService_Login(t *testing.T) {
 	t.Run("returns a token", func(t *testing.T) {
 		uow := in_memory.NewInMemoryUnitOfWork()
 		authService := NewAuthService(uow)
-		user, err := authService.Register(context.Background(), "test@example.com", "password")
+		err := authService.SignUp(context.Background(), "test@example.com", "password")
 		assert.NoError(t, err)
-		assert.NotNil(t, user)
 
 		token, err := authService.Login(context.Background(), "test@example.com", "password")
 		assert.NoError(t, err)
@@ -57,9 +53,8 @@ func TestAuthService_Login(t *testing.T) {
 	t.Run("returns an error if the password is incorrect", func(t *testing.T) {
 		uow := in_memory.NewInMemoryUnitOfWork()
 		authService := NewAuthService(uow)
-		user, err := authService.Register(context.Background(), "test@example.com", "password")
+		err := authService.SignUp(context.Background(), "test@example.com", "password")
 		assert.NoError(t, err)
-		assert.NotNil(t, user)
 
 		token, err := authService.Login(context.Background(), "test@example.com", "wrongpassword")
 		assert.Error(t, err)

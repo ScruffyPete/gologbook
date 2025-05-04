@@ -19,10 +19,10 @@ func NewAuthService(uow domain.UnitOfWork) *AuthService {
 	return &AuthService{uow: uow}
 }
 
-func (s *AuthService) Register(ctx context.Context, email string, password string) (*domain.User, error) {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+func (s *AuthService) SignUp(ctx context.Context, email string, password string) error {
+	hashedPassword, err := HashPassword(password)
 	if err != nil {
-		return nil, fmt.Errorf("generate password hash: %w", err)
+		return fmt.Errorf("generate password hash: %w", err)
 	}
 	user := domain.NewUser(email, string(hashedPassword))
 
@@ -32,10 +32,10 @@ func (s *AuthService) Register(ctx context.Context, email string, password strin
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("register user: %w", err)
+		return fmt.Errorf("sign up user: %w", err)
 	}
 
-	return user, nil
+	return nil
 }
 
 func (s *AuthService) Login(ctx context.Context, email string, password string) (string, error) {
@@ -83,4 +83,12 @@ func ValidateToken(tokenString string) (*jwt.Token, error) {
 	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
+}
+
+func HashPassword(password string) (string, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", fmt.Errorf("generate password hash: %w", err)
+	}
+	return string(hashedPassword), nil
 }
