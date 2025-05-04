@@ -12,7 +12,7 @@ import (
 
 func TestUserRepository_CreateUser(t *testing.T) {
 	t.Run("creates a user", func(t *testing.T) {
-		user := domain.MakeUser("test@example.com", "password")
+		user := domain.NewUser("test@example.com", "password")
 		db, _ := testutil.NewTestDB(nil, nil, nil)
 		defer db.Close()
 
@@ -27,7 +27,7 @@ func TestUserRepository_CreateUser(t *testing.T) {
 	})
 
 	t.Run("returns an error if the user already exists", func(t *testing.T) {
-		user := domain.MakeUser("test@example.com", "password")
+		user := domain.NewUser("test@example.com", "password")
 		db, _ := testutil.NewTestDB([]*domain.User{user}, nil, nil)
 		defer db.Close()
 
@@ -40,7 +40,7 @@ func TestUserRepository_CreateUser(t *testing.T) {
 
 func TestUserRepository_GetUserByEmail(t *testing.T) {
 	t.Run("returns a user", func(t *testing.T) {
-		user := domain.MakeUser("test@example.com", "password")
+		user := domain.NewUser("test@example.com", "password")
 		db, _ := testutil.NewTestDB([]*domain.User{user}, nil, nil)
 		defer db.Close()
 

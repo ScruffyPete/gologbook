@@ -41,3 +41,42 @@ func (e *ErrUserDoesNotExist) Is(target error) bool {
 
 	return target.Error() == e.Error()
 }
+
+type ErrUserAlreadyExists struct {
+	Email string
+}
+
+func NewErrUserAlreadyExists(email string) *ErrUserAlreadyExists {
+	return &ErrUserAlreadyExists{Email: email}
+}
+
+func (e *ErrUserAlreadyExists) Error() string {
+	return fmt.Sprintf("user with email %s already exists", e.Email)
+}
+
+func (e *ErrUserAlreadyExists) Is(target error) bool {
+	if target == nil {
+		return false
+	}
+
+	return target.Error() == e.Error()
+}
+
+type ErrInvalidPassword struct {
+}
+
+func NewErrInvalidPassword() *ErrInvalidPassword {
+	return &ErrInvalidPassword{}
+}
+
+func (e *ErrInvalidPassword) Error() string {
+	return "invalid password"
+}
+
+func (e *ErrInvalidPassword) Is(target error) bool {
+	if target == nil {
+		return false
+	}
+
+	return target.Error() == e.Error()
+}

@@ -25,6 +25,7 @@ func (uow *InMemoryUnitOfWork) WithTx(
 	fn func(domain.RepoBundle) error,
 ) error {
 	return fn(domain.RepoBundle{
+		Users:    uow.Users,
 		Projects: uow.Projects,
 		Entries:  uow.Entries,
 	})

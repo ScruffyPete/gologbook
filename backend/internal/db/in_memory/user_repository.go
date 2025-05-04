@@ -19,6 +19,9 @@ func NewUserRepository(users []*domain.User) *UserRepository {
 }
 
 func (repo *UserRepository) CreateUser(user *domain.User) (*domain.User, error) {
+	if _, ok := repo.users[user.Email]; ok {
+		return nil, domain.NewErrUserAlreadyExists(user.Email)
+	}
 	repo.users[user.Email] = user
 	return user, nil
 }

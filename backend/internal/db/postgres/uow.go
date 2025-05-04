@@ -29,6 +29,7 @@ func (uow *PostgresUnitOfWork) WithTx(ctx context.Context, fn func(repos domain.
 	defer tx.Rollback()
 
 	repos := domain.RepoBundle{
+		Users:    NewUserRepository(uow.db),
 		Projects: NewProjectRepository(uow.db),
 		Entries:  NewEntryRepository(uow.db),
 	}

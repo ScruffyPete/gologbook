@@ -10,7 +10,7 @@ import (
 func TestUserRepository_CreateUser(t *testing.T) {
 	repo := NewUserRepository(nil)
 
-	user := domain.MakeUser("test@example.com", "password")
+	user := domain.NewUser("test@example.com", "password")
 	createdUser, err := repo.CreateUser(user)
 
 	assert.Nil(t, err)
@@ -19,7 +19,7 @@ func TestUserRepository_CreateUser(t *testing.T) {
 
 func TestUserRepository_GetUserByEmail(t *testing.T) {
 	t.Run("returns a user", func(t *testing.T) {
-		user := domain.MakeUser("test@example.com", "password")
+		user := domain.NewUser("test@example.com", "password")
 		repo := NewUserRepository([]*domain.User{user})
 
 		foundUser, err := repo.GetUserByEmail(user.Email)
