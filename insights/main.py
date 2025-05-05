@@ -1,33 +1,26 @@
-import os
-from openai import OpenAI
-from dotenv import load_dotenv
+import asyncio
+import logging
 
-load_dotenv()
+from queue.in_memory import InMemoryQueue
+from db.in_memory import InMemoryDB
+from llm.in_memory import InMemoryLLM
+from services.processor import process_entry
 
-def generate_insight(entry_text: str):
-    # prompt = f"""
-    # You are an expert project reviewer. Analyze the following entry and identify potential problems or missing parts. Respond in JSON.
+logger = logging.getLogger(__name__)
 
-    # ENTRY:
-    # {entry_text}
-    # """
-            
-    prompt = 'tell me a short story about pirates'
 
-    client = OpenAI(
-        api_key=os.environ.get("OPENAI_API_KEY"),
-    )
+async def main():
+    db = InMemoryDB()
+    llm = InMemoryLLM()
+    queue = InMemoryQueue()
 
-    response = client.responses.create(
-        model="gpt-4.1",
-        input=prompt
-    )
+    while True:
+        entry_id = await queue.pop()
+        if entry_id is None:
+            logger.info("No entry to process")
+            continue
+        await process_entry(entry_id, db, llm)
 
-    print(response.output_text)
-
-    # return response["choices"][0]["message"]["content"]
 
 if __name__ == "__main__":
-    entry = "We decided to rewrite the service layer but didn’t discuss how it affects our current tests."
-    result = generate_insight(entry)
-    print(result)
+    asyncio.run(main())

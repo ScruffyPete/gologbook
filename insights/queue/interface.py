@@ -1,0 +1,9 @@
+from typing import Any, Protocol
+
+
+class QueueInterface(Protocol):
+    async def push(self, item: Any) -> None: ...
+
+    async def pop(self) -> Any: ...
+
+    async def is_empty(self) -> bool: ...
