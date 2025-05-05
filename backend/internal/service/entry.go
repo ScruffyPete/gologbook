@@ -49,7 +49,7 @@ func (s *EntryService) CreateEntry(
 			return err
 		}
 
-		new_entry := domain.MakeEntry(projectID, input.Body)
+		new_entry := domain.NewEntry(projectID, input.Body)
 		result, err = repos.Entries.CreateEntry(new_entry)
 		return err
 	})

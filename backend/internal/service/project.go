@@ -63,7 +63,7 @@ func (s *ProjectService) CreateProject(ctx context.Context, input *CreateProject
 
 	err := s.uow.WithTx(ctx, func(repos domain.RepoBundle) error {
 		var err error
-		new_project := domain.MakeProject(input.Title)
+		new_project := domain.NewProject(input.Title)
 		result, err = repos.Projects.CreateProject(new_project)
 		return err
 	})

@@ -19,8 +19,8 @@ func TestAuthAPIHandler_SignUp(t *testing.T) {
 		mux := http.NewServeMux()
 		apiHandler.Register(mux)
 
-		payload := `{"email": "test@example.com", "password": "password", "confirm": "password"}`
-		req := httptest.NewRequest(http.MethodPost, "/api/auth/signup", strings.NewReader(payload))
+		payload := `{"email": "test@example.com", "password": "password", "confirmPassword": "password"}`
+		req := httptest.NewRequest(http.MethodPost, "/api/signup", strings.NewReader(payload))
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 
@@ -35,8 +35,8 @@ func TestAuthAPIHandler_SignUp(t *testing.T) {
 		mux := http.NewServeMux()
 		apiHandler.Register(mux)
 
-		payload := `{"email": "test@example.com", "password": "password", "confirm": "password1"}`
-		req := httptest.NewRequest(http.MethodPost, "/api/auth/signup", strings.NewReader(payload))
+		payload := `{"email": "test@example.com", "password": "password", "confirmPassword": "password1"}`
+		req := httptest.NewRequest(http.MethodPost, "/api/signup", strings.NewReader(payload))
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 
@@ -51,8 +51,8 @@ func TestAuthAPIHandler_SignUp(t *testing.T) {
 		mux := http.NewServeMux()
 		apiHandler.Register(mux)
 
-		payload := `{"email": "test", "password": "password", "confirm": "password"}`
-		req := httptest.NewRequest(http.MethodPost, "/api/auth/signup", strings.NewReader(payload))
+		payload := `{"email": "test", "password": "password", "confirmPassword": "password"}`
+		req := httptest.NewRequest(http.MethodPost, "/api/signup", strings.NewReader(payload))
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 
@@ -71,8 +71,8 @@ func TestAuthAPIHandler_SignUp(t *testing.T) {
 		mux := http.NewServeMux()
 		apiHandler.Register(mux)
 
-		payload := `{"email": "` + email + `", "password": "` + password + `", "confirm": "` + password + `"}`
-		req := httptest.NewRequest(http.MethodPost, "/api/auth/signup", strings.NewReader(payload))
+		payload := `{"email": "` + email + `", "password": "` + password + `", "confirmPassword": "` + password + `"}`
+		req := httptest.NewRequest(http.MethodPost, "/api/signup", strings.NewReader(payload))
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 
@@ -80,7 +80,6 @@ func TestAuthAPIHandler_SignUp(t *testing.T) {
 
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
 	})
-
 }
 
 func TestAuthAPIHandler_Login(t *testing.T) {
@@ -96,7 +95,7 @@ func TestAuthAPIHandler_Login(t *testing.T) {
 		apiHandler.Register(mux)
 
 		payload := `{"email": "` + email + `", "password": "` + password + `"}`
-		req := httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(payload))
+		req := httptest.NewRequest(http.MethodPost, "/api/login", strings.NewReader(payload))
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 
@@ -112,7 +111,7 @@ func TestAuthAPIHandler_Login(t *testing.T) {
 		apiHandler.Register(mux)
 
 		payload := `{"email": "test@example.com", "password": "password"}`
-		req := httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(payload))
+		req := httptest.NewRequest(http.MethodPost, "/api/login", strings.NewReader(payload))
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 
@@ -128,7 +127,7 @@ func TestAuthAPIHandler_Login(t *testing.T) {
 		apiHandler.Register(mux)
 
 		payload := `{"email": "invalid-email", "password": "password"}`
-		req := httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(payload))
+		req := httptest.NewRequest(http.MethodPost, "/api/login", strings.NewReader(payload))
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 

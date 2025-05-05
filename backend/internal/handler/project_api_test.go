@@ -32,7 +32,7 @@ func TestNewProjectAPIHanlder(t *testing.T) {
 
 func TestListProjects(t *testing.T) {
 	t.Run("valid status ok", func(t *testing.T) {
-		project := domain.MakeProject("Buid a shed")
+		project := domain.NewProject("Buid a shed")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		uow := in_memory.InMemoryUnitOfWork{Projects: project_repo}
 
@@ -82,7 +82,7 @@ func TestListProjects(t *testing.T) {
 
 func TestGetPoject(t *testing.T) {
 	t.Run("valid project", func(t *testing.T) {
-		project := domain.MakeProject("Buid a shed")
+		project := domain.NewProject("Buid a shed")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		uow := in_memory.InMemoryUnitOfWork{Projects: project_repo}
 		apiHandler := NewAPIHandler(&uow)
@@ -99,7 +99,7 @@ func TestGetPoject(t *testing.T) {
 	})
 
 	t.Run("invalid project", func(t *testing.T) {
-		project := domain.MakeProject("Buid a shed")
+		project := domain.NewProject("Buid a shed")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		uow := in_memory.InMemoryUnitOfWork{Projects: project_repo}
 		apiHandler := NewAPIHandler(&uow)
@@ -152,7 +152,7 @@ func TestCreateProject(t *testing.T) {
 
 func TestUpdateProject(t *testing.T) {
 	t.Run("valid project", func(t *testing.T) {
-		project := domain.MakeProject("Cook a hog")
+		project := domain.NewProject("Cook a hog")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		uow := in_memory.InMemoryUnitOfWork{Projects: project_repo}
 		apiHandler := NewAPIHandler(&uow)
@@ -171,7 +171,7 @@ func TestUpdateProject(t *testing.T) {
 	})
 
 	t.Run("invalid project", func(t *testing.T) {
-		project := domain.MakeProject("Cook a hog")
+		project := domain.NewProject("Cook a hog")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		uow := in_memory.InMemoryUnitOfWork{Projects: project_repo}
 		apiHandler := NewAPIHandler(&uow)
@@ -190,7 +190,7 @@ func TestUpdateProject(t *testing.T) {
 	})
 
 	t.Run("invalid data", func(t *testing.T) {
-		project := domain.MakeProject("Cook a hog")
+		project := domain.NewProject("Cook a hog")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		uow := in_memory.InMemoryUnitOfWork{Projects: project_repo}
 		apiHandler := NewAPIHandler(&uow)
@@ -211,7 +211,7 @@ func TestUpdateProject(t *testing.T) {
 
 func TestDeleteProject(t *testing.T) {
 	t.Run("valid project", func(t *testing.T) {
-		project := domain.MakeProject("Dig a hole")
+		project := domain.NewProject("Dig a hole")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		uow := in_memory.InMemoryUnitOfWork{Projects: project_repo}
 		apiHandler := NewAPIHandler(&uow)
@@ -229,7 +229,7 @@ func TestDeleteProject(t *testing.T) {
 	})
 
 	t.Run("invalid project", func(t *testing.T) {
-		project := domain.MakeProject("Dig a hole")
+		project := domain.NewProject("Dig a hole")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		uow := in_memory.InMemoryUnitOfWork{Projects: project_repo}
 		apiHandler := NewAPIHandler(&uow)

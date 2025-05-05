@@ -73,7 +73,7 @@ func TestGetProject(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("valid project", func(t *testing.T) {
-		project := domain.MakeProject("Build a treehouse")
+		project := domain.NewProject("Build a treehouse")
 		uow := in_memory.InMemoryUnitOfWork{
 			Projects: in_memory.NewProjectRepository([]*domain.Project{project}),
 		}
@@ -131,7 +131,7 @@ func TestCreateProject(t *testing.T) {
 func TestUpdateProject(t *testing.T) {
 	ctx := context.Background()
 	t.Run("valid project", func(t *testing.T) {
-		project := domain.MakeProject("Build a treehouse")
+		project := domain.NewProject("Build a treehouse")
 		uow := in_memory.InMemoryUnitOfWork{
 			Projects: in_memory.NewProjectRepository([]*domain.Project{project}),
 		}
@@ -162,7 +162,7 @@ func TestDeleteProject(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("valid project", func(t *testing.T) {
-		project := domain.MakeProject("Build a treehouse")
+		project := domain.NewProject("Build a treehouse")
 		uow := in_memory.InMemoryUnitOfWork{
 			Projects: in_memory.NewProjectRepository([]*domain.Project{project}),
 		}

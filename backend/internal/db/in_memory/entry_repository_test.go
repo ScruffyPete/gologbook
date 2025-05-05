@@ -11,7 +11,7 @@ import (
 
 func TestListEntries(t *testing.T) {
 	t.Run("valid data", func(t *testing.T) {
-		project := domain.MakeProject("Hunt a boar")
+		project := domain.NewProject("Hunt a boar")
 		entries := testutil.MakeDummyEntries(project)
 		repo := NewEntryRepository(entries)
 
@@ -22,7 +22,7 @@ func TestListEntries(t *testing.T) {
 	})
 
 	t.Run("empty data", func(t *testing.T) {
-		project := domain.MakeProject("Hunt a boar")
+		project := domain.NewProject("Hunt a boar")
 		entries := []*domain.Entry{}
 		repo := NewEntryRepository(entries)
 
@@ -34,8 +34,8 @@ func TestListEntries(t *testing.T) {
 }
 
 func TestCreateEntry(t *testing.T) {
-	project := domain.MakeProject("Hunt a boar")
-	entry := domain.MakeEntry(project.ID, "Get an axe")
+	project := domain.NewProject("Hunt a boar")
+	entry := domain.NewEntry(project.ID, "Get an axe")
 	repo := NewEntryRepository([]*domain.Entry{entry})
 
 	repo_entry, err := repo.CreateEntry(entry)
@@ -46,7 +46,7 @@ func TestCreateEntry(t *testing.T) {
 
 func TestDeleteEntiries(t *testing.T) {
 	t.Run("valid data", func(t *testing.T) {
-		project := domain.MakeProject("Hunt a boar")
+		project := domain.NewProject("Hunt a boar")
 		entries := testutil.MakeDummyEntries(project)
 		repo := NewEntryRepository(entries)
 
@@ -56,7 +56,7 @@ func TestDeleteEntiries(t *testing.T) {
 	})
 
 	t.Run("missing project", func(t *testing.T) {
-		project := domain.MakeProject("Hunt a boar")
+		project := domain.NewProject("Hunt a boar")
 		entries := testutil.MakeDummyEntries(project)
 		repo := NewEntryRepository(entries)
 

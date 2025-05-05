@@ -33,7 +33,7 @@ func TestNewEntryAPIHanlder(t *testing.T) {
 func TestListEntries(t *testing.T) {
 
 	t.Run("valid data", func(t *testing.T) {
-		project := domain.MakeProject("Dig a hole")
+		project := domain.NewProject("Dig a hole")
 		entries := testutil.MakeDummyEntries(project)
 		entryRepo := in_memory.NewEntryRepository(entries)
 		uow := in_memory.InMemoryUnitOfWork{
@@ -55,7 +55,7 @@ func TestListEntries(t *testing.T) {
 	})
 
 	t.Run("empty data", func(t *testing.T) {
-		project := domain.MakeProject("Dig a hole")
+		project := domain.NewProject("Dig a hole")
 		uow := in_memory.NewInMemoryUnitOfWork()
 		apiHandler := NewAPIHandler(uow)
 
@@ -72,7 +72,7 @@ func TestListEntries(t *testing.T) {
 	})
 
 	t.Run("reposirotry error", func(t *testing.T) {
-		project := domain.MakeProject("Dig a hole")
+		project := domain.NewProject("Dig a hole")
 		entryRepo := &testutil.FailingEntryRepo{}
 		uow := in_memory.InMemoryUnitOfWork{
 			Entries: entryRepo,
@@ -94,7 +94,7 @@ func TestListEntries(t *testing.T) {
 
 func TestCreateEntry(t *testing.T) {
 	t.Run("valid data", func(t *testing.T) {
-		project := domain.MakeProject("Dig a hole")
+		project := domain.NewProject("Dig a hole")
 		projectRepo := in_memory.NewProjectRepository([]*domain.Project{project})
 		entryRepo := in_memory.NewEntryRepository(nil)
 		uow := in_memory.InMemoryUnitOfWork{
@@ -134,7 +134,7 @@ func TestCreateEntry(t *testing.T) {
 	})
 
 	t.Run("invalid input", func(t *testing.T) {
-		project := domain.MakeProject("Dig a hole")
+		project := domain.NewProject("Dig a hole")
 		uow := in_memory.NewInMemoryUnitOfWork()
 		apiHandler := NewAPIHandler(uow)
 

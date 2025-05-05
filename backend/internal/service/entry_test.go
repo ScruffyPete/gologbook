@@ -29,7 +29,7 @@ func TestNewEntryService(t *testing.T) {
 }
 
 func TestListEntries(t *testing.T) {
-	project := domain.MakeProject("Plan a wedding")
+	project := domain.NewProject("Plan a wedding")
 	projectRepo := in_memory.NewProjectRepository([]*domain.Project{project})
 	ctx := context.Background()
 
@@ -75,7 +75,7 @@ func TestListEntries(t *testing.T) {
 }
 
 func TestCreateEntry(t *testing.T) {
-	project := domain.MakeProject("Plan a wedding")
+	project := domain.NewProject("Plan a wedding")
 	projectRepo := in_memory.NewProjectRepository([]*domain.Project{project})
 	ctx := context.Background()
 

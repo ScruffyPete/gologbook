@@ -7,9 +7,9 @@ import (
 )
 
 func MakeDummyProjects() []*domain.Project {
-	projectA := domain.MakeProject("Build a treehouse")
-	projectB := domain.MakeProject("Paint the garage")
-	projectC := domain.MakeProject("Cook a feast")
+	projectA := domain.NewProject("Build a treehouse")
+	projectB := domain.NewProject("Paint the garage")
+	projectC := domain.NewProject("Cook a feast")
 
 	return []*domain.Project{
 		projectA,
@@ -19,9 +19,9 @@ func MakeDummyProjects() []*domain.Project {
 }
 
 func MakeDummyEntries(project *domain.Project) []*domain.Entry {
-	entryA := domain.MakeEntry(project.ID, "Get spear")
-	entryB := domain.MakeEntry(project.ID, "Build traps")
-	entryC := domain.MakeEntry(project.ID, "Sharpen knives")
+	entryA := domain.NewEntry(project.ID, "Get spear")
+	entryB := domain.NewEntry(project.ID, "Build traps")
+	entryC := domain.NewEntry(project.ID, "Sharpen knives")
 
 	entries := []*domain.Entry{entryA, entryB, entryC}
 

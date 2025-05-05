@@ -12,7 +12,7 @@ type Project struct {
 	Title     string `json:"title"`
 }
 
-func MakeProject(title string) *Project {
+func NewProject(title string) *Project {
 	return &Project{
 		ID:        uuid.NewString(),
 		CreatedAt: time.Now().UTC().Format("2006-01-02T15:04:05.999999Z"),
@@ -27,7 +27,7 @@ type Entry struct {
 	Body      string `json:"body"`
 }
 
-func MakeEntry(projectID string, body string) *Entry {
+func NewEntry(projectID string, body string) *Entry {
 	return &Entry{
 		ID:        uuid.NewString(),
 		CreatedAt: time.Now().UTC().Format("2006-01-02T15:04:05.999999Z"),

@@ -59,7 +59,7 @@ func TestListProjects(t *testing.T) {
 
 func TestGetProject(t *testing.T) {
 	t.Run("valid project", func(t *testing.T) {
-		project := domain.MakeProject("Build a treehouse")
+		project := domain.NewProject("Build a treehouse")
 		repo := NewProjectRepository([]*domain.Project{project})
 		repo_project, err := repo.GetProject(project.ID)
 		assert.Equal(t, repo_project, project)
@@ -76,7 +76,7 @@ func TestGetProject(t *testing.T) {
 }
 
 func TestCreateProject(t *testing.T) {
-	project := domain.MakeProject("Write a novel")
+	project := domain.NewProject("Write a novel")
 	repo := NewProjectRepository(nil)
 	repo_project, err := repo.CreateProject(project)
 	assert.Nil(t, err)
@@ -85,14 +85,14 @@ func TestCreateProject(t *testing.T) {
 
 func TestUpdateProject(t *testing.T) {
 	t.Run("existing project", func(t *testing.T) {
-		project := domain.MakeProject("Throw a ball")
+		project := domain.NewProject("Throw a ball")
 		repo := NewProjectRepository([]*domain.Project{project})
 		err := repo.UpdateProject(&domain.Project{ID: project.ID, Title: "Throw THE ball"})
 		assert.ErrorIs(t, err, nil)
 	})
 
 	t.Run("missing project", func(t *testing.T) {
-		project := domain.MakeProject("Throw a ball")
+		project := domain.NewProject("Throw a ball")
 		repo := NewProjectRepository(testutil.MakeDummyProjects())
 		err := repo.UpdateProject(project)
 		assert.ErrorIs(t, err, domain.NewErrProjectDoesNotExist(project.ID))
@@ -100,7 +100,7 @@ func TestUpdateProject(t *testing.T) {
 }
 
 func TestDeleteProject(t *testing.T) {
-	project := domain.MakeProject("Earn a million")
+	project := domain.NewProject("Earn a million")
 
 	t.Run("existing project", func(t *testing.T) {
 		repo := NewProjectRepository([]*domain.Project{project})
