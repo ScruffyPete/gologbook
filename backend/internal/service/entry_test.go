@@ -6,6 +6,7 @@ import (
 
 	"github.com/ScruffyPete/gologbook/internal/db/in_memory"
 	"github.com/ScruffyPete/gologbook/internal/domain"
+	"github.com/ScruffyPete/gologbook/internal/queue"
 	"github.com/ScruffyPete/gologbook/internal/testutil"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -14,16 +15,29 @@ import (
 
 func TestNewEntryService(t *testing.T) {
 
-	t.Run("valid uow", func(t *testing.T) {
+	t.Run("valid uow and queue", func(t *testing.T) {
 		uow := in_memory.NewInMemoryUnitOfWork()
+		queue := queue.NewInMemoryQueue()
 		require.NotPanics(t, func() {
-			NewEntryService(uow)
+			NewEntryService(uow, queue)
+		})
+	})
+
+	t.Run("invalid uow and queue", func(t *testing.T) {
+		require.Panics(t, func() {
+			NewEntryService(nil, nil)
 		})
 	})
 
 	t.Run("invalid uow", func(t *testing.T) {
 		require.Panics(t, func() {
-			NewEntryService(nil)
+			NewEntryService(nil, nil)
+		})
+	})
+
+	t.Run("invalid queue", func(t *testing.T) {
+		require.Panics(t, func() {
+			NewEntryService(nil, nil)
 		})
 	})
 }
@@ -40,8 +54,8 @@ func TestListEntries(t *testing.T) {
 			Projects: projectRepo,
 			Entries:  entryRepo,
 		}
-
-		svc := NewEntryService(&uow)
+		queue := queue.NewInMemoryQueue()
+		svc := NewEntryService(&uow, queue)
 
 		svc_entries, err := svc.ListEntries(ctx, project.ID)
 
@@ -51,7 +65,8 @@ func TestListEntries(t *testing.T) {
 
 	t.Run("empty data", func(t *testing.T) {
 		uow := in_memory.NewInMemoryUnitOfWork()
-		svc := NewEntryService(uow)
+		queue := queue.NewInMemoryQueue()
+		svc := NewEntryService(uow, queue)
 
 		svc_entries, err := svc.ListEntries(ctx, project.ID)
 
@@ -65,11 +80,12 @@ func TestListEntries(t *testing.T) {
 			Projects: projectRepo,
 			Entries:  entryRepo,
 		}
-		svc := NewEntryService(&uow)
+		queue := queue.NewInMemoryQueue()
+		svc := NewEntryService(&uow, queue)
 
 		svc_entries, err := svc.ListEntries(ctx, project.ID)
 
-		assert.Nil(t, svc_entries)
+		assert.Empty(t, svc_entries)
 		assert.ErrorIs(t, err, testutil.ErrRepoFailed)
 	})
 }
@@ -81,17 +97,23 @@ func TestCreateEntry(t *testing.T) {
 
 	t.Run("valid data", func(t *testing.T) {
 		entryRepo := in_memory.NewEntryRepository(nil)
-		uow := in_memory.InMemoryUnitOfWork{
+		uow := &in_memory.InMemoryUnitOfWork{
 			Projects: projectRepo,
 			Entries:  entryRepo,
 		}
-		svc := NewEntryService(&uow)
-		input := CreateEntryInput{Body: "get a venue"}
+		queue := queue.NewInMemoryQueue()
+		svc := NewEntryService(uow, queue)
+		input := CreateEntryInput{Body: "get a venue", ProjectID: project.ID}
 
-		entry, err := svc.CreateEntry(ctx, project.ID, &input)
+		entry, err := svc.CreateEntry(ctx, &input)
 
 		assert.Nil(t, err)
 		assert.Equal(t, input.Body, entry.Body)
+
+		msg, err := queue.Pop()
+		assert.Nil(t, err)
+		assert.Equal(t, domain.MESSAGE_TYPE_NEW_ENTRY, msg.Type)
+		assert.Equal(t, entry.ID, msg.Payload["entry_id"])
 	})
 
 	t.Run("missing project", func(t *testing.T) {
@@ -100,11 +122,12 @@ func TestCreateEntry(t *testing.T) {
 			Projects: projectRepo,
 			Entries:  entryRepo,
 		}
-		svc := NewEntryService(&uow)
-		input := CreateEntryInput{Body: "get a venue"}
-
+		queue := queue.NewInMemoryQueue()
+		svc := NewEntryService(&uow, queue)
 		non_existent_id := uuid.NewString()
-		entry, err := svc.CreateEntry(ctx, non_existent_id, &input)
+		input := CreateEntryInput{Body: "get a venue", ProjectID: non_existent_id}
+
+		entry, err := svc.CreateEntry(ctx, &input)
 
 		assert.Nil(t, entry)
 		assert.NotNil(t, err)
@@ -117,13 +140,31 @@ func TestCreateEntry(t *testing.T) {
 			Projects: projectRepo,
 			Entries:  entryRepo,
 		}
-		svc := NewEntryService(&uow)
-		input := CreateEntryInput{Body: "get a venue"}
+		queue := queue.NewInMemoryQueue()
+		svc := NewEntryService(&uow, queue)
+		input := CreateEntryInput{Body: "get a venue", ProjectID: project.ID}
 
-		entry, err := svc.CreateEntry(ctx, project.ID, &input)
+		entry, err := svc.CreateEntry(ctx, &input)
 
 		assert.Nil(t, entry)
 		assert.NotNil(t, err)
 		assert.ErrorIs(t, err, testutil.ErrRepoFailed)
+	})
+
+	t.Run("queue error", func(t *testing.T) {
+		entryRepo := in_memory.NewEntryRepository(nil)
+		uow := in_memory.InMemoryUnitOfWork{
+			Projects: projectRepo,
+			Entries:  entryRepo,
+		}
+		queue := &testutil.FailingQueue{}
+		svc := NewEntryService(&uow, queue)
+		input := CreateEntryInput{Body: "get a venue", ProjectID: project.ID}
+
+		entry, err := svc.CreateEntry(ctx, &input)
+
+		assert.Nil(t, entry)
+		assert.NotNil(t, err)
+		assert.ErrorIs(t, err, testutil.ErrQueueFailed)
 	})
 }

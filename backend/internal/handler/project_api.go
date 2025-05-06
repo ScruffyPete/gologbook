@@ -22,6 +22,18 @@ func NewProjectAPIHandler(uow domain.UnitOfWork) *ProjectAPIHandler {
 	}
 }
 
+func (h *ProjectAPIHandler) Register(mux *http.ServeMux, middlewares ...func(http.Handler) http.Handler) {
+	wrappedMux := NewMiddlewareMux(middlewares...)
+
+	wrappedMux.HandleFunc("GET /", h.listProjects)
+	wrappedMux.HandleFunc("GET /{id}", h.getProjectById)
+	wrappedMux.HandleFunc("POST /", h.createProjet)
+	wrappedMux.HandleFunc("PATCH /{id}", h.updateProjectDetails)
+	wrappedMux.HandleFunc("DELETE /{id}", h.deleteProject)
+
+	mux.Handle("/api/projects/", http.StripPrefix("/api/projects", wrappedMux))
+}
+
 func (h *ProjectAPIHandler) listProjects(w http.ResponseWriter, r *http.Request) {
 	projects, err := h.projectService.ListProjects(r.Context())
 	if err != nil {

@@ -31,6 +31,11 @@ func NewAuthAPIHandler(uow domain.UnitOfWork) *AuthAPIHandler {
 	return &AuthAPIHandler{authService: service.NewAuthService(uow)}
 }
 
+func (h *AuthAPIHandler) Register(mux *http.ServeMux) {
+	mux.HandleFunc("POST /api/signup", h.signUp)
+	mux.HandleFunc("POST /api/login", h.login)
+}
+
 func (h *AuthAPIHandler) signUp(w http.ResponseWriter, r *http.Request) {
 	var input RegisterInput
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {

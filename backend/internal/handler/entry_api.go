@@ -12,19 +12,29 @@ type EntryAPIHandler struct {
 	entryService *service.EntryService
 }
 
-func NewEntryAPIHandler(uow domain.UnitOfWork) *EntryAPIHandler {
-	if uow == nil {
-		panic("ProjectAPIHandler: unit of work cannot be nil")
-	}
+func NewEntryAPIHandler(uow domain.UnitOfWork, queue domain.Queue) *EntryAPIHandler {
 	return &EntryAPIHandler{
-		entryService: service.NewEntryService(uow),
+		entryService: service.NewEntryService(uow, queue),
 	}
 }
 
-func (h *EntryAPIHandler) listEntries(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
+func (h *EntryAPIHandler) Register(mux *http.ServeMux, middlewares ...func(http.Handler) http.Handler) {
+	wrappedMux := NewMiddlewareMux(middlewares...)
 
-	entries, err := h.entryService.ListEntries(r.Context(), id)
+	wrappedMux.HandleFunc("GET /", h.listEntries)
+	wrappedMux.HandleFunc("POST /", h.createEntry)
+
+	mux.Handle("/api/entries/", http.StripPrefix("/api/entries", wrappedMux))
+}
+
+func (h *EntryAPIHandler) listEntries(w http.ResponseWriter, r *http.Request) {
+	projectID := r.URL.Query().Get("project_id")
+	if projectID == "" {
+		http.Error(w, "project_id is required", http.StatusBadRequest)
+		return
+	}
+
+	entries, err := h.entryService.ListEntries(r.Context(), projectID)
 	if err != nil {
 		http.Error(w, "failed to load entries", http.StatusInternalServerError)
 		return
@@ -34,15 +44,13 @@ func (h *EntryAPIHandler) listEntries(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *EntryAPIHandler) createEntry(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
-
 	var input service.CreateEntryInput
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		http.Error(w, "invalid input", http.StatusBadRequest)
 		return
 	}
 
-	entry, err := h.entryService.CreateEntry(r.Context(), id, &input)
+	entry, err := h.entryService.CreateEntry(r.Context(), &input)
 	if err != nil {
 		http.Error(w, "failed to create entry", http.StatusInternalServerError)
 		return

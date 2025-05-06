@@ -7,6 +7,7 @@ import (
 
 	"github.com/ScruffyPete/gologbook/internal/db/postgres"
 	"github.com/ScruffyPete/gologbook/internal/handler"
+	"github.com/ScruffyPete/gologbook/internal/queue"
 )
 
 func main() {
@@ -20,7 +21,8 @@ func main() {
 	defer uow.Close()
 
 	mux := http.NewServeMux()
-	apiHandler := handler.NewAPIHandler(uow)
+	queue := queue.NewInMemoryQueue()
+	apiHandler := handler.NewAPIHandler(uow, queue)
 	apiHandler.Register(mux, handler.AuthMiddleware)
 
 	fmt.Println("Starting GoLogbook service...")

@@ -35,12 +35,11 @@ func TestListProjects(t *testing.T) {
 		project := domain.NewProject("Buid a shed")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		uow := in_memory.InMemoryUnitOfWork{Projects: project_repo}
-
-		apiHandler := NewAPIHandler(&uow)
 		mux := http.NewServeMux()
+		apiHandler := NewProjectAPIHandler(&uow)
 		apiHandler.Register(mux)
 
-		req := httptest.NewRequest(http.MethodGet, "/api/projects", nil)
+		req := httptest.NewRequest(http.MethodGet, "/api/projects/", nil)
 		w := httptest.NewRecorder()
 
 		mux.ServeHTTP(w, req)
@@ -50,12 +49,11 @@ func TestListProjects(t *testing.T) {
 
 	t.Run("empty status ok", func(t *testing.T) {
 		uow := in_memory.NewInMemoryUnitOfWork()
-
-		apiHandler := NewAPIHandler(uow)
+		apiHandler := NewProjectAPIHandler(uow)
 		mux := http.NewServeMux()
 		apiHandler.Register(mux)
 
-		req := httptest.NewRequest(http.MethodGet, "/api/projects", nil)
+		req := httptest.NewRequest(http.MethodGet, "/api/projects/", nil)
 		w := httptest.NewRecorder()
 
 		mux.ServeHTTP(w, req)
@@ -66,12 +64,11 @@ func TestListProjects(t *testing.T) {
 	t.Run("internal error", func(t *testing.T) {
 		project_repo := &testutil.FailingProjectRepo{}
 		uow := in_memory.InMemoryUnitOfWork{Projects: project_repo}
-
-		apiHandler := NewAPIHandler(&uow)
+		apiHandler := NewProjectAPIHandler(&uow)
 		mux := http.NewServeMux()
 		apiHandler.Register(mux)
 
-		req := httptest.NewRequest(http.MethodGet, "/api/projects", nil)
+		req := httptest.NewRequest(http.MethodGet, "/api/projects/", nil)
 		w := httptest.NewRecorder()
 
 		mux.ServeHTTP(w, req)
@@ -85,7 +82,7 @@ func TestGetPoject(t *testing.T) {
 		project := domain.NewProject("Buid a shed")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		uow := in_memory.InMemoryUnitOfWork{Projects: project_repo}
-		apiHandler := NewAPIHandler(&uow)
+		apiHandler := NewProjectAPIHandler(&uow)
 		mux := http.NewServeMux()
 		apiHandler.Register(mux)
 
@@ -102,7 +99,7 @@ func TestGetPoject(t *testing.T) {
 		project := domain.NewProject("Buid a shed")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		uow := in_memory.InMemoryUnitOfWork{Projects: project_repo}
-		apiHandler := NewAPIHandler(&uow)
+		apiHandler := NewProjectAPIHandler(&uow)
 		mux := http.NewServeMux()
 		apiHandler.Register(mux)
 
@@ -119,12 +116,12 @@ func TestGetPoject(t *testing.T) {
 func TestCreateProject(t *testing.T) {
 	t.Run("new project", func(t *testing.T) {
 		uow := in_memory.NewInMemoryUnitOfWork()
-		apiHandler := NewAPIHandler(uow)
+		apiHandler := NewProjectAPIHandler(uow)
 		mux := http.NewServeMux()
 		apiHandler.Register(mux)
 
 		payload := `{"title": "Buy a horse"}`
-		req := httptest.NewRequest(http.MethodPost, "/api/projects", strings.NewReader(payload))
+		req := httptest.NewRequest(http.MethodPost, "/api/projects/", strings.NewReader(payload))
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 
@@ -135,12 +132,12 @@ func TestCreateProject(t *testing.T) {
 
 	t.Run("invalid data", func(t *testing.T) {
 		uow := in_memory.NewInMemoryUnitOfWork()
-		apiHandler := NewAPIHandler(uow)
+		apiHandler := NewProjectAPIHandler(uow)
 		mux := http.NewServeMux()
 		apiHandler.Register(mux)
 
 		payload := `{"title": 1234}`
-		req := httptest.NewRequest(http.MethodPost, "/api/projects", strings.NewReader(payload))
+		req := httptest.NewRequest(http.MethodPost, "/api/projects/", strings.NewReader(payload))
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 
@@ -155,7 +152,7 @@ func TestUpdateProject(t *testing.T) {
 		project := domain.NewProject("Cook a hog")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		uow := in_memory.InMemoryUnitOfWork{Projects: project_repo}
-		apiHandler := NewAPIHandler(&uow)
+		apiHandler := NewProjectAPIHandler(&uow)
 		mux := http.NewServeMux()
 		apiHandler.Register(mux)
 
@@ -174,7 +171,7 @@ func TestUpdateProject(t *testing.T) {
 		project := domain.NewProject("Cook a hog")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		uow := in_memory.InMemoryUnitOfWork{Projects: project_repo}
-		apiHandler := NewAPIHandler(&uow)
+		apiHandler := NewProjectAPIHandler(&uow)
 		mux := http.NewServeMux()
 		apiHandler.Register(mux)
 
@@ -193,7 +190,7 @@ func TestUpdateProject(t *testing.T) {
 		project := domain.NewProject("Cook a hog")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		uow := in_memory.InMemoryUnitOfWork{Projects: project_repo}
-		apiHandler := NewAPIHandler(&uow)
+		apiHandler := NewProjectAPIHandler(&uow)
 		mux := http.NewServeMux()
 		apiHandler.Register(mux)
 
@@ -214,7 +211,7 @@ func TestDeleteProject(t *testing.T) {
 		project := domain.NewProject("Dig a hole")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		uow := in_memory.InMemoryUnitOfWork{Projects: project_repo}
-		apiHandler := NewAPIHandler(&uow)
+		apiHandler := NewProjectAPIHandler(&uow)
 		mux := http.NewServeMux()
 		apiHandler.Register(mux)
 
@@ -232,7 +229,7 @@ func TestDeleteProject(t *testing.T) {
 		project := domain.NewProject("Dig a hole")
 		project_repo := in_memory.NewProjectRepository([]*domain.Project{project})
 		uow := in_memory.InMemoryUnitOfWork{Projects: project_repo}
-		apiHandler := NewAPIHandler(&uow)
+		apiHandler := NewProjectAPIHandler(&uow)
 		mux := http.NewServeMux()
 		apiHandler.Register(mux)
 

@@ -15,7 +15,7 @@ import (
 func TestAuthAPIHandler_SignUp(t *testing.T) {
 	t.Run("returns a 201 status code", func(t *testing.T) {
 		uow := in_memory.NewInMemoryUnitOfWork()
-		apiHandler := NewAPIHandler(uow)
+		apiHandler := NewAuthAPIHandler(uow)
 		mux := http.NewServeMux()
 		apiHandler.Register(mux)
 
@@ -31,7 +31,7 @@ func TestAuthAPIHandler_SignUp(t *testing.T) {
 
 	t.Run("returns a 400 status code if the password and confirm do not match", func(t *testing.T) {
 		uow := in_memory.NewInMemoryUnitOfWork()
-		apiHandler := NewAPIHandler(uow)
+		apiHandler := NewAuthAPIHandler(uow)
 		mux := http.NewServeMux()
 		apiHandler.Register(mux)
 
@@ -47,7 +47,7 @@ func TestAuthAPIHandler_SignUp(t *testing.T) {
 
 	t.Run("returns a 400 status code if the email is not valid", func(t *testing.T) {
 		uow := in_memory.NewInMemoryUnitOfWork()
-		apiHandler := NewAPIHandler(uow)
+		apiHandler := NewAuthAPIHandler(uow)
 		mux := http.NewServeMux()
 		apiHandler.Register(mux)
 
@@ -67,7 +67,7 @@ func TestAuthAPIHandler_SignUp(t *testing.T) {
 		user := domain.NewUser(email, password)
 		uow := in_memory.NewInMemoryUnitOfWork()
 		uow.Users.CreateUser(user)
-		apiHandler := NewAPIHandler(uow)
+		apiHandler := NewAuthAPIHandler(uow)
 		mux := http.NewServeMux()
 		apiHandler.Register(mux)
 
@@ -90,7 +90,7 @@ func TestAuthAPIHandler_Login(t *testing.T) {
 		user := domain.NewUser(email, hashedPassword)
 		uow := in_memory.NewInMemoryUnitOfWork()
 		uow.Users.CreateUser(user)
-		apiHandler := NewAPIHandler(uow)
+		apiHandler := NewAuthAPIHandler(uow)
 		mux := http.NewServeMux()
 		apiHandler.Register(mux)
 
@@ -106,7 +106,7 @@ func TestAuthAPIHandler_Login(t *testing.T) {
 
 	t.Run("returns a 401 status code if the user does not exist", func(t *testing.T) {
 		uow := in_memory.NewInMemoryUnitOfWork()
-		apiHandler := NewAPIHandler(uow)
+		apiHandler := NewAuthAPIHandler(uow)
 		mux := http.NewServeMux()
 		apiHandler.Register(mux)
 
@@ -122,7 +122,7 @@ func TestAuthAPIHandler_Login(t *testing.T) {
 
 	t.Run("returns a 400 status code if the email is not valid", func(t *testing.T) {
 		uow := in_memory.NewInMemoryUnitOfWork()
-		apiHandler := NewAPIHandler(uow)
+		apiHandler := NewAuthAPIHandler(uow)
 		mux := http.NewServeMux()
 		apiHandler.Register(mux)
 

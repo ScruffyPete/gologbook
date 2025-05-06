@@ -16,7 +16,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
             }),
-            fetch(`/api/projects/${params.projectId}/entries`, {
+            fetch(`/api/entries/?project_id=${params.projectId}`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
@@ -59,7 +59,7 @@ export function ProjectPage() {
     const handleSubmit = async () => {
         const entry = newEntryBody.trim()
         try {
-            const res = await fetch(`/api/projects/${project.id}/entries`, {
+            const res = await fetch(`/api/entries/?project_id=${project.id}`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
