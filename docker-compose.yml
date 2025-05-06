@@ -3,6 +3,8 @@ services:
     build: ./backend
     ports:
       - "8080:8080"
+    env_file:
+      - .env
     environment:
       - PORT=8080
       - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=${DB_SSLMODE}
@@ -26,12 +28,16 @@ services:
 
   test-integration:
     build: ./backend
+    env_file:
+      - .env
     environment:
       - DATABASE_URL=postgres://${TEST_DB_USER}:${TEST_DB_PASSWORD}@${TEST_DB_HOST}:${TEST_DB_PORT}/${TEST_DB_NAME}?sslmode=${TEST_DB_SSLMODE}
     command: sh -c "./migrate && go test -tags=integration ./..."
     depends_on:
       testdb:
         condition: service_healthy
+      redis:
+        condition: service_started
 
   db:
     image: postgres:15-alpine
@@ -62,6 +68,11 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
 
 volumes:
   postgres_data:

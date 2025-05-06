@@ -13,6 +13,4 @@ type Message struct {
 
 type Queue interface {
 	Push(item Message) error
-	Pop() (Message, error)
-	IsEmpty() (bool, error)
 }
