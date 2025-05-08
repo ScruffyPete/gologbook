@@ -1,5 +1,5 @@
 from typing import Protocol
-from insights.domain.entities import Entry, Insight
+from apps.domain.entities import Entry, Insight
 
 
 class DBInterface(Protocol):

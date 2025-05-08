@@ -1,5 +1,5 @@
-from insights.db.in_memory import InMemoryDB
-from insights.domain.entities import Entry
+from apps.db.in_memory import InMemoryDB
+from apps.domain.entities import Entry
 import uuid
 from datetime import datetime
 import pytest

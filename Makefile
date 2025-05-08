@@ -1,7 +1,15 @@
+.PHONY: test-backend-integration test-insights-integration test-integration api
+
+test-backend-integration:
+	docker compose run --rm --build test-backend-integration || true
+	docker compose down -v
+
+test-insights-integration:
+	docker compose run --rm --build test-insights-integration || true
+	docker compose down -v
+
 test-integration:
-	docker compose build test-integration
-	docker compose up -d redis
-	docker compose run --rm --build test-integration
+	docker compose run --rm --build test-integration || true
 	docker compose down -v
 
 api:

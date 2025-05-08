@@ -4,10 +4,10 @@ from datetime import datetime
 
 import pytest_asyncio
 
-from insights.domain.entities import Entry
-from insights.services.processor import process_entry
-from insights.db.in_memory import InMemoryDB
-from insights.llm.in_memory import InMemoryLLM
+from apps.domain.entities import Entry
+from apps.services.processor import process_entry
+from apps.db.in_memory import InMemoryDB
+from apps.llm.in_memory import InMemoryLLM
 
 
 @pytest.fixture

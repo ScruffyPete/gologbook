@@ -41,7 +41,7 @@ func (q *RedisQueue) Push(ctx context.Context, item domain.Message) error {
 	args := &redis.XAddArgs{
 		Stream: q.stream,
 		Values: map[string]any{
-			"payload": payload,
+			"message": payload,
 		},
 	}
 	if _, err := q.client.XAdd(ctx, args).Result(); err != nil {

@@ -1,10 +1,10 @@
 import asyncio
 import logging
 
-from queue.in_memory import InMemoryQueue
-from db.in_memory import InMemoryDB
-from llm.in_memory import InMemoryLLM
-from services.processor import process_entry
+from apps.queue.in_memory import InMemory
+from apps.db.in_memory import InMemoryDB
+from apps.llm.in_memory import InMemoryLLM
+from apps.services.processor import process_entry
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 async def main():
     db = InMemoryDB()
     llm = InMemoryLLM()
-    queue = InMemoryQueue()
+    queue = InMemory()
 
     while True:
         entry_id = await queue.pop()

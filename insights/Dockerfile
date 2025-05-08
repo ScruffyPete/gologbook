@@ -5,20 +5,13 @@ ENV PYTHONDONTWRITEBYTECODE=1
 # Turns off buffering for easier container logging
 ENV PYTHONUNBUFFERED=1
 
-# Install protoc
-RUN apt-get update && \
-    apt-get install -y protobuf-compiler && \
-    rm -rf /var/lib/apt/lists/*
-
 COPY requirements.txt .
 RUN python -m pip install -r requirements.txt
 
-WORKDIR /app
 COPY . /app
+WORKDIR /app
 
-# Compile proto files
-RUN mkdir -p gen
-RUN protoc --python_out=./gen --proto_path=/proto /proto/*.proto
 
-CMD ["python", "main.py"]
+ENV PYTHONPATH=/app
 
+CMD ["python", "-m", "main"]

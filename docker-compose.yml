@@ -1,5 +1,5 @@
 services:
-  api:
+  base-api:
     build: ./backend
     ports:
       - "8080:8080"
@@ -7,11 +7,34 @@ services:
       - .env
     environment:
       - PORT=8080
-      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=${DB_SSLMODE}
+
+  api:
+    extends:
+      service: base-api
     command: ./api
+    environment:
+      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=${DB_SSLMODE}
+      - REDIS_HOST=redis
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  test-api:
+    extends:
+      service: base-api
+    command: ./api
+    environment:
+      - DATABASE_URL=postgres://${TEST_DB_USER}:${TEST_DB_PASSWORD}@${TEST_DB_HOST}:${TEST_DB_PORT}/${TEST_DB_NAME}?sslmode=${TEST_DB_SSLMODE}
+      - REDIS_HOST=test-redis
+    depends_on:
+      testdb:
+        condition: service_healthy
+      test-redis:
+        condition: service_healthy
+      migrate-test:
+        condition: service_completed_successfully
 
   migrate:
     build: ./backend
@@ -22,22 +45,58 @@ services:
       db:
         condition: service_healthy
 
+  migrate-test:
+    build: ./backend
+    environment:
+      - DATABASE_URL=postgres://${TEST_DB_USER}:${TEST_DB_PASSWORD}@${TEST_DB_HOST}:${TEST_DB_PORT}/${TEST_DB_NAME}?sslmode=${TEST_DB_SSLMODE}
+    command: ./migrate
+    depends_on:
+      db:
+        condition: service_healthy
+
   test-unit:
     build: ./backend
     command: sh -c "go test ./..."
 
-  test-integration:
+  test-backend-integration:
     build: ./backend
     env_file:
       - .env
     environment:
       - DATABASE_URL=postgres://${TEST_DB_USER}:${TEST_DB_PASSWORD}@${TEST_DB_HOST}:${TEST_DB_PORT}/${TEST_DB_NAME}?sslmode=${TEST_DB_SSLMODE}
+      - REDIS_HOST=test-redis
     command: sh -c "./migrate && go test -tags=integration ./..."
     depends_on:
       testdb:
         condition: service_healthy
-      redis:
-        condition: service_started
+      test-redis:
+        condition: service_healthy
+      migrate-test:
+        condition: service_completed_successfully
+
+  test-insights-integration:
+    build: ./insights
+    command: sh -c "pytest -v"
+    env_file:
+      - ./insights/.env
+    environment:
+      - REDIS_HOST=test-redis
+    depends_on:
+      test-redis:
+        condition: service_healthy
+
+  test-integration:
+    build:
+      context: ./test-integration
+    env_file:
+      - ./test-integration/.env
+    depends_on:
+      test-backend-integration:
+        condition: service_completed_successfully
+      test-insights-integration:
+        condition: service_completed_successfully
+      test-api:
+        condition: service_healthy
 
   db:
     image: postgres:15-alpine
@@ -73,6 +132,21 @@ services:
     image: redis:latest
     ports:
       - "6379:6379"
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  test-redis:
+    image: redis:latest
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:

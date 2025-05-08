@@ -2,15 +2,9 @@ import asyncio
 from typing import Any
 
 
-class InMemoryQueue:
+class InMemory:
     def __init__(self):
         self.queue = asyncio.Queue()
-
-    def is_empty(self) -> bool:
-        return self.queue.empty()
-
-    async def push(self, item: Any) -> None:
-        await self.queue.put(item)
 
     async def pop(self) -> Any:
         try:
@@ -18,5 +12,5 @@ class InMemoryQueue:
         except asyncio.CancelledError:
             return None
         except Exception as e:
-            print(f"Error popping from queue: {e}")
+            print(f"Error popping from app.queue: {e}")
             return None

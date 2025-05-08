@@ -1,5 +1,5 @@
-from insights.db.interface import DBInterface
-from insights.llm.interface import LLMInterface
+from apps.db.interface import DBInterface
+from apps.llm.interface import LLMInterface
 
 
 async def process_entry(entry_id: str, db: DBInterface, llm: LLMInterface):

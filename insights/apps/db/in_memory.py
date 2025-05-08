@@ -1,4 +1,4 @@
-from insights.domain.entities import Entry, Insight
+from apps.domain.entities import Entry, Insight
 
 
 class InMemoryDB:

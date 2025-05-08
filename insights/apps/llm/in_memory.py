@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from insights.domain.entities import Entry, Insight
+from apps.domain.entities import Entry, Insight
 
 
 class InMemoryLLM:
