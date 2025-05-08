@@ -35,3 +35,11 @@ func NewEntry(projectID string, body string) *Entry {
 		Body:      body,
 	}
 }
+
+type Insight struct {
+	ID        string   `json:"id"`
+	CreatedAt string   `json:"createdAt"`
+	ProjectID string   `json:"projectId"`
+	EntryIDs  []string `json:"entryIds,omitempty"`
+	Body      string   `json:"body"`
+}

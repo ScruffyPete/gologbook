@@ -2,8 +2,10 @@ package testutil
 
 import (
 	"sort"
+	"time"
 
 	"github.com/ScruffyPete/gologbook/internal/domain"
+	"github.com/google/uuid"
 )
 
 func MakeDummyProjects() []*domain.Project {
@@ -33,4 +35,14 @@ func MakeDummyEntries(project *domain.Project) []*domain.Entry {
 	})
 
 	return sorted
+}
+
+func NewInsight(projectID string, entryIDs []string, body string) *domain.Insight {
+	return &domain.Insight{
+		ID:        uuid.NewString(),
+		CreatedAt: time.Now().UTC().Format("2006-01-02T15:04:05.999999Z"),
+		ProjectID: projectID,
+		EntryIDs:  entryIDs,
+		Body:      body,
+	}
 }

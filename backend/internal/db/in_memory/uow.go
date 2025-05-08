@@ -10,6 +10,7 @@ type InMemoryUnitOfWork struct {
 	Users    domain.UserRepository
 	Projects domain.ProjectReporitory
 	Entries  domain.EntryRepository
+	Insights domain.InsightRepository
 }
 
 func NewInMemoryUnitOfWork() *InMemoryUnitOfWork {
@@ -17,6 +18,7 @@ func NewInMemoryUnitOfWork() *InMemoryUnitOfWork {
 		Users:    NewUserRepository(nil),
 		Projects: NewProjectRepository(nil),
 		Entries:  NewEntryRepository(nil),
+		Insights: NewInsightRepository(nil),
 	}
 }
 

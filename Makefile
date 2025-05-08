@@ -13,5 +13,5 @@ test-integration:
 	docker compose down -v
 
 api:
-	docker compose run --rm --build migrate
 	docker compose up --build api
+	

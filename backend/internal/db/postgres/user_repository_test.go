@@ -13,7 +13,7 @@ import (
 func TestUserRepository_CreateUser(t *testing.T) {
 	t.Run("creates a user", func(t *testing.T) {
 		user := domain.NewUser("test@example.com", "password")
-		db, _ := testutil.NewTestDB(nil, nil, nil)
+		db, _ := testutil.NewTestDB(nil, nil, nil, nil)
 		defer db.Close()
 
 		repo := NewUserRepository(db)
@@ -28,7 +28,7 @@ func TestUserRepository_CreateUser(t *testing.T) {
 
 	t.Run("returns an error if the user already exists", func(t *testing.T) {
 		user := domain.NewUser("test@example.com", "password")
-		db, _ := testutil.NewTestDB([]*domain.User{user}, nil, nil)
+		db, _ := testutil.NewTestDB([]*domain.User{user}, nil, nil, nil)
 		defer db.Close()
 
 		repo := NewUserRepository(db)
@@ -41,7 +41,7 @@ func TestUserRepository_CreateUser(t *testing.T) {
 func TestUserRepository_GetUserByEmail(t *testing.T) {
 	t.Run("returns a user", func(t *testing.T) {
 		user := domain.NewUser("test@example.com", "password")
-		db, _ := testutil.NewTestDB([]*domain.User{user}, nil, nil)
+		db, _ := testutil.NewTestDB([]*domain.User{user}, nil, nil, nil)
 		defer db.Close()
 
 		repo := NewUserRepository(db)
@@ -56,7 +56,7 @@ func TestUserRepository_GetUserByEmail(t *testing.T) {
 
 	t.Run("returns an error if the user does not exist", func(t *testing.T) {
 		email := "test@example.com"
-		db, _ := testutil.NewTestDB(nil, nil, nil)
+		db, _ := testutil.NewTestDB(nil, nil, nil, nil)
 		defer db.Close()
 
 		repo := NewUserRepository(db)
@@ -68,7 +68,7 @@ func TestUserRepository_GetUserByEmail(t *testing.T) {
 
 	t.Run("returns an error if the query fails", func(t *testing.T) {
 		email := "test@example.com"
-		db, _ := testutil.NewTestDB(nil, nil, nil)
+		db, _ := testutil.NewTestDB(nil, nil, nil, nil)
 		db.Close()
 
 		repo := NewUserRepository(db)
