@@ -11,7 +11,7 @@ def entry():
     return Entry(
         id=uuid.uuid4(),
         project_id=uuid.uuid4(),
-        text="Hello, world!",
+        body="Hello, world!",
         created_at=datetime.now(),
     )
 
@@ -22,14 +22,14 @@ async def db(entry):
 
 
 @pytest.mark.asyncio
-async def test_save_entry(db, entry):
+async def test_save_entry(db: InMemoryDB, entry: Entry):
     entry = Entry(
         id=uuid.uuid4(),
         project_id=uuid.uuid4(),
-        text="Hello, world!",
+        body="Hello, world!",
         created_at=datetime.now(),
     )
-    await db.save_entry(entry)
+    await db._save_entry(entry)
     db_entry = await db.get_entry(entry.id)
     assert db_entry == entry
 

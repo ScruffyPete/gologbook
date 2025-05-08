@@ -1,5 +1,5 @@
 import pytest
-import requests
+import requests  # type: ignore
 
 
 @pytest.fixture

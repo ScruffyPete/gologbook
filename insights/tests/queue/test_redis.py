@@ -20,7 +20,6 @@ def check_redis():
         return True
     except Exception as e:
         print("Redis check failed:", e)
-        raise e
         return False
 
 

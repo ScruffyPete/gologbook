@@ -6,7 +6,7 @@ from apps.domain.entities import Entry, Insight
 
 class InMemoryLLM:
     async def generate_insight(self, entry: Entry) -> Insight:
-        insight_text = f"Insight for entry {entry.id}: {entry.text[:100]}"
+        insight_text = f"Insight for entry {entry.id}: {entry.body[:100]}"
         return Insight(
             id=uuid.uuid4(),
             project_id=entry.project_id,

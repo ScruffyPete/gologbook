@@ -4,3 +4,4 @@ psycopg-binary==3.2.7
 pytest==8.3.5
 pytest-asyncio==0.26.0
 redis==6.0.0
+asyncpg==0.30.0

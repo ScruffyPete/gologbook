@@ -15,7 +15,7 @@ def entry():
     return Entry(
         id=uuid.uuid4(),
         project_id=uuid.uuid4(),
-        text="Hello, world!",
+        body="Hello, world!",
         created_at=datetime.now(),
     )
 

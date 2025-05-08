@@ -12,9 +12,9 @@ async def test_in_memory_llm():
     entry = Entry(
         id=uuid.uuid4(),
         project_id=uuid.uuid4(),
-        text="Hello, world!",
+        body="Hello, world!",
         created_at=datetime.now(),
     )
     insight = await llm.generate_insight(entry)
     assert insight.entry_id == entry.id
-    assert insight.text == f"Insight for entry {entry.id}: {entry.text[:100]}"
+    assert insight.text == f"Insight for entry {entry.id}: {entry.body[:100]}"

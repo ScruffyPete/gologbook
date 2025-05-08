@@ -9,9 +9,6 @@ class InMemoryDB:
     async def get_entry(self, entry_id: str) -> Entry | None:
         return self.entries.get(entry_id, None)
 
-    async def save_entry(self, entry: Entry) -> None:
-        self.entries[entry.id] = entry
-
     async def get_insights_by_entry_id(self, entry_id: str) -> list[Insight]:
         return [
             insight
@@ -21,3 +18,6 @@ class InMemoryDB:
 
     async def save_insight(self, insight: Insight) -> None:
         self.insights[insight.id] = insight
+
+    async def _save_entry(self, entry: Entry) -> None:
+        self.entries[entry.id] = entry
