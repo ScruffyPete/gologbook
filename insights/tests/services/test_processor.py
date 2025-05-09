@@ -2,11 +2,9 @@ import pytest
 import uuid
 from datetime import datetime
 
-import pytest_asyncio
-
+from apps.db.in_memory import InMemoryRepositoryUnit
 from apps.domain.entities import Entry
 from apps.services.processor import process_entry
-from apps.db.in_memory import InMemoryDB
 from apps.llm.in_memory import InMemoryLLM
 
 
@@ -20,22 +18,21 @@ def entry():
     )
 
 
-@pytest_asyncio.fixture
-async def db(entry):
-    db = InMemoryDB(entries=[entry])
-    return db
-
-
 @pytest.fixture
 def llm():
     return InMemoryLLM()
 
 
-@pytest.mark.asyncio
-async def test_processor(entry, db, llm):
-    await process_entry(entry.id, db, llm)
+@pytest.fixture
+def repo(entry: Entry):
+    return InMemoryRepositoryUnit(entries=[entry])
 
-    insights = await db.get_insights_by_entry_id(entry.id)
+
+@pytest.mark.asyncio
+async def test_processor(repo: InMemoryRepositoryUnit, llm: InMemoryLLM, entry: Entry):
+    await process_entry(repo, entry.id, llm)
+
+    insights = await repo.insight_repo.get_insights_by_entry_id(entry.id)
     assert len(insights) == 1
     insight = insights[0]
-    assert insight.entry_id == entry.id
+    assert insight.entry_ids == [entry.id]

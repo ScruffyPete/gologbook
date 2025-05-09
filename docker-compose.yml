@@ -23,6 +23,18 @@ services:
       migrate:
         condition: service_completed_successfully
 
+  insights:
+    build: ./insights
+    command: python main.py
+    environment:
+      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=${DB_SSLMODE}
+      - REDIS_HOST=redis
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+
   test-api:
     extends:
       service: base-api
@@ -78,7 +90,7 @@ services:
 
   test-insights-integration:
     build: ./insights
-    command: sh -c "pytest -v"
+    command: sh -c "pytest -v --run-db"
     env_file:
       - ./insights/.env
     environment:

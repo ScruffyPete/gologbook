@@ -1,23 +1,31 @@
 from apps.domain.entities import Entry, Insight
+from uuid import UUID
 
 
-class InMemoryDB:
-    def __init__(self, entries: list[Entry] = [], insights: list[Insight] = []):
+class InMemoryEntryRepository:
+    def __init__(self, entries: list[Entry] = []):
         self.entries = {entry.id: entry for entry in entries}
-        self.insights = {insight.id: insight for insight in insights}
 
-    async def get_entry(self, entry_id: str) -> Entry | None:
+    async def get_entry(self, entry_id: UUID) -> Entry | None:
         return self.entries.get(entry_id, None)
 
-    async def get_insights_by_entry_id(self, entry_id: str) -> list[Insight]:
+
+class InMemoryInsightRepository:
+    def __init__(self, insights: list[Insight] = []):
+        self.insights = {insight.id: insight for insight in insights}
+
+    async def get_insights_by_entry_id(self, entry_id: UUID) -> list[Insight]:
         return [
             insight
             for insight in self.insights.values()
-            if insight.entry_id == entry_id
+            if entry_id in insight.entry_ids
         ]
 
-    async def save_insight(self, insight: Insight) -> None:
+    async def create(self, insight: Insight) -> None:
         self.insights[insight.id] = insight
 
-    async def _save_entry(self, entry: Entry) -> None:
-        self.entries[entry.id] = entry
+
+class InMemoryRepositoryUnit:
+    def __init__(self, entries: list[Entry] = [], insights: list[Insight] = []):
+        self.entry_repo = InMemoryEntryRepository(entries)
+        self.insight_repo = InMemoryInsightRepository(insights)

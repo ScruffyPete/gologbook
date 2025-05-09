@@ -14,4 +14,4 @@ WORKDIR /app
 
 ENV PYTHONPATH=/app
 
-CMD ["python", "-m", "main"]
+CMD ["python", "main.py"]

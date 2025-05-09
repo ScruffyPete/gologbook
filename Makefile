@@ -1,4 +1,4 @@
-.PHONY: test-backend-integration test-insights-integration test-integration api
+.PHONY: test-backend-integration test-insights-integration test-integration api insights
 
 test-backend-integration:
 	docker compose run --rm --build test-backend-integration || true
@@ -14,4 +14,6 @@ test-integration:
 
 api:
 	docker compose up --build api
-	
+
+insights:
+	docker compose up --build insights

@@ -1,8 +1,9 @@
-from apps.db.interface import DBInterface
+from apps.db.interface import RepositoryUnit
 from apps.llm.interface import LLMInterface
+from uuid import UUID
 
 
-async def process_entry(entry_id: str, db: DBInterface, llm: LLMInterface):
+async def process_entry(repo: RepositoryUnit, entry_id: UUID, llm: LLMInterface):
     """Process an entry and generate an insight.
 
     Args:
@@ -10,9 +11,9 @@ async def process_entry(entry_id: str, db: DBInterface, llm: LLMInterface):
         db (DBInterface): The database interface.
         llm (LLMInterface): The LLM interface.
     """
-    entry = await db.get_entry(entry_id)
+    entry = await repo.entry_repo.get_entry(entry_id)
     if entry is None:
         return
 
     insight = await llm.generate_insight(entry)
-    await db.save_insight(insight)
+    await repo.insight_repo.create(insight)

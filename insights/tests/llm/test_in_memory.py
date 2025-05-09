@@ -16,5 +16,5 @@ async def test_in_memory_llm():
         created_at=datetime.now(),
     )
     insight = await llm.generate_insight(entry)
-    assert insight.entry_id == entry.id
-    assert insight.text == f"Insight for entry {entry.id}: {entry.body[:100]}"
+    assert insight.entry_ids == [entry.id]
+    assert insight.body == f"Insight for entry {entry.id}: {entry.body[:100]}"

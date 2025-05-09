@@ -10,7 +10,7 @@ class InMemoryLLM:
         return Insight(
             id=uuid.uuid4(),
             project_id=entry.project_id,
-            entry_id=entry.id,
-            text=insight_text,
+            entry_ids=[entry.id],
+            body=insight_text,
             created_at=datetime.now(),
         )
