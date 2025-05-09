@@ -1,10 +1,17 @@
 import uuid
+from contextlib import asynccontextmanager
 from datetime import datetime
 
 from apps.domain.entities import Entry, Insight
 
 
 class InMemoryLLM:
+    @classmethod
+    @asynccontextmanager
+    async def create(cls):
+        llm = cls()
+        yield llm
+
     async def generate_insight(self, entry: Entry) -> Insight:
         insight_text = f"Insight for entry {entry.id}: {entry.body[:100]}"
         return Insight(

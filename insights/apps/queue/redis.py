@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 import os
 
 import redis.asyncio as aioredis
@@ -6,20 +7,27 @@ from typing import Any
 from apps.queue.interface import QueueMessage
 
 
-class Redis:
+class RedisQueue:
     def __init__(self, stream: str):
         redis_host = os.getenv("REDIS_HOST")
         redis_port = os.getenv("REDIS_PORT")
         redis_db = os.getenv("REDIS_DB")
-        self.redis = aioredis.Redis.from_url(
+        self.redis_client = aioredis.Redis.from_url(
             f"redis://{redis_host}:{redis_port}/{redis_db}"
         )
         self.stream = stream
         self.last_id = "0"
 
+    @classmethod
+    @asynccontextmanager
+    async def create(cls, stream: str):
+        rq = cls(stream)
+        yield rq
+        await rq.redis_client.aclose()
+
     async def pop(self) -> Any:
         try:
-            entries = await self.redis.xread(
+            entries = await self.redis_client.xread(
                 streams={self.stream: self.last_id}, count=1, block=1000
             )
             if not entries:

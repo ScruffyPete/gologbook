@@ -1,13 +1,13 @@
 import pytest
 import pytest_asyncio
-from apps.queue.in_memory import InMemory
+from apps.queue.in_memory import InMemoryQueue
 
 
 @pytest_asyncio.fixture
 async def queue():
-    queue = InMemory()
-    await queue.queue.put("Hello, world!")
-    yield queue
+    async with InMemoryQueue.create() as queue:
+        await queue.queue.put("Hello, world!")
+        yield queue
 
 
 @pytest.mark.asyncio

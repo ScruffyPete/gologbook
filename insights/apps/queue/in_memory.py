@@ -1,10 +1,17 @@
 import asyncio
+from contextlib import asynccontextmanager
 from typing import Any
 
 
-class InMemory:
+class InMemoryQueue:
     def __init__(self):
         self.queue = asyncio.Queue()
+
+    @classmethod
+    @asynccontextmanager
+    async def create(cls):
+        queue = cls()
+        yield queue
 
     async def pop(self) -> Any:
         try:

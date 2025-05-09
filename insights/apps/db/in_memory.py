@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from apps.domain.entities import Entry, Insight
 from uuid import UUID
 
@@ -29,3 +30,9 @@ class InMemoryRepositoryUnit:
     def __init__(self, entries: list[Entry] = [], insights: list[Insight] = []):
         self.entry_repo = InMemoryEntryRepository(entries)
         self.insight_repo = InMemoryInsightRepository(insights)
+
+    @classmethod
+    @asynccontextmanager
+    async def create(cls):
+        repo = cls()
+        yield repo
