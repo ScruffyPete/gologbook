@@ -16,10 +16,10 @@ type RedisQueue struct {
 	stream string
 }
 
-func NewRedisQueue(stream string) *RedisQueue {
+func NewRedisQueue(stream string) (*RedisQueue, error) {
 	db, err := strconv.Atoi(os.Getenv("REDIS_DEAULT_DB"))
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	addr := fmt.Sprintf("%s:%s", os.Getenv("REDIS_HOST"), os.Getenv("REDIS_PORT"))
@@ -29,7 +29,10 @@ func NewRedisQueue(stream string) *RedisQueue {
 		Password: os.Getenv("REDIS_PASSWORD"),
 		DB:       db,
 	})
-	return &RedisQueue{client: client, stream: stream}
+	if err := client.Ping(context.Background()).Err(); err != nil {
+		return nil, err
+	}
+	return &RedisQueue{client: client, stream: stream}, nil
 }
 
 func (q *RedisQueue) Push(ctx context.Context, item domain.Message) error {
@@ -48,4 +51,8 @@ func (q *RedisQueue) Push(ctx context.Context, item domain.Message) error {
 		return fmt.Errorf("failed to push message to redis: %w", err)
 	}
 	return nil
+}
+
+func (q *RedisQueue) Close() error {
+	return q.client.Close()
 }

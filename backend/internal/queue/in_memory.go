@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"context"
 	"errors"
 	"sync"
 
@@ -16,7 +17,7 @@ func NewInMemoryQueue() *InMemoryQueue {
 	return &InMemoryQueue{items: []domain.Message{}}
 }
 
-func (q *InMemoryQueue) Push(item domain.Message) error {
+func (q *InMemoryQueue) Push(ctx context.Context, item domain.Message) error {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 	q.items = append(q.items, item)
@@ -32,6 +33,10 @@ func (q *InMemoryQueue) Pop() (domain.Message, error) {
 	item := q.items[0]
 	q.items = q.items[1:]
 	return item, nil
+}
+
+func (q *InMemoryQueue) Close() error {
+	return nil
 }
 
 func (q *InMemoryQueue) IsEmpty() (bool, error) {

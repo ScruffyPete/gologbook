@@ -67,7 +67,7 @@ func (s *EntryService) CreateEntry(
 		Type:    domain.MESSAGE_TYPE_NEW_ENTRY,
 		Payload: map[string]any{"entry_id": result.ID},
 	}
-	if err := s.queue.Push(msg); err != nil {
+	if err := s.queue.Push(ctx, msg); err != nil {
 		return nil, fmt.Errorf("push message to queue: %w", err)
 	}
 	return result, nil

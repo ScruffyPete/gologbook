@@ -1,5 +1,7 @@
 package domain
 
+import "context"
+
 type MessageType string
 
 const (
@@ -12,5 +14,6 @@ type Message struct {
 }
 
 type Queue interface {
-	Push(item Message) error
+	Push(ctx context.Context, item Message) error
+	Close() error
 }

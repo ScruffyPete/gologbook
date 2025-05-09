@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"context"
 	"testing"
 
 	"github.com/ScruffyPete/gologbook/internal/domain"
@@ -17,7 +18,7 @@ func TestPush(t *testing.T) {
 		Payload: payload,
 	}
 
-	queue.Push(message)
+	queue.Push(context.Background(), message)
 
 	poppedMessage, err := queue.Pop()
 	assert.NoError(t, err)
@@ -33,7 +34,7 @@ func TestPop(t *testing.T) {
 			Type:    domain.MESSAGE_TYPE_NEW_ENTRY,
 			Payload: payload,
 		}
-		queue.Push(message)
+		queue.Push(context.Background(), message)
 		poppedMessage, err := queue.Pop()
 		assert.NoError(t, err)
 		assert.Equal(t, message, poppedMessage)
@@ -62,7 +63,7 @@ func TestIsEmpty(t *testing.T) {
 			Type:    domain.MESSAGE_TYPE_NEW_ENTRY,
 			Payload: payload,
 		}
-		queue.Push(message)
+		queue.Push(context.Background(), message)
 		empty, err := queue.IsEmpty()
 		assert.NoError(t, err)
 		assert.False(t, empty)
