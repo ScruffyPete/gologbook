@@ -90,7 +90,7 @@ services:
 
   test-insights-integration:
     build: ./insights
-    command: sh -c "pytest -v --run-db"
+    command: sh -c "pytest -v --run-db --run-queue"
     env_file:
       - ./insights/.env
     environment:
