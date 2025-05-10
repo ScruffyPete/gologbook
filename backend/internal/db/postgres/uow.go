@@ -32,6 +32,7 @@ func (uow *PostgresUnitOfWork) WithTx(ctx context.Context, fn func(repos domain.
 		Users:    NewUserRepository(uow.db),
 		Projects: NewProjectRepository(uow.db),
 		Entries:  NewEntryRepository(uow.db),
+		Insights: NewInsightRepository(uow.db),
 	}
 
 	if err := fn(repos); err != nil {

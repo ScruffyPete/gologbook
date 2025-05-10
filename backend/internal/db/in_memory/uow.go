@@ -30,6 +30,7 @@ func (uow *InMemoryUnitOfWork) WithTx(
 		Users:    uow.Users,
 		Projects: uow.Projects,
 		Entries:  uow.Entries,
+		Insights: uow.Insights,
 	})
 }
 
