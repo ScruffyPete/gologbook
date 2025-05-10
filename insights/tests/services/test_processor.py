@@ -4,6 +4,7 @@ from datetime import datetime
 
 from apps.db.in_memory import InMemoryRepositoryUnit
 from apps.domain.entities import Entry
+from apps.queue.interface import QueueMessage
 from apps.services.processor import process_entry
 from apps.llm.in_memory import InMemoryLLM
 
@@ -28,11 +29,19 @@ def repo(entry: Entry):
     return InMemoryRepositoryUnit(entries=[entry])
 
 
+@pytest.fixture
+def message(entry: Entry):
+    return QueueMessage(type="test", payload={"entry_id": entry.id})
+
+
 @pytest.mark.asyncio
-async def test_processor(repo: InMemoryRepositoryUnit, llm: InMemoryLLM, entry: Entry):
-    await process_entry(repo, entry.id, llm)
+async def test_processor(
+    repo: InMemoryRepositoryUnit, llm: InMemoryLLM, entry: Entry, message: QueueMessage
+):
+    await process_entry(repo, message, llm)
 
     insights = await repo.insight_repo.get_insights_by_entry_id(entry.id)
     assert len(insights) == 1
+
     insight = insights[0]
     assert insight.entry_ids == [entry.id]

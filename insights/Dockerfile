@@ -14,4 +14,7 @@ WORKDIR /app
 
 ENV PYTHONPATH=/app
 
+RUN apt-get update && apt-get install -y curl
+HEALTHCHECK --interval=5s --timeout=5s --start-period=5s --retries=3 CMD [ "curl", "-f", "http://localhost:8081/healthz" ]
+
 CMD ["python", "main.py"]

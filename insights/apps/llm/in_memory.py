@@ -13,11 +13,11 @@ class InMemoryLLM:
         yield llm
 
     async def generate_insight(self, entry: Entry) -> Insight:
-        insight_text = f"Insight for entry {entry.id}: {entry.body[:100]}"
+        insight_body = f"Insight for entry {entry.id}: {entry.body[:100]}"
         return Insight(
             id=uuid.uuid4(),
             project_id=entry.project_id,
             entry_ids=[entry.id],
-            body=insight_text,
+            body=insight_body,
             created_at=datetime.now(),
         )

@@ -4,6 +4,7 @@ package postgres
 
 import (
 	"testing"
+	"time"
 
 	"github.com/ScruffyPete/gologbook/internal/domain"
 	"github.com/ScruffyPete/gologbook/internal/testutil"
@@ -13,9 +14,11 @@ import (
 func TestInsightRepository_GetInsights(t *testing.T) {
 	t.Run("returns all insights for a project", func(t *testing.T) {
 		project := domain.NewProject("Build a treehouse")
+		createdAt := time.Now().UTC()
+		createdAt2 := createdAt.Add(time.Second)
 		insights := []*domain.Insight{
-			testutil.NewInsight(project.ID, []string{}, "Insight 1"),
-			testutil.NewInsight(project.ID, []string{}, "Insight 2"),
+			testutil.NewInsight(project.ID, []string{}, "Insight 1", &createdAt),
+			testutil.NewInsight(project.ID, []string{}, "Insight 2", &createdAt2),
 		}
 		db, _ := testutil.NewTestDB(nil, []*domain.Project{project}, nil, insights)
 		defer db.Close()

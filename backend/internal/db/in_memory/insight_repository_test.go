@@ -2,6 +2,7 @@ package in_memory
 
 import (
 	"testing"
+	"time"
 
 	"github.com/ScruffyPete/gologbook/internal/domain"
 	"github.com/ScruffyPete/gologbook/internal/testutil"
@@ -11,9 +12,11 @@ import (
 func TestInMemoryInsightRepository_GetInsights(t *testing.T) {
 	t.Run("project wide insights", func(t *testing.T) {
 		project := domain.NewProject("Hunt a boar")
+		createdAt := time.Now().UTC()
+		createdAt2 := createdAt.Add(time.Second)
 		insights := []*domain.Insight{
-			testutil.NewInsight(project.ID, []string{}, "Insight 1"),
-			testutil.NewInsight(project.ID, []string{}, "Insight 2"),
+			testutil.NewInsight(project.ID, []string{}, "Insight 1", &createdAt),
+			testutil.NewInsight(project.ID, []string{}, "Insight 2", &createdAt2),
 		}
 		repo := NewInsightRepository(insights)
 		insights, err := repo.ListInsights(project.ID)

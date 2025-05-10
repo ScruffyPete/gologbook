@@ -8,6 +8,16 @@ services:
     environment:
       - PORT=8080
 
+  base-insights:
+    build: ./insights
+    command: python main.py
+    ports:
+      - "8081:8081"
+    env_file:
+      - ./insights/.env
+    environment:
+      - PORT=8081
+
   api:
     extends:
       service: base-api
@@ -25,10 +35,9 @@ services:
         condition: service_completed_successfully
 
   insights:
-    build: ./insights
+    extends:
+      service: base-insights
     command: python main.py
-    env_file:
-      - ./insights/.env
     environment:
       - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=${DB_SSLMODE}
       - REDIS_HOST=redis
@@ -54,6 +63,19 @@ services:
         condition: service_healthy
       migrate-test:
         condition: service_completed_successfully
+
+  test-insights:
+    extends:
+      service: base-insights
+    environment:
+      - DATABASE_URL=postgres://${TEST_DB_USER}:${TEST_DB_PASSWORD}@${TEST_DB_HOST}:${TEST_DB_PORT}/${TEST_DB_NAME}?sslmode=${TEST_DB_SSLMODE}
+      - REDIS_HOST=test-redis
+      - REDIS_STREAM=test-entry-created
+    depends_on:
+      test-redis:
+        condition: service_healthy
+      testdb:
+        condition: service_healthy
 
   migrate:
     build: ./backend
@@ -118,6 +140,8 @@ services:
       test-insights-integration:
         condition: service_completed_successfully
       test-api:
+        condition: service_healthy
+      test-insights:
         condition: service_healthy
 
   db:
