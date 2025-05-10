@@ -1,3 +1,4 @@
+import json
 import pytest
 import requests  # type: ignore
 
@@ -17,7 +18,19 @@ def api_client():
     return TestClient("http://test-api:8080")
 
 
-def test_entry_flow(api_client):
+@pytest.fixture
+def insights_client():
+    class TestClient:
+        def __init__(self, base_url):
+            self.base_url = base_url
+
+        def get(self, url, headers=None):
+            return requests.get(f"{self.base_url}{url}", headers=headers)
+
+    return TestClient("http://test-insights:8081")
+
+
+def test_entry_flow(api_client, insights_client):
     email = "test-integration@test.com"
     password = "testpassword"
 
@@ -40,12 +53,12 @@ def test_entry_flow(api_client):
 
     headers = {"Authorization": f"Bearer {auth_token}"}
 
-    project = {"name": "integration test"}
+    project = {"name": "test-project"}
     response = api_client.post("/api/projects/", json=project, headers=headers)
     assert response.status_code == 201
     project_id = response.json()["id"]
 
-    entry = {"body": "integration test", "project_id": project_id}
+    entry = {"body": "test-entry", "project_id": project_id}
     response = api_client.post("/api/entries/", json=entry, headers=headers)
     assert response.status_code == 201
 
@@ -53,7 +66,18 @@ def test_entry_flow(api_client):
     entries = response.json()
     assert response.status_code == 200
     assert len(entries) == 1
-    assert entries[0]["body"] == "integration test"
+    assert entries[0]["body"] == "test-entry"
     assert entries[0]["projectId"] == project_id
 
-    # TODO: test that the entry reached insights and was processed
+    # Check that the insights service has processed the entry
+    insights_response = insights_client.get("/status")
+    assert insights_response.status_code == 200
+    insights_data = insights_response.json()
+    assert insights_data["has_started"]
+    assert insights_data["last_processed"] is not None
+    assert insights_data["last_processed"] > 0
+
+    last_processed_message = json.loads(insights_data["last_processed_message"])
+    assert last_processed_message is not None
+    assert last_processed_message["type"] == "new_entry"
+    assert last_processed_message["payload"]["entry_id"] == entries[0]["id"]
