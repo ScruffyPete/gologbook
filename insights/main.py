@@ -1,31 +1,63 @@
+import argparse
 import asyncio
 from contextlib import AsyncExitStack
 import logging
+import signal
 
 from apps.db.in_memory import InMemoryRepositoryUnit
+from apps.db.postgres import PGRepositoryUnit
 from apps.queue.in_memory import InMemoryQueue
+from apps.queue.redis import RedisQueue
 from apps.llm.in_memory import InMemoryLLM
 from apps.services.processor import process_entry
 
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+shutdown_event = asyncio.Event()
+
+
+def handle_shutdown():
+    logger.info("Shutdown signal received")
+    shutdown_event.set()
 
 
 async def main():
-    async with AsyncExitStack() as stack:
-        repo = await stack.enter_async_context(InMemoryRepositoryUnit.create())
-        llm = await stack.enter_async_context(InMemoryLLM.create())
-        queue = await stack.enter_async_context(InMemoryQueue.create())
+    loop = asyncio.get_running_loop()
+    loop.add_signal_handler(signal.SIGINT, handle_shutdown)
+    loop.add_signal_handler(signal.SIGTERM, handle_shutdown)
 
-        while True:
-            logger.info("Waiting for entry to process")
-            entry_id = await queue.pop()
+    logger.info("Starting insights service...")
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--in-memory", action="store_true", help="Run with in-memory storage"
+    )
+    args = parser.parse_args()
+
+    RepositoryUnit = InMemoryRepositoryUnit if args.in_memory else PGRepositoryUnit
+    Queue = InMemoryQueue if args.in_memory else RedisQueue
+    LLM = InMemoryLLM
+
+    logger.info(
+        "Running insights with %s storage and queue",
+        "in-memory" if args.in_memory else "real",
+    )
+
+    async with AsyncExitStack() as stack:
+        repo = await stack.enter_async_context(RepositoryUnit.create())
+        llm = await stack.enter_async_context(LLM.create())
+        queue = await stack.enter_async_context(Queue.create())
+
+        logger.info("Waiting for entry to process")
+        while not shutdown_event.is_set():
+            entry_id = await asyncio.wait_for(queue.pop(), 2)
             if entry_id is None:
-                logger.info("No entry to process")
                 continue
+
+            logger.info("Processing entry %s", entry_id)
             await process_entry(repo, entry_id, llm)
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
     asyncio.run(main())
