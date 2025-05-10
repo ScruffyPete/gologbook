@@ -8,20 +8,20 @@ from apps.queue.interface import QueueMessage
 
 
 class RedisQueue:
-    def __init__(self, stream: str):
+    def __init__(self):
         redis_host = os.getenv("REDIS_HOST")
         redis_port = os.getenv("REDIS_PORT")
         redis_db = os.getenv("REDIS_DB")
         self.redis_client = aioredis.Redis.from_url(
             f"redis://{redis_host}:{redis_port}/{redis_db}"
         )
-        self.stream = stream
+        self.stream = os.getenv("REDIS_STREAM")
         self.last_id = "0"
 
     @classmethod
     @asynccontextmanager
-    async def create(cls, stream: str):
-        rq = cls(stream)
+    async def create(cls):
+        rq = cls()
         yield rq
         await rq.redis_client.aclose()
 

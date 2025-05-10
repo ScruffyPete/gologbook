@@ -35,7 +35,7 @@ func main() {
 			os.Exit(1)
 		}
 		fmt.Println("Using redis queue")
-		q, err = queue.NewRedisQueue("test")
+		q, err = queue.NewRedisQueue()
 		if err != nil {
 			fmt.Println(err.Error())
 			os.Exit(1)

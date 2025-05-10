@@ -16,7 +16,11 @@ type RedisQueue struct {
 	stream string
 }
 
-func NewRedisQueue(stream string) (*RedisQueue, error) {
+func NewRedisQueue() (*RedisQueue, error) {
+	stream := os.Getenv("REDIS_STREAM")
+	if stream == "" {
+		return nil, fmt.Errorf("REDIS_STREAM is not set")
+	}
 	db, err := strconv.Atoi(os.Getenv("REDIS_DEAULT_DB"))
 	if err != nil {
 		return nil, err
