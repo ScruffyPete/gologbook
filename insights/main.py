@@ -9,7 +9,7 @@ from apps.db.postgres import PGRepositoryUnit
 from apps.queue.in_memory import InMemoryQueue
 from apps.queue.redis import RedisQueue
 from apps.llm.in_memory import InMemoryLLM
-from apps.services.healthz import ServiceState, health_service
+from apps.services.state import ServiceState, state_service
 from apps.services.processor import process_entry
 
 
@@ -44,7 +44,7 @@ async def main(state: ServiceState):
     )
 
     async with AsyncExitStack() as stack:
-        await stack.enter_async_context(health_service(state))
+        await stack.enter_async_context(state_service(state))
 
         repo = await stack.enter_async_context(RepositoryUnit.create())
         llm = await stack.enter_async_context(LLM.create())
@@ -66,8 +66,9 @@ async def main(state: ServiceState):
                 await process_entry(repo, message, llm)
             except Exception as e:
                 logger.exception("Failed to process entry %s, error: %s", message, e)
+                state.mark_failed(str(e))
             else:
-                state.mark_processed()
+                state.mark_processed(message)
 
 
 if __name__ == "__main__":
