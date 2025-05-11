@@ -6,9 +6,8 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { loader as projectLoader, ProjectPage } from './components/ProjectPage.tsx'
 import { LoginPage } from './components/LoginPage.tsx'
 import { SignupPage } from './components/SignupPage.tsx'
-import { Layout } from './components/Layout.tsx'
+import { LayoutWrapper } from './components/Layout.tsx'
 import { RootPage } from './components/RootPage.tsx'
-import { requireAuthLoader } from '@/lib/auth.ts'
 
 const router = createBrowserRouter([
   {
@@ -29,8 +28,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/projects',
-        Component: Layout,
-        loader: requireAuthLoader,
+        Component: LayoutWrapper,
         children: [
           {
             path: '/projects/:projectId',

@@ -1,7 +1,16 @@
-import { Outlet } from 'react-router-dom'
+import { Navigate, Outlet } from 'react-router-dom'
 import { AppSidebar } from './AppSidebar'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from './ui/sidebar'
 import { Separator } from '@radix-ui/react-separator'
+
+
+export function LayoutWrapper() {
+    const token = localStorage.getItem('token')
+    if (!token) {
+        return <Navigate to="/login" />
+    }
+    return <Layout />
+}
 
 export function Layout() {
 
