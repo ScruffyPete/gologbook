@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/ScruffyPete/gologbook/internal/domain"
 )
@@ -23,7 +24,7 @@ func (s *InsightService) ListInsights(ctx context.Context, projectID string) ([]
 		return err
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("list insights: %w", err)
 	}
 
 	return result, nil

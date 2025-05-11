@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestInMemoryInsightRepository_GetInsights(t *testing.T) {
+func TestInMemoryInsightRepository_ListInsights(t *testing.T) {
 	t.Run("project wide insights", func(t *testing.T) {
 		project := domain.NewProject("Hunt a boar")
 		createdAt := time.Now().UTC()

@@ -7,28 +7,28 @@ import (
 )
 
 type InMemoryInsightRepository struct {
-	insights map[string]*domain.Insight
+	insights map[string][]*domain.Insight
 }
 
 func NewInsightRepository(insights []*domain.Insight) *InMemoryInsightRepository {
-	data := make(map[string]*domain.Insight)
+	data := make(map[string][]*domain.Insight)
 
 	for _, insight := range insights {
-		data[insight.ID] = insight
+		data[insight.ProjectID] = append(data[insight.ProjectID], insight)
 	}
 
 	return &InMemoryInsightRepository{insights: data}
 }
 
 func (repo *InMemoryInsightRepository) ListInsights(projectID string) ([]*domain.Insight, error) {
-	insights := make([]*domain.Insight, 0)
-	for _, insight := range repo.insights {
-		if insight.ProjectID == projectID {
-			insights = append(insights, insight)
-		}
-	}
-	sort.Slice(insights, func(i, j int) bool {
-		return insights[j].CreatedAt > insights[i].CreatedAt
+	insights := repo.insights[projectID]
+
+	sorted := make([]*domain.Insight, len(insights))
+	copy(sorted, insights)
+
+	sort.Slice(sorted, func(i, j int) bool {
+		return sorted[i].CreatedAt < sorted[j].CreatedAt
 	})
-	return insights, nil
+
+	return sorted, nil
 }
