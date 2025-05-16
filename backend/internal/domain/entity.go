@@ -8,7 +8,7 @@ import (
 
 type Project struct {
 	ID        string `json:"id"`
-	CreatedAt string `json:"createdAt"`
+	CreatedAt string `json:"created_at"`
 	Title     string `json:"title"`
 }
 
@@ -22,8 +22,8 @@ func NewProject(title string) *Project {
 
 type Entry struct {
 	ID        string `json:"id"`
-	CreatedAt string `json:"createdAt"`
-	ProjectID string `json:"projectId"`
+	CreatedAt string `json:"created_at"`
+	ProjectID string `json:"project_id"`
 	Body      string `json:"body"`
 }
 
@@ -38,8 +38,8 @@ func NewEntry(projectID string, body string) *Entry {
 
 type Insight struct {
 	ID        string   `json:"id"`
-	CreatedAt string   `json:"createdAt"`
-	ProjectID string   `json:"projectId"`
-	EntryIDs  []string `json:"entryIds,omitempty"`
+	CreatedAt string   `json:"created_at"`
+	ProjectID string   `json:"project_id"`
+	EntryIDs  []string `json:"entry_ids,omitempty"`
 	Body      string   `json:"body"`
 }

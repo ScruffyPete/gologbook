@@ -35,7 +35,7 @@ export function AppSidebar() {
 
     async function loadProjects() {
         try {
-            const res = await fetch("/api/projects", {
+            const res = await fetch("/api/projects/", {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
@@ -54,7 +54,7 @@ export function AppSidebar() {
         e.preventDefault()
 
         try {
-            const res = await fetch('/api/projects', {
+            const res = await fetch('/api/projects/', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,

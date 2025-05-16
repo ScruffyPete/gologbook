@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/ScruffyPete/gologbook/internal/domain"
 )
@@ -33,6 +34,7 @@ func (s *EntryService) ListEntries(ctx context.Context, projectID string) ([]*do
 		return err
 	})
 	if err != nil {
+		slog.Error("list entries", "error", err)
 		return nil, fmt.Errorf("list entries: %w", err)
 	}
 	return result, nil
@@ -47,6 +49,7 @@ func (s *EntryService) CreateEntry(
 	err := s.uow.WithTx(ctx, func(repos domain.RepoBundle) error {
 		var err error
 		if _, err = repos.Projects.GetProject(input.ProjectID); err != nil {
+			slog.Error("project not found", "error", err)
 			return err
 		}
 
@@ -56,10 +59,12 @@ func (s *EntryService) CreateEntry(
 	})
 
 	if err != nil {
+		slog.Error("create entry", "error", err)
 		return nil, fmt.Errorf("create entry: %w", err)
 	}
 
 	if s.queue == nil {
+		slog.Error("queue cannot be nil")
 		return nil, fmt.Errorf("EntryService: queue cannot be nil")
 	}
 
@@ -68,6 +73,7 @@ func (s *EntryService) CreateEntry(
 		Payload: map[string]any{"entry_id": result.ID},
 	}
 	if err := s.queue.Push(ctx, msg); err != nil {
+		slog.Error("push message to queue", "error", err)
 		return nil, fmt.Errorf("push message to queue: %w", err)
 	}
 	return result, nil
