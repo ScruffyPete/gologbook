@@ -12,12 +12,13 @@ import (
 
 func TestRedisQueue_Push(t *testing.T) {
 	queue, _ := NewRedisQueue()
-	err := queue.Push(context.Background(), domain.Message{
+	message := domain.Message{
 		Type: "test",
 		Payload: map[string]any{
 			"test": "test",
 		},
-	})
+	}
+	err := queue.Push(context.Background(), "test_key", &message)
 
 	assert.NoError(t, err)
 }

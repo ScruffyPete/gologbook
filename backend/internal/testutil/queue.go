@@ -11,7 +11,7 @@ type FailingQueue struct{}
 
 var ErrQueueFailed = errors.New("failed to push message")
 
-func (q *FailingQueue) Push(ctx context.Context, msg domain.Message) error {
+func (q *FailingQueue) Push(ctx context.Context, key string, msg *domain.Message) error {
 	return ErrQueueFailed
 }
 
