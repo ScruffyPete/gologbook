@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"os"
 	"strconv"
 
@@ -13,14 +14,9 @@ import (
 
 type RedisQueue struct {
 	client *redis.Client
-	stream string
 }
 
 func NewRedisQueue() (*RedisQueue, error) {
-	stream := os.Getenv("REDIS_STREAM")
-	if stream == "" {
-		return nil, fmt.Errorf("REDIS_STREAM is not set")
-	}
 	db, err := strconv.Atoi(os.Getenv("REDIS_DEAULT_DB"))
 	if err != nil {
 		return nil, err
@@ -36,22 +32,17 @@ func NewRedisQueue() (*RedisQueue, error) {
 	if err := client.Ping(context.Background()).Err(); err != nil {
 		return nil, err
 	}
-	return &RedisQueue{client: client, stream: stream}, nil
+	return &RedisQueue{client: client}, nil
 }
 
-func (q *RedisQueue) Push(ctx context.Context, item domain.Message) error {
-	payload, err := json.Marshal(item)
+func (q *RedisQueue) Push(ctx context.Context, key string, item *domain.Message) error {
+	payload, err := json.Marshal(*item)
 	if err != nil {
 		return err
 	}
 
-	args := &redis.XAddArgs{
-		Stream: q.stream,
-		Values: map[string]any{
-			"message": payload,
-		},
-	}
-	if _, err := q.client.XAdd(ctx, args).Result(); err != nil {
+	if _, err := q.client.RPush(ctx, key, map[string]any{"message": payload}).Result(); err != nil {
+		slog.Error("push message to queue", "error", err)
 		return fmt.Errorf("failed to push message to redis: %w", err)
 	}
 	return nil

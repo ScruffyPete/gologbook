@@ -2,6 +2,7 @@ package queue
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/ScruffyPete/gologbook/internal/domain"
@@ -17,12 +18,13 @@ func TestPush(t *testing.T) {
 		Type:    domain.MESSAGE_TYPE_NEW_ENTRY,
 		Payload: payload,
 	}
+	key := fmt.Sprintf("project:%s", entry.ProjectID)
 
-	queue.Push(context.Background(), message)
+	queue.Push(context.Background(), key, &message)
 
-	poppedMessage, err := queue.Pop()
+	poppedMessage, err := queue.Pop(key)
 	assert.NoError(t, err)
-	assert.Equal(t, message, poppedMessage)
+	assert.Equal(t, &message, poppedMessage)
 }
 
 func TestPop(t *testing.T) {
@@ -34,15 +36,17 @@ func TestPop(t *testing.T) {
 			Type:    domain.MESSAGE_TYPE_NEW_ENTRY,
 			Payload: payload,
 		}
-		queue.Push(context.Background(), message)
-		poppedMessage, err := queue.Pop()
+		key := fmt.Sprintf("project:%s", entry.ProjectID)
+
+		queue.Push(context.Background(), key, &message)
+		poppedMessage, err := queue.Pop(key)
 		assert.NoError(t, err)
-		assert.Equal(t, message, poppedMessage)
+		assert.Equal(t, &message, poppedMessage)
 	})
 
 	t.Run("should return error if queue is empty", func(t *testing.T) {
 		queue := NewInMemoryQueue()
-		_, err := queue.Pop()
+		_, err := queue.Pop("new queue")
 		assert.Error(t, err)
 	})
 }
@@ -63,7 +67,8 @@ func TestIsEmpty(t *testing.T) {
 			Type:    domain.MESSAGE_TYPE_NEW_ENTRY,
 			Payload: payload,
 		}
-		queue.Push(context.Background(), message)
+		key := fmt.Sprintf("project:%s", entry.ProjectID)
+		queue.Push(context.Background(), key, &message)
 		empty, err := queue.IsEmpty()
 		assert.NoError(t, err)
 		assert.False(t, empty)

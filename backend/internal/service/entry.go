@@ -72,7 +72,8 @@ func (s *EntryService) CreateEntry(
 		Type:    domain.MESSAGE_TYPE_NEW_ENTRY,
 		Payload: map[string]any{"entry_id": result.ID},
 	}
-	if err := s.queue.Push(ctx, msg); err != nil {
+	key := fmt.Sprintf("project:%s", result.ProjectID)
+	if err := s.queue.Push(ctx, key, &msg); err != nil {
 		slog.Error("push message to queue", "error", err)
 		return nil, fmt.Errorf("push message to queue: %w", err)
 	}

@@ -10,28 +10,29 @@ import (
 
 type InMemoryQueue struct {
 	mu    sync.Mutex
-	items []domain.Message
+	items map[string][]*domain.Message
 }
 
 func NewInMemoryQueue() *InMemoryQueue {
-	return &InMemoryQueue{items: []domain.Message{}}
+	return &InMemoryQueue{items: map[string][]*domain.Message{}}
 }
 
-func (q *InMemoryQueue) Push(ctx context.Context, item domain.Message) error {
+func (q *InMemoryQueue) Push(ctx context.Context, key string, item *domain.Message) error {
 	q.mu.Lock()
 	defer q.mu.Unlock()
-	q.items = append(q.items, item)
+	q.items[key] = append(q.items[key], item)
 	return nil
 }
 
-func (q *InMemoryQueue) Pop() (domain.Message, error) {
+func (q *InMemoryQueue) Pop(key string) (*domain.Message, error) {
 	q.mu.Lock()
 	defer q.mu.Unlock()
-	if len(q.items) == 0 {
-		return domain.Message{}, errors.New("queue is empty")
+
+	if len(q.items[key]) == 0 {
+		return nil, errors.New("queue is empty")
 	}
-	item := q.items[0]
-	q.items = q.items[1:]
+	item := q.items[key][0]
+	q.items[key] = q.items[key][1:]
 	return item, nil
 }
 
