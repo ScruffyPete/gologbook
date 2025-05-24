@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/ScruffyPete/gologbook/internal/db/in_memory"
@@ -111,10 +110,9 @@ func TestCreateEntry(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, input.Body, entry.Body)
 
-		msg, err := queue.Pop(fmt.Sprintf("project:%s", entry.ProjectID))
+		timestamp, err := queue.Pop("project_zset", entry.ProjectID)
 		assert.Nil(t, err)
-		assert.Equal(t, domain.MESSAGE_TYPE_NEW_ENTRY, msg.Type)
-		assert.Equal(t, entry.ID, msg.Payload["entry_id"])
+		assert.NotZero(t, timestamp)
 	})
 
 	t.Run("missing project", func(t *testing.T) {

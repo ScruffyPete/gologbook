@@ -6,19 +6,12 @@ import (
 	"context"
 	"testing"
 
-	"github.com/ScruffyPete/gologbook/internal/domain"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestRedisQueue_Push(t *testing.T) {
 	queue, _ := NewRedisQueue()
-	message := domain.Message{
-		Type: "test",
-		Payload: map[string]any{
-			"test": "test",
-		},
-	}
-	err := queue.Push(context.Background(), "test_key", &message)
-
+	err := queue.Push(context.Background(), "test_key", uuid.NewString())
 	assert.NoError(t, err)
 }
