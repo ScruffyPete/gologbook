@@ -14,6 +14,6 @@ type Message struct {
 }
 
 type Queue interface {
-	Push(ctx context.Context, key string, item *Message) error
+	Push(ctx context.Context, key string, projectID string) error
 	Close() error
 }

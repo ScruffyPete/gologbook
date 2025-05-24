@@ -2,13 +2,11 @@ package queue
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"log/slog"
 	"os"
 	"strconv"
+	"time"
 
-	"github.com/ScruffyPete/gologbook/internal/domain"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -35,17 +33,13 @@ func NewRedisQueue() (*RedisQueue, error) {
 	return &RedisQueue{client: client}, nil
 }
 
-func (q *RedisQueue) Push(ctx context.Context, key string, item *domain.Message) error {
-	payload, err := json.Marshal(*item)
-	if err != nil {
-		return err
-	}
+func (q *RedisQueue) Push(ctx context.Context, key string, projectID string) error {
+	_, err := q.client.ZAdd(ctx, key, redis.Z{
+		Member: projectID,
+		Score:  float64(time.Now().Unix()),
+	}).Result()
 
-	if _, err := q.client.RPush(ctx, key, map[string]any{"message": payload}).Result(); err != nil {
-		slog.Error("push message to queue", "error", err)
-		return fmt.Errorf("failed to push message to redis: %w", err)
-	}
-	return nil
+	return err
 }
 
 func (q *RedisQueue) Close() error {

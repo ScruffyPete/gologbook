@@ -3,15 +3,13 @@ package testutil
 import (
 	"context"
 	"errors"
-
-	"github.com/ScruffyPete/gologbook/internal/domain"
 )
 
 type FailingQueue struct{}
 
 var ErrQueueFailed = errors.New("failed to push message")
 
-func (q *FailingQueue) Push(ctx context.Context, key string, msg *domain.Message) error {
+func (q *FailingQueue) Push(ctx context.Context, key string, projectID string) error {
 	return ErrQueueFailed
 }
 
