@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
+from openai import project
+
 
 @dataclass
 class Project:
@@ -19,7 +21,7 @@ class Entry:
 
 
 @dataclass
-class Insight:
+class Document:
     id: UUID
     project_id: UUID
     entry_ids: list[UUID]

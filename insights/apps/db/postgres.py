@@ -4,7 +4,7 @@ import asyncpg
 import json
 import os
 
-from apps.domain.entities import Entry, Insight, Project
+from apps.domain.entities import Entry, Document, Project
 
 
 @asynccontextmanager
@@ -37,14 +37,12 @@ class PGProjectRepository(PGBaseRepository):
 
 
 class PGEntryRepository(PGBaseRepository):
-    async def get_entry(self, entry_id: UUID) -> Entry | None:
+    async def get_project_entries(self, project_id: UUID) -> list[Entry]:
         query = """
-            SELECT * FROM entries WHERE id = $1
+            SELECT * FROM entries WHERE project_id = $1
         """
-        result = await self.conn.fetchrow(query, entry_id)
-        if result is None:
-            return None
-        return Entry(**result)
+        results = await self.conn.fetch(query, project_id)
+        return [Entry(**row) for row in results]
 
     async def _create_entry(self, entry: Entry) -> None:
         query = """
@@ -55,14 +53,14 @@ class PGEntryRepository(PGBaseRepository):
         )
 
 
-class PGInsightRepository(PGBaseRepository):
-    async def get_insights_by_entry_id(self, entry_id: UUID) -> list[Insight]:
+class PGDocumentRepository(PGBaseRepository):
+    async def get_documents_by_entry_id(self, entry_id: UUID) -> list[Document]:
         query = """
             SELECT * FROM insights WHERE entry_ids @> to_jsonb(ARRAY[$1::UUID])
         """
         results = await self.conn.fetch(query, entry_id)
         return [
-            Insight(
+            Document(
                 id=row["id"],
                 project_id=row["project_id"],
                 entry_ids=[UUID(eid) for eid in json.loads(row["entry_ids"])],
@@ -72,25 +70,25 @@ class PGInsightRepository(PGBaseRepository):
             for row in results
         ]
 
-    async def create(self, insight: Insight) -> None:
+    async def create(self, document: Document) -> None:
         query = """
             INSERT INTO insights (id, created_at, project_id, entry_ids, body) VALUES ($1, $2, $3, $4, $5)
         """
         await self.conn.execute(
             query,
-            insight.id,
-            insight.created_at,
-            insight.project_id,
-            json.dumps([str(entry_id) for entry_id in insight.entry_ids]),
-            insight.body,
+            document.id,
+            document.created_at,
+            document.project_id,
+            json.dumps([str(entry_id) for entry_id in document.entry_ids]),
+            document.body,
         )
 
 
-class PGRepositoryUnit:
+class PGRepositoryBundle:
     def __init__(self, conn: asyncpg.Connection):
         self.project_repo = PGProjectRepository(conn)
         self.entry_repo = PGEntryRepository(conn)
-        self.insight_repo = PGInsightRepository(conn)
+        self.document_repo = PGDocumentRepository(conn)
 
     @classmethod
     @asynccontextmanager

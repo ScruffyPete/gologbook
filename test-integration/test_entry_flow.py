@@ -1,4 +1,6 @@
 import json
+from time import sleep
+import time
 import pytest
 import requests  # type: ignore
 
@@ -68,20 +70,19 @@ def test_entry_flow(api_client, insights_client):
     assert response.status_code == 200
     assert len(entries) == 1
     assert entries[0]["body"] == "test-entry"
-    assert entries[0]["projectId"] == project_id
+    assert entries[0]["project_id"] == project_id
+
+    # new entry cooldown    
+    time.sleep(10 + 1)
 
     # Check that the insights service has processed the entry
     insights_response = insights_client.get("/status")
     assert insights_response.status_code == 200
     insights_data = insights_response.json()
-    assert insights_data["has_started"]
+    assert insights_data["has_started"]    
     assert insights_data["last_processed"] is not None
     assert insights_data["last_processed"] > 0
-
-    last_processed_message = json.loads(insights_data["last_processed_message"])
-    assert last_processed_message is not None
-    assert last_processed_message["type"] == "new_entry"
-    assert last_processed_message["payload"]["entry_id"] == entries[0]["id"]
+    assert insights_data["last_processed_project_id"] == project_id
 
     # Check that the insights service has added new insights
     insights_response = api_client.get(
@@ -91,4 +92,4 @@ def test_entry_flow(api_client, insights_client):
     insights = insights_response.json()
     assert len(insights) == 1
     assert insights[0]["body"] == f"Insight for entry {entry_id}: {entry['body'][:100]}"
-    assert insights[0]["projectId"] == project_id
+    assert insights[0]["project_id"] == project_id

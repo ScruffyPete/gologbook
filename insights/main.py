@@ -2,77 +2,123 @@ import argparse
 import asyncio
 from contextlib import AsyncExitStack
 import logging
+import time
 import signal
 
-from apps.db.in_memory import InMemoryRepositoryUnit
-from apps.db.postgres import PGRepositoryUnit
+from apps.db.in_memory import InMemoryRepositoryBundle
+from apps.db.interface import RepositoryBundleInterface
+from apps.db.postgres import PGRepositoryBundle
 from apps.queue.in_memory import InMemoryQueue
+from apps.queue.interface import QueueInterface
 from apps.queue.redis import RedisQueue
 from apps.llm.in_memory import InMemoryLLM
+from apps.llm.interface import LLMInterface
 from apps.services.state import ServiceState, state_service
 from apps.services.processor import process_entry
 
 
 shutdown_event = asyncio.Event()
+logger = logging.getLogger(__name__)
 
 
 def handle_shutdown():
     logger.info("Shutdown signal received")
     shutdown_event.set()
+    
 
-
-async def main(state: ServiceState):
-    loop = asyncio.get_running_loop()
-    loop.add_signal_handler(signal.SIGINT, handle_shutdown)
-    loop.add_signal_handler(signal.SIGTERM, handle_shutdown)
-
-    logger.info("Starting insights service...")
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--in-memory", action="store_true", help="Run with in-memory storage"
-    )
-    args = parser.parse_args()
-
-    RepositoryUnit = InMemoryRepositoryUnit if args.in_memory else PGRepositoryUnit
-    Queue = InMemoryQueue if args.in_memory else RedisQueue
+async def dispatcher(
+    queue_interface: QueueInterface,
+    work_queue: asyncio.Queue,
+    cooldown: int,
+    batch_size: int,
+):
+    while not shutdown_event.is_set():
+        try:
+            cuttoff_time = time.time() - cooldown
+            project_ids = await queue_interface.pop_ready_projects(
+                cuttoff_time=cuttoff_time,
+                batch_size=batch_size,
+            )
+            
+            for project_id in project_ids:
+                await work_queue.put(project_id)
+                
+        except Exception as e:
+            logger.exception("Dispatcher error: %s", e)
+            
+        await asyncio.sleep(0.5)
+    
+    
+async def worker(
+    worker_id: str,
+    work_queue: asyncio.Queue,
+    repo: RepositoryBundleInterface, 
+    llm: LLMInterface,
+    state: ServiceState,
+):
+    while not shutdown_event.is_set():
+        try:
+            project_id = await work_queue.get()
+            logger.info(f"Worker-{worker_id} processing project {project_id}")
+            await process_entry(repo, project_id, llm)
+            state.mark_processed(project_id)
+            
+        except Exception as e:
+            logger.exception(f"Worker-{worker_id} failed: {e}")
+            state.mark_failed(str(e))
+            
+        finally:
+            work_queue.task_done()
+    
+    
+async def run_service(state: ServiceState, in_memory: bool):
+    RepositoryBundle = InMemoryRepositoryBundle if in_memory else PGRepositoryBundle
+    Queue = InMemoryQueue if in_memory else RedisQueue
     LLM = InMemoryLLM
 
     logger.info(
         "Running insights with %s storage and queue",
-        "in-memory" if args.in_memory else "real",
+        "in-memory" if in_memory else "real",
     )
 
     async with AsyncExitStack() as stack:
         await stack.enter_async_context(state_service(state))
 
-        repo = await stack.enter_async_context(RepositoryUnit.create())
+        repo = await stack.enter_async_context(RepositoryBundle.create())
         llm = await stack.enter_async_context(LLM.create())
         queue = await stack.enter_async_context(Queue.create())
-
+        
+        work_queue = asyncio.Queue(maxsize=100)
+        dispatcher_task = asyncio.create_task(dispatcher(queue, work_queue, cooldown=10, batch_size=10))
+        worker_count = 5
+        worker_tasks = [
+            asyncio.create_task(worker(str(n), work_queue, repo, llm, state))
+            for n in range(worker_count)
+        ]
+        
         state.mark_started()
-        logger.info("Waiting for entry to process")
-        while not shutdown_event.is_set():
-            try:
-                message = await asyncio.wait_for(queue.pop(), timeout=2)
-            except asyncio.TimeoutError:
-                continue
-
-            if message is None:
-                continue
-
-            logger.info("Processing entry %s", message)
-            try:
-                await process_entry(repo, message, llm)
-            except Exception as e:
-                logger.exception("Failed to process entry %s, error: %s", message, e)
-                state.mark_failed(str(e))
-            else:
-                state.mark_processed(message)
+        
+        await shutdown_event.wait()
+        dispatcher_task.cancel()
+        for worker_task in worker_tasks:
+            worker_task.cancel()
+        await asyncio.gather(*worker_tasks, dispatcher_task, return_exceptions=True)
 
 
+async def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--in-memory", action="store_true", help="Run with in-memory storage")
+    args = parser.parse_args()
+    
+    loop = asyncio.get_running_loop()
+    loop.add_signal_handler(signal.SIGINT, handle_shutdown)
+    loop.add_signal_handler(signal.SIGTERM, handle_shutdown)
+
+    state = ServiceState()
+    logger.info("Starting insights service...")
+    await run_service(state, in_memory=args.in_memory)
+
+    
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger(__name__)
-    state = ServiceState()
-    asyncio.run(main(state))
+    asyncio.run(main())

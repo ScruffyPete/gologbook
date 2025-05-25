@@ -1,6 +1,7 @@
 from typing import Protocol
-from apps.domain.entities import Entry, Insight
+import uuid
+from apps.domain.entities import Entry, Document
 
 
 class LLMInterface(Protocol):
-    async def generate_insight(self, entry: Entry) -> Insight: ...
+    async def compile_messages(self, project_id: uuid.UUID, entries: list[Entry]) -> Document: ...

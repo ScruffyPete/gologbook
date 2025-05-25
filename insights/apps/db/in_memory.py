@@ -1,35 +1,41 @@
+from collections import defaultdict
 from contextlib import asynccontextmanager
-from apps.domain.entities import Entry, Insight
+from apps.domain.entities import Entry, Document
 from uuid import UUID
 
 
 class InMemoryEntryRepository:
+    entries: defaultdict[UUID, list[Entry]]
+    
     def __init__(self, entries: list[Entry] = []):
-        self.entries = {entry.id: entry for entry in entries}
+        self.entries = defaultdict(lambda: list())
 
-    async def get_entry(self, entry_id: UUID) -> Entry | None:
-        return self.entries.get(entry_id, None)
+        for entry in entries:
+            self.entries[entry.project_id].append(entry)
+
+    async def get_project_entries(self, project_id: UUID) -> list[Entry]:
+        return self.entries.get(project_id, [])
 
 
-class InMemoryInsightRepository:
-    def __init__(self, insights: list[Insight] = []):
-        self.insights = {insight.id: insight for insight in insights}
+class InMemoryDocumentRepository:
+    def __init__(self, documents: list[Document] = []):
+        self.documents = {document.id: document for document in documents}
 
-    async def get_insights_by_entry_id(self, entry_id: UUID) -> list[Insight]:
+    async def get_documents_by_entry_id(self, entry_id: UUID) -> list[Document]:
         return [
-            insight
-            for insight in self.insights.values()
-            if entry_id in insight.entry_ids
+            document
+            for document in self.documents.values()
+            if entry_id in document.entry_ids
         ]
 
-    async def create(self, insight: Insight) -> None:
-        self.insights[insight.id] = insight
+    async def create(self, document: Document) -> None:
+        self.documents[document.id] = document
 
 
-class InMemoryRepositoryUnit:
-    def __init__(self, entries: list[Entry] = [], insights: list[Insight] = []):
+class InMemoryRepositoryBundle:
+    def __init__(self, entries: list[Entry] = [], documents: list[Document] = []):
         self.entry_repo = InMemoryEntryRepository(entries)
-        self.insight_repo = InMemoryInsightRepository(insights)
+        self.document_repo = InMemoryDocumentRepository(documents)
 
     @classmethod
     @asynccontextmanager

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"os"
 
 	"github.com/ScruffyPete/gologbook/internal/domain"
 )
@@ -68,7 +69,7 @@ func (s *EntryService) CreateEntry(
 		return nil, fmt.Errorf("EntryService: queue cannot be nil")
 	}
 
-	key := "project_zset"
+	key := os.Getenv("REDIS_PENDING_PROJECTS_KEY")
 	if err := s.queue.Push(ctx, key, result.ProjectID); err != nil {
 		slog.Error("push message to queue", "error", err)
 		return nil, fmt.Errorf("push message to queue: %w", err)

@@ -1,8 +1,8 @@
 from apps.db.in_memory import (
     InMemoryEntryRepository,
-    InMemoryInsightRepository,
+    InMemoryDocumentRepository,
 )
-from apps.domain.entities import Entry, Insight, Project
+from apps.domain.entities import Entry, Document, Project
 import uuid
 from datetime import datetime
 import pytest
@@ -30,14 +30,14 @@ def entry(project: Project):
 @pytest.fixture
 def insights(entry: Entry):
     return [
-        Insight(
+        Document(
             id=uuid.uuid4(),
             project_id=entry.project_id,
             entry_ids=[entry.id],
             body="Hello!",
             created_at=datetime.now(),
         ),
-        Insight(
+        Document(
             id=uuid.uuid4(),
             project_id=entry.project_id,
             entry_ids=[entry.id],
@@ -50,39 +50,39 @@ def insights(entry: Entry):
 @pytest.mark.asyncio
 async def test_entry_repository_get_entry__valid_entry(entry: Entry):
     entry_repository = InMemoryEntryRepository(entries=[entry])
-    db_entry = await entry_repository.get_entry(entry.id)
-    assert db_entry == entry
+    db_entries = await entry_repository.get_project_entries(entry.project_id)
+    assert db_entries == [entry]
 
 
 @pytest.mark.asyncio
 async def test_entry_repository_get_entry__invalid_entry(entry: Entry):
     entry_repository = InMemoryEntryRepository(entries=[])
-    db_entry = await entry_repository.get_entry(entry.id)
-    assert db_entry is None
+    db_entries = await entry_repository.get_project_entries(entry.project_id)
+    assert db_entries == []
 
 
 @pytest.mark.asyncio
 async def test_insight_repository_get_insights_by_entry_id__valid_entry(
-    entry: Entry, insights: list[Insight]
+    entry: Entry, insights: list[Document]
 ):
-    insight_repository = InMemoryInsightRepository(insights=insights)
-    db_insights = await insight_repository.get_insights_by_entry_id(entry.id)
+    insight_repository = InMemoryDocumentRepository(documents=insights)
+    db_insights = await insight_repository.get_documents_by_entry_id(entry.id)
     assert db_insights == insights
 
 
 @pytest.mark.asyncio
 async def test_insight_repository_get_insights_by_entry_id__invalid_entry(
-    insights: list[Insight],
+    insights: list[Document],
 ):
-    insight_repository = InMemoryInsightRepository(insights=insights)
-    db_insights = await insight_repository.get_insights_by_entry_id(uuid.uuid4())
+    insight_repository = InMemoryDocumentRepository(documents=insights)
+    db_insights = await insight_repository.get_documents_by_entry_id(uuid.uuid4())
     assert db_insights == []
 
 
 @pytest.mark.asyncio
 async def test_insight_repository_save_insight__valid_insight(entry: Entry):
-    insight_repository = InMemoryInsightRepository(insights=[])
-    new_insight = Insight(
+    insight_repository = InMemoryDocumentRepository(documents=[])
+    new_insight = Document(
         id=uuid.uuid4(),
         project_id=entry.project_id,
         entry_ids=[entry.id],
@@ -90,5 +90,5 @@ async def test_insight_repository_save_insight__valid_insight(entry: Entry):
         created_at=datetime.now(),
     )
     await insight_repository.create(new_insight)
-    db_insights = await insight_repository.get_insights_by_entry_id(entry.id)
+    db_insights = await insight_repository.get_documents_by_entry_id(entry.id)
     assert db_insights == [new_insight]

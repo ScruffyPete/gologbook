@@ -1,19 +1,19 @@
 import uuid
 import pytest
 import pytest_asyncio
-from apps.db.postgres import PGRepositoryUnit
+from apps.db.postgres import PGRepositoryBundle
 from datetime import datetime
-from apps.domain.entities import Entry, Insight, Project
+from apps.domain.entities import Entry, Document, Project
 
 
 @pytest_asyncio.fixture
 async def repo():
-    async with PGRepositoryUnit.create() as repo:
+    async with PGRepositoryBundle.create() as repo:
         yield repo
 
 
 @pytest_asyncio.fixture
-async def entry(repo: PGRepositoryUnit):
+async def entry(repo: PGRepositoryBundle):
     project_id = uuid.uuid4()
     project = Project(
         id=project_id,
@@ -34,9 +34,9 @@ async def entry(repo: PGRepositoryUnit):
 
 
 @pytest_asyncio.fixture
-async def insights(repo: PGRepositoryUnit, entry: Entry):
+async def insights(repo: PGRepositoryBundle, entry: Entry):
     insights = [
-        Insight(
+        Document(
             id=uuid.uuid4(),
             project_id=entry.project_id,
             entry_ids=[entry.id],
@@ -45,36 +45,37 @@ async def insights(repo: PGRepositoryUnit, entry: Entry):
         )
         for _ in range(3)
     ]
-    await repo.insight_repo.create(insights[0])
-    await repo.insight_repo.create(insights[1])
-    await repo.insight_repo.create(insights[2])
+    await repo.document_repo.create(insights[0])
+    await repo.document_repo.create(insights[1])
+    await repo.document_repo.create(insights[2])
 
     yield insights
 
 
 @pytest.mark.db
 @pytest.mark.asyncio
-async def test_get_entry__valid_entry(repo: PGRepositoryUnit, entry: Entry):
-    db_entry = await repo.entry_repo.get_entry(entry.id)
-    assert db_entry.id == entry.id
-    assert db_entry.project_id == entry.project_id
-    assert db_entry.body == entry.body
-    assert db_entry.created_at == entry.created_at
+async def test_get_project_entries__valid_project(repo: PGRepositoryBundle, entry: Entry):
+    db_entries = await repo.entry_repo.get_project_entries(entry.project_id)
+    assert len(db_entries) == 1
+    assert db_entries[0].id == entry.id
+    assert db_entries[0].project_id == entry.project_id
+    assert db_entries[0].body == entry.body
+    assert db_entries[0].created_at == entry.created_at
 
 
 @pytest.mark.db
 @pytest.mark.asyncio
-async def test_get_entry__invalid_entry(repo: PGRepositoryUnit):
-    db_entry = await repo.entry_repo.get_entry(uuid.uuid4())
-    assert db_entry is None
+async def test_get_project_entries__invalid_project(repo: PGRepositoryBundle):
+    db_entry = await repo.entry_repo.get_project_entries(uuid.uuid4())
+    assert len(db_entry) == 0
 
 
 @pytest.mark.db
 @pytest.mark.asyncio
 async def test_get_insights_by_entry_id__valid_entry(
-    repo: PGRepositoryUnit, entry: Entry, insights: list[Insight]
+    repo: PGRepositoryBundle, entry: Entry, insights: list[Document]
 ):
-    db_insights = await repo.insight_repo.get_insights_by_entry_id(entry.id)
+    db_insights = await repo.document_repo.get_documents_by_entry_id(entry.id)
     assert len(db_insights) == 3
     assert db_insights[0].id == insights[0].id
     assert db_insights[1].id == insights[1].id
@@ -83,24 +84,24 @@ async def test_get_insights_by_entry_id__valid_entry(
 
 @pytest.mark.db
 @pytest.mark.asyncio
-async def test_get_insights_by_entry_id__invalid_entry(repo: PGRepositoryUnit):
-    db_insights = await repo.insight_repo.get_insights_by_entry_id(uuid.uuid4())
+async def test_get_insights_by_entry_id__invalid_entry(repo: PGRepositoryBundle):
+    db_insights = await repo.document_repo.get_documents_by_entry_id(uuid.uuid4())
     assert len(db_insights) == 0
 
 
 @pytest.mark.db
 @pytest.mark.asyncio
-async def test_create_insight__valid_insight(repo: PGRepositoryUnit, entry: Entry):
-    insight = Insight(
+async def test_create_insight__valid_insight(repo: PGRepositoryBundle, entry: Entry):
+    insight = Document(
         id=uuid.uuid4(),
         project_id=entry.project_id,
         entry_ids=[entry.id],
         body="Hello, world!",
         created_at=datetime.now(),
     )
-    await repo.insight_repo.create(insight)
+    await repo.document_repo.create(insight)
 
-    db_insights = await repo.insight_repo.get_insights_by_entry_id(entry.id)
+    db_insights = await repo.document_repo.get_documents_by_entry_id(entry.id)
     assert len(db_insights) == 1
     assert db_insights[0].id == insight.id
     assert db_insights[0].project_id == insight.project_id
@@ -110,8 +111,8 @@ async def test_create_insight__valid_insight(repo: PGRepositoryUnit, entry: Entr
 
 @pytest.mark.db
 @pytest.mark.asyncio
-async def test_create_insight__invalid_insight(repo: PGRepositoryUnit):
-    insight = Insight(
+async def test_create_insight__invalid_insight(repo: PGRepositoryBundle):
+    insight = Document(
         id=uuid.uuid4(),
         project_id=uuid.uuid4(),
         entry_ids=[uuid.uuid4()],
@@ -119,4 +120,4 @@ async def test_create_insight__invalid_insight(repo: PGRepositoryUnit):
         created_at=datetime.now(),
     )
     with pytest.raises(Exception):
-        await repo.insight_repo.create(insight)
+        await repo.document_repo.create(insight)

@@ -1,28 +1,12 @@
-from apps.db.interface import RepositoryUnit
+from uuid import UUID
+from apps.db.interface import RepositoryBundleInterface
 from apps.llm.interface import LLMInterface
-from apps.queue.interface import QueueMessage
 
 
-async def process_entry(repo: RepositoryUnit, message: QueueMessage, llm: LLMInterface):
-    """Process an entry and generate an insight.
+async def process_entry(repo: RepositoryBundleInterface, project_id: UUID, llm: LLMInterface):
+    entries = await repo.entry_repo.get_project_entries(project_id)
+    if not len(entries) > 0:
+        return
 
-    Args:
-        entry_id (str): The ID of the entry to process.
-        db (DBInterface): The database interface.
-        llm (LLMInterface): The LLM interface.
-    """
-    try:
-        try:
-            entry_id = message.payload["entry_id"]
-        except KeyError:
-            print(f"No entry_id in message: {message.payload}")
-            return
-
-        entry = await repo.entry_repo.get_entry(entry_id)
-        if entry is None:
-            return
-
-        insight = await llm.generate_insight(entry)
-        await repo.insight_repo.create(insight)
-    except Exception as e:
-        print(f"Error processing entry: {e}")
+    document = await llm.compile_messages(project_id, entries)
+    await repo.document_repo.create(document)

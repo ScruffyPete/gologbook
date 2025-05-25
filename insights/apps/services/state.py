@@ -1,11 +1,11 @@
 import asyncio
 import logging
 import os
+from uuid import UUID
 
 from aiohttp import web
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from apps.queue.interface import QueueMessage
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class ServiceState:
     has_started: bool = False
     last_processed: float | None = None
-    last_processed_message: QueueMessage | None = None
+    last_processed_project_id: UUID | None = None
     failure_count: int = 0
     last_failure: float | None = None
     last_error: str | None = None
@@ -22,9 +22,9 @@ class ServiceState:
     def mark_started(self):
         self.has_started = True
 
-    def mark_processed(self, message: QueueMessage):
+    def mark_processed(self, project_id: UUID):
         self.last_processed = asyncio.get_running_loop().time()
-        self.last_processed_message = message
+        self.last_processed_project_id = project_id
 
     def mark_failed(self, error: str):
         self.failure_count += 1
@@ -35,9 +35,7 @@ class ServiceState:
         return {
             "has_started": self.has_started,
             "last_processed": self.last_processed,
-            "last_processed_message": self.last_processed_message.to_json()
-            if self.last_processed_message
-            else None,
+            "last_processed_project_id": self.last_processed_project_id,
             "failure_count": self.failure_count,
             "last_failure": self.last_failure,
             "last_error": self.last_error,

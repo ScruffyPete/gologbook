@@ -1,10 +1,11 @@
 from contextlib import asynccontextmanager
 import os
+import uuid
 
 import redis.asyncio as aioredis
 from typing import Any
 
-from apps.queue.interface import QueueMessage
+from tests.queue.test_in_memory import key
 
 
 class RedisQueue:
@@ -15,8 +16,9 @@ class RedisQueue:
         self.redis_client = aioredis.Redis.from_url(
             f"redis://{redis_host}:{redis_port}/{redis_db}"
         )
-        self.stream = os.getenv("REDIS_STREAM")
-        self.last_id = "0"
+        self.pending_projects_key = os.getenv("REDIS_PENDING_PROJECTS_KEY")
+        self.lock_prefix = os.getenv("REDIS_PROJECT_LOCK_PREFIX")
+        self.lock_ttl = 30
 
     @classmethod
     @asynccontextmanager
@@ -25,21 +27,32 @@ class RedisQueue:
         yield rq
         await rq.redis_client.aclose()
 
-    async def pop(self) -> Any:
-        try:
-            entries = await self.redis_client.xread(
-                streams={self.stream: self.last_id}, count=1, block=1000
+    async def pop_ready_projects(self, cuttoff_time: float, batch_size: int) -> tuple[uuid.UUID]:
+        raw_project_ids = await self.redis_client.zrangebyscore(
+            name=self.pending_projects_key,
+            min="-inf",
+            max=cuttoff_time,
+            start=0,
+            num=batch_size * 5  # overfetch to account for locked entries
+        )
+        if not raw_project_ids:
+            return tuple()
+
+        ready_project_ids = []
+        for raw_project_id in raw_project_ids:
+            project_id = raw_project_id.decode()
+            lock_key = f"{self.lock_prefix}:{project_id}"
+            locked = await self.redis_client.set(
+                name=lock_key,
+                value="1",
+                nx=True, # Only set the key if it does not already exist
+                ex=self.lock_ttl,
             )
-            if not entries:
-                return None
-
-            _, messages = entries[0]
-            msg_id, fields = messages[0]
-            self.last_id = msg_id
-
-            raw_bytes = fields[b"message"]
-            json_str = raw_bytes.decode("utf-8")
-            return QueueMessage.from_json(json_str)
-
-        except aioredis.TimeoutError:
-            return None
+            if locked:
+                ready_project_ids.append(project_id)
+            
+            if len(ready_project_ids) >= batch_size:
+                # cuttoff the overfetch
+                break
+            
+        return tuple(ready_project_ids)

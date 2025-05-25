@@ -1,19 +1,28 @@
+import os
 import pytest
-from apps.queue.interface import QueueMessage
 from apps.queue.redis import RedisQueue
 
-
 @pytest.fixture
-def message():
-    return QueueMessage(type="test", payload={"entry_id": "123"})
+def key() -> str:
+    return os.getenv("REDIS_PENDING_PROJECTS_KEY")
 
 
 @pytest.mark.asyncio
 @pytest.mark.queue
-async def test_redis_queue(message):
+async def test_redis_queue(key):
+    mapping = {
+        "one": 1,
+        "two": 2, 
+        "three": 3
+    }
+
     async with RedisQueue.create() as queue:
-        message = QueueMessage(type="test", payload={"test": "test"})
-        await queue.redis_client.xadd(
-            queue.stream, fields={"message": message.to_json()}
+        await queue.redis_client.zadd(name=key, mapping=mapping)
+        
+        project_ids = await queue.pop_ready_projects(
+            cuttoff_time=5,
+            batch_size=10,
         )
-        assert await queue.pop() == message
+        
+        expected = ["one", "two", "three"]
+        assert list(project_ids) == expected

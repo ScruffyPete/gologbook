@@ -2,15 +2,16 @@ import pytest
 import uuid
 from datetime import datetime
 
-from apps.db.in_memory import InMemoryRepositoryUnit
+from apps.db.in_memory import InMemoryRepositoryBundle
 from apps.domain.entities import Entry
-from apps.queue.interface import QueueMessage
+from apps.db.interface import RepositoryBundleInterface
+from apps.llm.interface import LLMInterface
 from apps.services.processor import process_entry
 from apps.llm.in_memory import InMemoryLLM
 
 
 @pytest.fixture
-def entry():
+def entry() -> Entry:
     return Entry(
         id=uuid.uuid4(),
         project_id=uuid.uuid4(),
@@ -20,28 +21,23 @@ def entry():
 
 
 @pytest.fixture
-def llm():
+def llm() -> InMemoryLLM:
     return InMemoryLLM()
 
 
 @pytest.fixture
-def repo(entry: Entry):
-    return InMemoryRepositoryUnit(entries=[entry])
-
-
-@pytest.fixture
-def message(entry: Entry):
-    return QueueMessage(type="test", payload={"entry_id": entry.id})
+def repo(entry: Entry) -> InMemoryRepositoryBundle:
+    return InMemoryRepositoryBundle(entries=[entry])
 
 
 @pytest.mark.asyncio
 async def test_processor(
-    repo: InMemoryRepositoryUnit, llm: InMemoryLLM, entry: Entry, message: QueueMessage
+    repo: RepositoryBundleInterface, llm: LLMInterface, entry: Entry
 ):
-    await process_entry(repo, message, llm)
+    await process_entry(repo, entry.project_id, llm)
 
-    insights = await repo.insight_repo.get_insights_by_entry_id(entry.id)
-    assert len(insights) == 1
+    documents = await repo.document_repo.get_documents_by_entry_id(entry.id)
+    assert len(documents) == 1
 
-    insight = insights[0]
-    assert insight.entry_ids == [entry.id]
+    document = documents[0]
+    assert document.entry_ids == [entry.id]

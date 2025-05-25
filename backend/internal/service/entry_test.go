@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	"github.com/ScruffyPete/gologbook/internal/db/in_memory"
@@ -110,7 +111,8 @@ func TestCreateEntry(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, input.Body, entry.Body)
 
-		timestamp, err := queue.Pop("project_zset", entry.ProjectID)
+		key := os.Getenv("REDIS_PENDING_PROJECTS_KEY")
+		timestamp, err := queue.Pop(key, entry.ProjectID)
 		assert.Nil(t, err)
 		assert.NotZero(t, timestamp)
 	})
