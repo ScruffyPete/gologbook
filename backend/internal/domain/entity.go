@@ -36,7 +36,7 @@ func NewEntry(projectID string, body string) *Entry {
 	}
 }
 
-type Insight struct {
+type Document struct {
 	ID        string   `json:"id"`
 	CreatedAt string   `json:"created_at"`
 	ProjectID string   `json:"project_id"`

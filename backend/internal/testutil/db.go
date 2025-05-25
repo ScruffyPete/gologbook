@@ -14,7 +14,7 @@ func NewTestDB(
 	users []*domain.User,
 	projects []*domain.Project,
 	entries []*domain.Entry,
-	insights []*domain.Insight,
+	documents []*domain.Document,
 ) (*sql.DB, error) {
 	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
@@ -22,7 +22,7 @@ func NewTestDB(
 	}
 
 	// Ensure clean state before inserting test data
-	if _, err := db.Exec("TRUNCATE TABLE users, projects, entries, insights RESTART IDENTITY CASCADE;"); err != nil {
+	if _, err := db.Exec("TRUNCATE TABLE users, projects, entries, documents RESTART IDENTITY CASCADE;"); err != nil {
 		db.Close()
 		return nil, fmt.Errorf("failed to clean up database: %w", err)
 	}
@@ -68,23 +68,23 @@ func NewTestDB(
 		}
 	}
 
-	for _, insight := range insights {
-		entryIDsJSON, err := json.Marshal(insight.EntryIDs)
+	for _, document := range documents {
+		entryIDsJSON, err := json.Marshal(document.EntryIDs)
 		if err != nil {
 			db.Close()
 			return nil, fmt.Errorf("failed to marshal entry IDs: %w", err)
 		}
 		_, err = db.Exec(
-			"INSERT INTO insights (id, created_at, project_id, entry_ids, body) VALUES ($1, $2, $3, $4, $5)",
-			insight.ID,
-			insight.CreatedAt,
-			insight.ProjectID,
+			"INSERT INTO documents (id, created_at, project_id, entry_ids, body) VALUES ($1, $2, $3, $4, $5)",
+			document.ID,
+			document.CreatedAt,
+			document.ProjectID,
 			entryIDsJSON,
-			insight.Body,
+			document.Body,
 		)
 		if err != nil {
 			db.Close()
-			return nil, fmt.Errorf("failed to insert insight: %w", err)
+			return nil, fmt.Errorf("failed to insert document: %w", err)
 		}
 	}
 

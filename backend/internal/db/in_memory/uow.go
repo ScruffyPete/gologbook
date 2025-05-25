@@ -7,18 +7,18 @@ import (
 )
 
 type InMemoryUnitOfWork struct {
-	Users    domain.UserRepository
-	Projects domain.ProjectReporitory
-	Entries  domain.EntryRepository
-	Insights domain.InsightRepository
+	Users     domain.UserRepository
+	Projects  domain.ProjectReporitory
+	Entries   domain.EntryRepository
+	Documents domain.DocumentRepository
 }
 
 func NewInMemoryUnitOfWork() *InMemoryUnitOfWork {
 	return &InMemoryUnitOfWork{
-		Users:    NewUserRepository(nil),
-		Projects: NewProjectRepository(nil),
-		Entries:  NewEntryRepository(nil),
-		Insights: NewInsightRepository(nil),
+		Users:     NewUserRepository(nil),
+		Projects:  NewProjectRepository(nil),
+		Entries:   NewEntryRepository(nil),
+		Documents: NewDocumentRepository(nil),
 	}
 }
 
@@ -27,10 +27,10 @@ func (uow *InMemoryUnitOfWork) WithTx(
 	fn func(domain.RepoBundle) error,
 ) error {
 	return fn(domain.RepoBundle{
-		Users:    uow.Users,
-		Projects: uow.Projects,
-		Entries:  uow.Entries,
-		Insights: uow.Insights,
+		Users:     uow.Users,
+		Projects:  uow.Projects,
+		Entries:   uow.Entries,
+		Documents: uow.Documents,
 	})
 }
 

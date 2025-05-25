@@ -7,18 +7,18 @@ import (
 )
 
 type APIHandler struct {
-	authHandler    *AuthAPIHandler
-	projectHandler *ProjectAPIHandler
-	entryHandler   *EntryAPIHandler
-	insightHandler *InsightAPIHandler
+	authHandler     *AuthAPIHandler
+	projectHandler  *ProjectAPIHandler
+	entryHandler    *EntryAPIHandler
+	documentHandler *DocumentAPIHandler
 }
 
 func NewAPIHandler(uow domain.UnitOfWork, queue domain.Queue) *APIHandler {
 	return &APIHandler{
-		authHandler:    NewAuthAPIHandler(uow),
-		projectHandler: NewProjectAPIHandler(uow),
-		entryHandler:   NewEntryAPIHandler(uow, queue),
-		insightHandler: NewInsightAPIHandler(uow),
+		authHandler:     NewAuthAPIHandler(uow),
+		projectHandler:  NewProjectAPIHandler(uow),
+		entryHandler:    NewEntryAPIHandler(uow, queue),
+		documentHandler: NewDocumentAPIHandler(uow),
 	}
 }
 
@@ -27,7 +27,7 @@ func (h *APIHandler) Register(mux *http.ServeMux, middlewares ...func(http.Handl
 	h.authHandler.Register(mux)
 	h.projectHandler.Register(mux, middlewares...)
 	h.entryHandler.Register(mux, middlewares...)
-	h.insightHandler.Register(mux, middlewares...)
+	h.documentHandler.Register(mux, middlewares...)
 }
 
 func (h *APIHandler) healthCheckHandler(w http.ResponseWriter, r *http.Request) {

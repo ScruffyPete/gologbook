@@ -56,7 +56,7 @@ class PGEntryRepository(PGBaseRepository):
 class PGDocumentRepository(PGBaseRepository):
     async def get_documents_by_entry_id(self, entry_id: UUID) -> list[Document]:
         query = """
-            SELECT * FROM insights WHERE entry_ids @> to_jsonb(ARRAY[$1::UUID])
+            SELECT * FROM documents WHERE entry_ids @> to_jsonb(ARRAY[$1::UUID])
         """
         results = await self.conn.fetch(query, entry_id)
         return [
@@ -72,7 +72,7 @@ class PGDocumentRepository(PGBaseRepository):
 
     async def create(self, document: Document) -> None:
         query = """
-            INSERT INTO insights (id, created_at, project_id, entry_ids, body) VALUES ($1, $2, $3, $4, $5)
+            INSERT INTO documents (id, created_at, project_id, entry_ids, body) VALUES ($1, $2, $3, $4, $5)
         """
         await self.conn.execute(
             query,

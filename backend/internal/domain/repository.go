@@ -19,13 +19,13 @@ type UserRepository interface {
 	GetUserByEmail(email string) (*User, error)
 }
 
-type InsightRepository interface {
-	ListInsights(projectID string) ([]*Insight, error)
+type DocumentRepository interface {
+	ListDocuments(projectID string) ([]*Document, error)
 }
 
 type RepoBundle struct {
-	Users    UserRepository
-	Projects ProjectReporitory
-	Entries  EntryRepository
-	Insights InsightRepository
+	Users     UserRepository
+	Projects  ProjectReporitory
+	Entries   EntryRepository
+	Documents DocumentRepository
 }

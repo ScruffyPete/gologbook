@@ -86,7 +86,7 @@ def test_entry_flow(api_client, insights_client):
 
     # Check that the insights service has added new insights
     insights_response = api_client.get(
-        f"/api/insights?project_id={project_id}", headers=headers
+        f"/api/documents?project_id={project_id}", headers=headers
     )
     assert insights_response.status_code == 200
     insights = insights_response.json()

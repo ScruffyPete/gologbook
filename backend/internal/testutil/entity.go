@@ -37,13 +37,13 @@ func MakeDummyEntries(project *domain.Project) []*domain.Entry {
 	return sorted
 }
 
-func NewInsight(projectID string, entryIDs []string, body string, createdAt *time.Time) *domain.Insight {
+func NewDocument(projectID string, entryIDs []string, body string, createdAt *time.Time) *domain.Document {
 	if createdAt == nil {
 		t := time.Now().UTC()
 		createdAt = &t
 	}
 
-	return &domain.Insight{
+	return &domain.Document{
 		ID:        uuid.NewString(),
 		CreatedAt: createdAt.Format("2006-01-02T15:04:05.999999Z"),
 		ProjectID: projectID,
