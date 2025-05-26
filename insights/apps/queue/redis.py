@@ -5,8 +5,6 @@ import uuid
 import redis.asyncio as aioredis
 from typing import Any
 
-from tests.queue.test_in_memory import key
-
 
 class RedisQueue:
     def __init__(self):
@@ -17,6 +15,7 @@ class RedisQueue:
             f"redis://{redis_host}:{redis_port}/{redis_db}"
         )
         self.pending_projects_key = os.getenv("REDIS_PENDING_PROJECTS_KEY")
+        self.llm_stream_channel_prefix = os.getenv("REDIS_LLM_STREAM_CHANNEL_PREFIX")
         self.lock_prefix = os.getenv("REDIS_PROJECT_LOCK_PREFIX")
         self.lock_ttl = 30
 
@@ -56,3 +55,15 @@ class RedisQueue:
                 break
             
         return tuple(ready_project_ids)
+    
+    async def remove_processed_projects(self, project_ids: list[uuid.UUID]) -> None:
+        for project_id in project_ids:
+            await self.redis_client.zrem(self.pending_projects_key, project_id)
+            await self.redis_client.delete(f"{self.lock_prefix}:{project_id}")
+
+    async def publish_project_token(self, project_id: uuid.UUID, token: str):
+        channel = f"{self.llm_stream_channel_prefix}:{project_id}"
+        await self.redis_client.publish(
+            channel=channel,
+            message=token,
+        )

@@ -6,7 +6,9 @@ from apps.db.in_memory import InMemoryRepositoryBundle
 from apps.domain.entities import Entry
 from apps.db.interface import RepositoryBundleInterface
 from apps.llm.interface import LLMInterface
-from apps.services.processor import process_entry
+from apps.queue.in_memory import InMemoryQueue
+from apps.queue.interface import QueueInterface
+from apps.services.processor import process_project
 from apps.llm.in_memory import InMemoryLLM
 
 
@@ -26,15 +28,20 @@ def llm() -> InMemoryLLM:
 
 
 @pytest.fixture
+def queue() -> InMemoryQueue:
+    return InMemoryQueue()
+
+
+@pytest.fixture
 def repo(entry: Entry) -> InMemoryRepositoryBundle:
     return InMemoryRepositoryBundle(entries=[entry])
 
 
 @pytest.mark.asyncio
 async def test_processor(
-    repo: RepositoryBundleInterface, llm: LLMInterface, entry: Entry
+    repo: RepositoryBundleInterface, queue: QueueInterface, llm: LLMInterface, entry: Entry
 ):
-    await process_entry(repo, entry.project_id, llm)
+    await process_project(entry.project_id, repo, queue, llm)
 
     documents = await repo.document_repo.get_documents_by_entry_id(entry.id)
     assert len(documents) == 1

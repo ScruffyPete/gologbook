@@ -1,12 +1,35 @@
-from uuid import UUID
+import uuid
+
 from apps.db.interface import RepositoryBundleInterface
+from apps.domain.entities import Document
 from apps.llm.interface import LLMInterface
+from apps.queue.interface import QueueInterface
+
+from datetime import datetime
 
 
-async def process_entry(repo: RepositoryBundleInterface, project_id: UUID, llm: LLMInterface):
+
+async def process_project(
+    project_id: uuid.UUID, 
+    repo: RepositoryBundleInterface, 
+    queue: QueueInterface,
+    llm: LLMInterface,
+):
     entries = await repo.entry_repo.get_project_entries(project_id)
-    if not len(entries) > 0:
+    if not entries:
         return
 
-    document = await llm.compile_messages(project_id, entries)
+    document_buffer = []
+    async for token in llm.stream_document(project_id, entries):
+        await queue.publish_project_token(project_id, token)
+        document_buffer.append(token)
+        
+    document = Document(
+        id=uuid.uuid4(),
+        project_id=project_id,
+        entry_ids=[entry.id for entry in entries],
+        body="".join(document_buffer),
+        created_at=datetime.now(),
+    )
+        
     await repo.document_repo.create(document)

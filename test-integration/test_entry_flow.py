@@ -91,5 +91,5 @@ def test_entry_flow(api_client, insights_client):
     assert insights_response.status_code == 200
     insights = insights_response.json()
     assert len(insights) == 1
-    assert insights[0]["body"] == f"Insight for entry {entry_id}: {entry['body'][:100]}"
+    assert insights[0]["body"] == f"Insight for entry {entry_id}: {entry['body'][:100]}\n\n"
     assert insights[0]["project_id"] == project_id

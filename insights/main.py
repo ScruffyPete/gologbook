@@ -14,7 +14,7 @@ from apps.queue.redis import RedisQueue
 from apps.llm.in_memory import InMemoryLLM
 from apps.llm.interface import LLMInterface
 from apps.services.state import ServiceState, state_service
-from apps.services.processor import process_entry
+from apps.services.processor import process_project
 
 
 shutdown_event = asyncio.Event()
@@ -51,6 +51,7 @@ async def dispatcher(
     
 async def worker(
     worker_id: str,
+    queue_interface: QueueInterface,
     work_queue: asyncio.Queue,
     repo: RepositoryBundleInterface, 
     llm: LLMInterface,
@@ -60,7 +61,7 @@ async def worker(
         try:
             project_id = await work_queue.get()
             logger.info(f"Worker-{worker_id} processing project {project_id}")
-            await process_entry(repo, project_id, llm)
+            await process_project(project_id, repo, queue_interface, llm)
             state.mark_processed(project_id)
             
         except Exception as e:
@@ -92,7 +93,7 @@ async def run_service(state: ServiceState, in_memory: bool):
         dispatcher_task = asyncio.create_task(dispatcher(queue, work_queue, cooldown=10, batch_size=10))
         worker_count = 5
         worker_tasks = [
-            asyncio.create_task(worker(str(n), work_queue, repo, llm, state))
+            asyncio.create_task(worker(str(n), queue, work_queue, repo, llm, state))
             for n in range(worker_count)
         ]
         

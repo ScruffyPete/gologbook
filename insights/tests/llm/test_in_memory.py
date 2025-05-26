@@ -16,6 +16,9 @@ async def test_in_memory_llm():
         body="Hello, world!",
         created_at=datetime.now(),
     )
-    insight = await llm.compile_messages(project_id, [entry])
-    assert insight.entry_ids == [entry.id]
-    assert insight.body == f"Insight for entry {entry.id}: {entry.body[:100]}"
+    buffer = []
+    async for token in llm.stream_document(project_id, [entry]):
+        buffer.append(token)
+        
+    body = "".join(buffer)
+    assert body == f"Insight for entry {entry.id}: {entry.body[:100]}\n\n"

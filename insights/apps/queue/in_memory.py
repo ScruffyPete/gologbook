@@ -7,10 +7,12 @@ from uuid import UUID
 
 
 class InMemoryQueue:
-    items: defaultdict[defaultdict[float]]
+    pending_projects_zset: dict[str, dict[UUID, float]]
+    project_token_channels: defaultdict[asyncio.Queue]
     
     def __init__(self):
-        self.items = defaultdict(lambda: defaultdict(float))
+        self.pending_projects_zset: dict[str, dict[UUID, float]] = {}
+        self.project_token_channels = defaultdict(lambda: asyncio.Queue(maxsize=100))
         self.key = os.getenv("REDIS_PENDING_PROJECTS_KEY")
 
     @classmethod
@@ -19,11 +21,15 @@ class InMemoryQueue:
         queue = cls()
         yield queue
 
-    async def pop_ready_projects(self, cutoff_time: float, batch_size: int) -> tuple[UUID]:
+    async def pop_ready_projects(self, cutoff_time: float, batch_size: int) -> dict[UUID, float]:
         try:
-            return self.items[self.key]
-        except asyncio.CancelledError:
-            return None
-        except Exception as e:
-            print(f"Error popping from app.queue: {e}")
-            return None
+            return self.pending_projects_zset[self.key]
+        except KeyError:
+            return {}
+
+    async def remove_processed_projects(self, project_ids: list[UUID]) -> None:
+        for project_id in project_ids:
+            del self.pending_projects_zset[self.key][project_id]
+
+    async def publish_project_token(self, project_id: UUID, token: str):
+        await self.project_token_channels[project_id].put(token)
