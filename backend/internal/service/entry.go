@@ -70,7 +70,7 @@ func (s *EntryService) CreateEntry(
 	}
 
 	key := os.Getenv("REDIS_PENDING_PROJECTS_KEY")
-	if err := s.queue.Push(ctx, key, result.ProjectID); err != nil {
+	if err := s.queue.PushPendingProject(ctx, key, result.ProjectID); err != nil {
 		slog.Error("push message to queue", "error", err)
 		return nil, fmt.Errorf("push message to queue: %w", err)
 	}

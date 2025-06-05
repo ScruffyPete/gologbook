@@ -24,6 +24,8 @@ async def process_project(
         await queue.publish_project_token(project_id, token)
         document_buffer.append(token)
         
+    await queue.publish_project_token(project_id, "[[STOP]]")
+        
     document = Document(
         id=uuid.uuid4(),
         project_id=project_id,

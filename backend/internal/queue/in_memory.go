@@ -8,25 +8,29 @@ import (
 )
 
 type InMemoryQueue struct {
-	mu    sync.Mutex
-	items map[string]map[string]float64
+	mu              sync.Mutex
+	pendingProjects map[string]map[string]float64
+	documentStream  map[string]<-chan string
 }
 
 func NewInMemoryQueue() *InMemoryQueue {
-	return &InMemoryQueue{items: map[string]map[string]float64{}}
+	return &InMemoryQueue{
+		pendingProjects: map[string]map[string]float64{},
+		documentStream:  map[string]<-chan string{},
+	}
 }
 
-func (q *InMemoryQueue) Push(ctx context.Context, key string, projectID string) error {
+func (q *InMemoryQueue) PushPendingProject(ctx context.Context, key string, projectID string) error {
 	q.mu.Lock()
 	defer q.mu.Unlock()
-	if q.items == nil {
-		q.items = make(map[string]map[string]float64)
+	if q.pendingProjects == nil {
+		q.pendingProjects = make(map[string]map[string]float64)
 	}
-	if q.items[key] == nil {
-		q.items[key] = make(map[string]float64)
+	if q.pendingProjects[key] == nil {
+		q.pendingProjects[key] = make(map[string]float64)
 	}
 
-	q.items[key][projectID] = float64(time.Now().UnixNano())
+	q.pendingProjects[key][projectID] = float64(time.Now().UnixNano())
 	return nil
 }
 
@@ -34,7 +38,7 @@ func (q *InMemoryQueue) Pop(key string, projectID string) (float64, error) {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 
-	projects, ok := q.items[key]
+	projects, ok := q.pendingProjects[key]
 	if !ok {
 		return 0, errors.New("no such key")
 	}
@@ -44,8 +48,25 @@ func (q *InMemoryQueue) Pop(key string, projectID string) (float64, error) {
 		return 0, errors.New("no item for project")
 	}
 
-	delete(q.items[key], projectID) // Remove after pop
+	delete(q.pendingProjects[key], projectID) // Remove after pop
 	return item, nil
+}
+
+func (q *InMemoryQueue) SubscribeForDocumentTokens(ctx context.Context, channelName string) <-chan string {
+	out := make(chan string, 100)
+
+	go func() {
+		defer close(out)
+
+		for msg := range q.documentStream[channelName] {
+			if msg == "[[STOP]]" {
+				return
+			}
+			out <- msg
+		}
+	}()
+
+	return out
 }
 
 func (q *InMemoryQueue) Close() error {

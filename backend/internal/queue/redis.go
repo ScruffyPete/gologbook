@@ -33,13 +33,33 @@ func NewRedisQueue() (*RedisQueue, error) {
 	return &RedisQueue{client: client}, nil
 }
 
-func (q *RedisQueue) Push(ctx context.Context, key string, projectID string) error {
+func (q *RedisQueue) PushPendingProject(ctx context.Context, key string, projectID string) error {
 	_, err := q.client.ZAdd(ctx, key, redis.Z{
 		Member: projectID,
 		Score:  float64(time.Now().Unix()),
 	}).Result()
 
 	return err
+}
+
+func (q *RedisQueue) SubscribeForDocumentTokens(ctx context.Context, channelName string) <-chan string {
+	pubsub := q.client.Subscribe(ctx, channelName)
+
+	out := make(chan string, 100)
+
+	go func() {
+		defer close(out)
+		defer pubsub.Close()
+
+		for msg := range pubsub.Channel() {
+			if msg.Payload == "[[STOP]]" {
+				return
+			}
+			out <- msg.Payload
+		}
+	}()
+
+	return out
 }
 
 func (q *RedisQueue) Close() error {
