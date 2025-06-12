@@ -27,7 +27,7 @@ func TestDocumentService_ListDocuments(t *testing.T) {
 			Entries:   entryRepo,
 			Documents: documentRepo,
 		}
-		svc := NewDocumentService(&uow)
+		svc := NewDocumentService(&uow, nil)
 
 		documents, err := svc.ListDocuments(ctx, project.ID)
 		assert.Nil(t, err)
@@ -36,7 +36,7 @@ func TestDocumentService_ListDocuments(t *testing.T) {
 
 	t.Run("should return empty list if no docuements", func(t *testing.T) {
 		uow := in_memory.NewInMemoryUnitOfWork()
-		svc := NewDocumentService(uow)
+		svc := NewDocumentService(uow, nil)
 
 		documents, err := svc.ListDocuments(ctx, project.ID)
 		assert.Nil(t, err)

@@ -8,11 +8,12 @@ import (
 )
 
 type DocumentService struct {
-	uow domain.UnitOfWork
+	uow   domain.UnitOfWork
+	queue domain.Queue
 }
 
-func NewDocumentService(uow domain.UnitOfWork) *DocumentService {
-	return &DocumentService{uow: uow}
+func NewDocumentService(uow domain.UnitOfWork, queue domain.Queue) *DocumentService {
+	return &DocumentService{uow: uow, queue: queue}
 }
 
 func (s *DocumentService) ListDocuments(ctx context.Context, projectID string) ([]*domain.Document, error) {
@@ -28,4 +29,8 @@ func (s *DocumentService) ListDocuments(ctx context.Context, projectID string) (
 	}
 
 	return result, nil
+}
+
+func (s *DocumentService) ConsumeDocumentStream(ctx context.Context, projectID string) <-chan string {
+	return s.queue.SubscribeForDocumentTokens(ctx, projectID)
 }

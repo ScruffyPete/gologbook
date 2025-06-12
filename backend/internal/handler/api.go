@@ -18,7 +18,7 @@ func NewAPIHandler(uow domain.UnitOfWork, queue domain.Queue) *APIHandler {
 		authHandler:     NewAuthAPIHandler(uow),
 		projectHandler:  NewProjectAPIHandler(uow),
 		entryHandler:    NewEntryAPIHandler(uow, queue),
-		documentHandler: NewDocumentAPIHandler(uow),
+		documentHandler: NewDocumentAPIHandler(uow, queue),
 	}
 }
 

@@ -15,6 +15,6 @@ type Message struct {
 
 type Queue interface {
 	PushPendingProject(ctx context.Context, key string, projectID string) error
-	SubscribeForDocumentTokens(ctx context.Context, channelName string) <-chan string
+	SubscribeForDocumentTokens(ctx context.Context, projectID string) <-chan string
 	Close() error
 }

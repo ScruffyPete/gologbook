@@ -52,13 +52,13 @@ func (q *InMemoryQueue) Pop(key string, projectID string) (float64, error) {
 	return item, nil
 }
 
-func (q *InMemoryQueue) SubscribeForDocumentTokens(ctx context.Context, channelName string) <-chan string {
+func (q *InMemoryQueue) SubscribeForDocumentTokens(ctx context.Context, projectID string) <-chan string {
 	out := make(chan string, 100)
 
 	go func() {
 		defer close(out)
 
-		for msg := range q.documentStream[channelName] {
+		for msg := range q.documentStream[projectID] {
 			if msg == "[[STOP]]" {
 				return
 			}
@@ -71,6 +71,10 @@ func (q *InMemoryQueue) SubscribeForDocumentTokens(ctx context.Context, channelN
 
 func (q *InMemoryQueue) Close() error {
 	return nil
+}
+
+func (q *InMemoryQueue) SetDocumentStream(channelName string, documentStream <-chan string) {
+	q.documentStream[channelName] = documentStream
 }
 
 // func (q *InMemoryQueue) IsEmpty() (bool, error) {

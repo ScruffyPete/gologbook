@@ -42,7 +42,9 @@ func (q *RedisQueue) PushPendingProject(ctx context.Context, key string, project
 	return err
 }
 
-func (q *RedisQueue) SubscribeForDocumentTokens(ctx context.Context, channelName string) <-chan string {
+func (q *RedisQueue) SubscribeForDocumentTokens(ctx context.Context, projectID string) <-chan string {
+	channelNamePrefix := os.Getenv("REDIS_LLM_STREAM_CHANNEL_PREFIX")
+	channelName := fmt.Sprintf("%s:%s", channelNamePrefix, projectID)
 	pubsub := q.client.Subscribe(ctx, channelName)
 
 	out := make(chan string, 100)

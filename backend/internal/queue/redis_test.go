@@ -4,6 +4,8 @@ package queue
 
 import (
 	"context"
+	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -21,10 +23,13 @@ func TestRedisQueue_Subscribe(t *testing.T) {
 	queue, err := NewRedisQueue()
 	assert.Nil(t, err)
 
-	channelName := "test:document:stream"
+	projectID := uuid.NewString()
 	ctx := context.Background()
 
-	msgCh := queue.SubscribeForDocumentTokens(ctx, channelName)
+	msgCh := queue.SubscribeForDocumentTokens(ctx, projectID)
+
+	prefix := os.Getenv("REDIS_LLM_STREAM_CHANNEL_PREFIX")
+	channelName := fmt.Sprintf("%s:%s", prefix, projectID)
 
 	go func() {
 		time.Sleep(100 * time.Microsecond)
