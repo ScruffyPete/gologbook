@@ -1,6 +1,7 @@
 package in_memory
 
 import (
+	"context"
 	"sort"
 	"testing"
 	"time"
@@ -12,11 +13,13 @@ import (
 )
 
 func TestListProjects(t *testing.T) {
+	ctx := context.Background()
+
 	t.Run("valid data", func(t *testing.T) {
 		projects := testutil.MakeDummyProjects()
 		repo := NewProjectRepository(projects)
 
-		repo_projects, err := repo.ListProjects()
+		repo_projects, err := repo.ListProjects(ctx)
 
 		assert.Nil(t, err)
 		assert.ElementsMatch(t, repo_projects, projects)
@@ -25,7 +28,7 @@ func TestListProjects(t *testing.T) {
 	t.Run("empty data", func(t *testing.T) {
 		projects := []*domain.Project{}
 		repo := NewProjectRepository(projects)
-		repo_projects, err := repo.ListProjects()
+		repo_projects, err := repo.ListProjects(ctx)
 
 		assert.Nil(t, err)
 		assert.ElementsMatch(t, repo_projects, projects)
@@ -49,7 +52,7 @@ func TestListProjects(t *testing.T) {
 		})
 		repo := NewProjectRepository(projects)
 
-		repo_projects, err := repo.ListProjects()
+		repo_projects, err := repo.ListProjects(ctx)
 
 		assert.Nil(t, err)
 		assert.Equal(t, newer.Title, repo_projects[0].Title)
@@ -58,10 +61,12 @@ func TestListProjects(t *testing.T) {
 }
 
 func TestGetProject(t *testing.T) {
+	ctx := context.Background()
+
 	t.Run("valid project", func(t *testing.T) {
 		project := domain.NewProject("Build a treehouse")
 		repo := NewProjectRepository([]*domain.Project{project})
-		repo_project, err := repo.GetProject(project.ID)
+		repo_project, err := repo.GetProject(ctx, project.ID)
 		assert.Equal(t, repo_project, project)
 		assert.ErrorIs(t, err, nil)
 	})
@@ -69,7 +74,7 @@ func TestGetProject(t *testing.T) {
 	t.Run("invalid project", func(t *testing.T) {
 		repo := NewProjectRepository(testutil.MakeDummyProjects())
 		non_existent_id := uuid.NewString()
-		repo_project, err := repo.GetProject(non_existent_id)
+		repo_project, err := repo.GetProject(ctx, non_existent_id)
 		assert.Nil(t, repo_project)
 		assert.ErrorIs(t, err, domain.NewErrProjectDoesNotExist(non_existent_id))
 	})
@@ -78,39 +83,43 @@ func TestGetProject(t *testing.T) {
 func TestCreateProject(t *testing.T) {
 	project := domain.NewProject("Write a novel")
 	repo := NewProjectRepository(nil)
-	repo_project, err := repo.CreateProject(project)
+	ctx := context.Background()
+	repo_project, err := repo.CreateProject(ctx, project)
 	assert.Nil(t, err)
 	assert.Equal(t, project, repo_project)
 }
 
 func TestUpdateProject(t *testing.T) {
+	ctx := context.Background()
+
 	t.Run("existing project", func(t *testing.T) {
 		project := domain.NewProject("Throw a ball")
 		repo := NewProjectRepository([]*domain.Project{project})
-		err := repo.UpdateProject(&domain.Project{ID: project.ID, Title: "Throw THE ball"})
+		err := repo.UpdateProject(ctx, &domain.Project{ID: project.ID, Title: "Throw THE ball"})
 		assert.ErrorIs(t, err, nil)
 	})
 
 	t.Run("missing project", func(t *testing.T) {
 		project := domain.NewProject("Throw a ball")
 		repo := NewProjectRepository(testutil.MakeDummyProjects())
-		err := repo.UpdateProject(project)
+		err := repo.UpdateProject(ctx, project)
 		assert.ErrorIs(t, err, domain.NewErrProjectDoesNotExist(project.ID))
 	})
 }
 
 func TestDeleteProject(t *testing.T) {
 	project := domain.NewProject("Earn a million")
+	ctx := context.Background()
 
 	t.Run("existing project", func(t *testing.T) {
 		repo := NewProjectRepository([]*domain.Project{project})
-		err := repo.DeleteProject(project.ID)
+		err := repo.DeleteProject(ctx, project.ID)
 		assert.ErrorIs(t, err, nil)
 	})
 
 	t.Run("invalid project", func(t *testing.T) {
 		repo := NewProjectRepository(testutil.MakeDummyProjects())
-		err := repo.DeleteProject(project.ID)
+		err := repo.DeleteProject(ctx, project.ID)
 		assert.ErrorIs(t, err, domain.NewErrProjectDoesNotExist(project.ID))
 	})
 }

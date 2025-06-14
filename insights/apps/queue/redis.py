@@ -62,8 +62,8 @@ class RedisQueue:
             await self.redis_client.delete(f"{self.lock_prefix}:{project_id}")
 
     async def publish_project_token(self, project_id: uuid.UUID, token: str):
-        channel = f"{self.llm_stream_channel_prefix}:{project_id}"
-        await self.redis_client.publish(
-            channel=channel,
-            message=token,
+        stream_key = f"{self.llm_stream_channel_prefix}:{project_id}"
+        await self.redis_client.xadd(
+            name=stream_key,
+            fields={"token": token},
         )

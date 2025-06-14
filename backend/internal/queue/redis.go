@@ -3,6 +3,7 @@ package queue
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"strconv"
 	"time"
@@ -43,21 +44,38 @@ func (q *RedisQueue) PushPendingProject(ctx context.Context, key string, project
 }
 
 func (q *RedisQueue) SubscribeForDocumentTokens(ctx context.Context, projectID string) <-chan string {
-	channelNamePrefix := os.Getenv("REDIS_LLM_STREAM_CHANNEL_PREFIX")
-	channelName := fmt.Sprintf("%s:%s", channelNamePrefix, projectID)
-	pubsub := q.client.Subscribe(ctx, channelName)
+	streamNamePrefix := os.Getenv("REDIS_LLM_STREAM_CHANNEL_PREFIX")
+	streamName := fmt.Sprintf("%s:%s", streamNamePrefix, projectID)
 
 	out := make(chan string, 100)
 
 	go func() {
 		defer close(out)
-		defer pubsub.Close()
+		lastID := "0"
 
-		for msg := range pubsub.Channel() {
-			if msg.Payload == "[[STOP]]" {
-				return
+		for {
+			streams, err := q.client.XRead(ctx, &redis.XReadArgs{
+				Streams: []string{streamName, lastID},
+				Block:   5 * time.Second,
+			}).Result()
+
+			if err != nil {
+				slog.Error("XREAD error", "error", err)
 			}
-			out <- msg.Payload
+
+			for _, stream := range streams {
+				for _, msg := range stream.Messages {
+					token, ok := msg.Values["token"].(string)
+					if !ok {
+						continue
+					}
+					if token == "[[STOP]]" {
+						return
+					}
+					out <- token
+					lastID = msg.ID
+				}
+			}
 		}
 	}()
 

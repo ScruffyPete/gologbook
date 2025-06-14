@@ -31,7 +31,7 @@ func (s *EntryService) ListEntries(ctx context.Context, projectID string) ([]*do
 
 	err := s.uow.WithTx(ctx, func(repos domain.RepoBundle) error {
 		var err error
-		result, err = repos.Entries.ListEntries(projectID)
+		result, err = repos.Entries.ListEntries(ctx, projectID)
 		return err
 	})
 	if err != nil {
@@ -49,13 +49,13 @@ func (s *EntryService) CreateEntry(
 
 	err := s.uow.WithTx(ctx, func(repos domain.RepoBundle) error {
 		var err error
-		if _, err = repos.Projects.GetProject(input.ProjectID); err != nil {
+		if _, err = repos.Projects.GetProject(ctx, input.ProjectID); err != nil {
 			slog.Error("project not found", "error", err)
 			return err
 		}
 
 		new_entry := domain.NewEntry(input.ProjectID, input.Body)
-		result, err = repos.Entries.CreateEntry(new_entry)
+		result, err = repos.Entries.CreateEntry(ctx, new_entry)
 		return err
 	})
 

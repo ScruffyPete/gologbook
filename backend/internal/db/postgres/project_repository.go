@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/ScruffyPete/gologbook/internal/domain"
@@ -14,8 +15,9 @@ func NewProjectRepository(db *sql.DB) *projectRepository {
 	return &projectRepository{db: db}
 }
 
-func (repo *projectRepository) ListProjects() ([]*domain.Project, error) {
-	rows, err := repo.db.Query(
+func (repo *projectRepository) ListProjects(ctx context.Context) ([]*domain.Project, error) {
+	rows, err := repo.db.QueryContext(
+		ctx,
 		"SELECT id, title, created_at FROM projects ORDER BY created_at DESC",
 	)
 	if err != nil {
@@ -35,8 +37,9 @@ func (repo *projectRepository) ListProjects() ([]*domain.Project, error) {
 	return projects, nil
 }
 
-func (repo *projectRepository) GetProject(id string) (*domain.Project, error) {
-	row, err := repo.db.Query(
+func (repo *projectRepository) GetProject(ctx context.Context, id string) (*domain.Project, error) {
+	row, err := repo.db.QueryContext(
+		ctx,
 		"SELECT id, title, created_at FROM projects WHERE id = $1",
 		id,
 	)
@@ -57,8 +60,9 @@ func (repo *projectRepository) GetProject(id string) (*domain.Project, error) {
 	return &p, nil
 }
 
-func (repo *projectRepository) CreateProject(project *domain.Project) (*domain.Project, error) {
-	_, err := repo.db.Exec(
+func (repo *projectRepository) CreateProject(ctx context.Context, project *domain.Project) (*domain.Project, error) {
+	_, err := repo.db.ExecContext(
+		ctx,
 		"INSERT INTO projects (id, title, created_at) VALUES ($1, $2, $3)",
 		project.ID,
 		project.Title,
@@ -71,8 +75,9 @@ func (repo *projectRepository) CreateProject(project *domain.Project) (*domain.P
 	return project, nil
 }
 
-func (repo *projectRepository) UpdateProject(project *domain.Project) error {
-	result, err := repo.db.Exec(
+func (repo *projectRepository) UpdateProject(ctx context.Context, project *domain.Project) error {
+	result, err := repo.db.ExecContext(
+		ctx,
 		"UPDATE projects SET title = $1 WHERE id = $2",
 		project.Title,
 		project.ID,
@@ -93,8 +98,8 @@ func (repo *projectRepository) UpdateProject(project *domain.Project) error {
 	return nil
 }
 
-func (repo *projectRepository) DeleteProject(id string) error {
-	result, err := repo.db.Exec("DELETE FROM projects WHERE id = $1", id)
+func (repo *projectRepository) DeleteProject(ctx context.Context, id string) error {
+	result, err := repo.db.ExecContext(ctx, "DELETE FROM projects WHERE id = $1", id)
 	if err != nil {
 		return err
 	}

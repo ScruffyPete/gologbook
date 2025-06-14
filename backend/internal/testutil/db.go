@@ -1,6 +1,7 @@
 package testutil
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 )
 
 func NewTestDB(
+	ctx context.Context,
 	users []*domain.User,
 	projects []*domain.Project,
 	entries []*domain.Entry,
@@ -22,13 +24,14 @@ func NewTestDB(
 	}
 
 	// Ensure clean state before inserting test data
-	if _, err := db.Exec("TRUNCATE TABLE users, projects, entries, documents RESTART IDENTITY CASCADE;"); err != nil {
+	if _, err := db.ExecContext(ctx, "TRUNCATE TABLE users, projects, entries, documents RESTART IDENTITY CASCADE;"); err != nil {
 		db.Close()
 		return nil, fmt.Errorf("failed to clean up database: %w", err)
 	}
 
 	for _, user := range users {
-		_, err := db.Exec(
+		_, err := db.ExecContext(
+			ctx,
 			"INSERT INTO users (id, created_at, email, password) VALUES ($1, $2, $3, $4)",
 			user.ID,
 			user.CreatedAt,
@@ -42,7 +45,8 @@ func NewTestDB(
 	}
 
 	for _, project := range projects {
-		_, err := db.Exec(
+		_, err := db.ExecContext(
+			ctx,
 			"INSERT INTO projects (id, title, created_at) VALUES ($1, $2, $3)",
 			project.ID,
 			project.Title,
@@ -55,7 +59,8 @@ func NewTestDB(
 	}
 
 	for _, entry := range entries {
-		_, err := db.Exec(
+		_, err := db.ExecContext(
+			ctx,
 			"INSERT INTO entries (id, created_at, project_id, body) VALUES ($1, $2, $3, $4)",
 			entry.ID,
 			entry.CreatedAt,
@@ -74,7 +79,8 @@ func NewTestDB(
 			db.Close()
 			return nil, fmt.Errorf("failed to marshal entry IDs: %w", err)
 		}
-		_, err = db.Exec(
+		_, err = db.ExecContext(
+			ctx,
 			"INSERT INTO documents (id, created_at, project_id, entry_ids, body) VALUES ($1, $2, $3, $4, $5)",
 			document.ID,
 			document.CreatedAt,

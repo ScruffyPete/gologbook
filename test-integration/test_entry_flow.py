@@ -1,9 +1,7 @@
 import json
-from time import sleep
 import time
 import pytest
 import requests  # type: ignore
-import sseclient # type: ignore
 
 
 @pytest.fixture
@@ -98,26 +96,20 @@ def test_entry_flow(api_client, insights_client):
     assert insights[0]["body"] == f"Insight for entry {entry_id}: {entry['body'][:100]}\n\n"
     assert insights[0]["project_id"] == project_id
 
-    # response = api_client.get(f"/api/documents/{project_id}/stream/", headers=headers, stream=True, timeout=(3,5))
-    # client = sseclient.SSEClient(response)
-    # expected_tokens = [
-    #     "[[START]]",  # if you're using it
-    #     f"Insight for entry {entry_id}: {entry['body'][:100]}\n\n",
-    #     "[[STOP]]"
-    # ]
-    # received_tokens = []
-    # try:
-    #     for event in client.events():
-    #         received_tokens.append(event.data)
-    # except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
-    #     print("document stream timeout")
-    
-    # for expected in expected_tokens:
-    #     assert expected in received_tokens
-    # assert response.status_code == 200
-    # sse_events = response.text.splitlines()
-    # assert len(sse_events) == 2
-    
-    # messages = api_client.stream(f"/api/documents/{project_id}/stream/", headers=headers)
-    # for msg in messages:
-    #     print(msg)
+    response = api_client.get(f"/api/documents/{project_id}/stream/", headers=headers, stream=True, timeout=(3,5))
+    expected_tokens = [
+        f"Insight for entry {entry_id}: {entry['body'][:100]}",
+    ]
+    for i, line in enumerate(response.iter_lines()):
+        decoded = line.decode()
+        if not decoded.strip():
+            continue
+        assert decoded.startswith("data:")
+
+        payload = decoded[5:].strip()
+
+        try:
+            data = json.loads(payload)
+        except json.JSONDecodeError:
+            data = payload   
+        assert expected_tokens[i] == data

@@ -1,6 +1,7 @@
 package in_memory
 
 import (
+	"context"
 	"sort"
 
 	"github.com/ScruffyPete/gologbook/internal/domain"
@@ -20,7 +21,7 @@ func NewProjectRepository(projects []*domain.Project) *projectRepository {
 	return &projectRepository{projects: data}
 }
 
-func (repo *projectRepository) ListProjects() ([]*domain.Project, error) {
+func (repo *projectRepository) ListProjects(ctx context.Context) ([]*domain.Project, error) {
 	projects := make([]*domain.Project, 0, len(repo.projects))
 
 	for _, p := range repo.projects {
@@ -34,7 +35,7 @@ func (repo *projectRepository) ListProjects() ([]*domain.Project, error) {
 	return projects, nil
 }
 
-func (repo *projectRepository) GetProject(id string) (*domain.Project, error) {
+func (repo *projectRepository) GetProject(ctx context.Context, id string) (*domain.Project, error) {
 	if projectData, exists := repo.projects[id]; exists {
 		return projectData, nil
 	}
@@ -42,12 +43,12 @@ func (repo *projectRepository) GetProject(id string) (*domain.Project, error) {
 	return nil, domain.NewErrProjectDoesNotExist(id)
 }
 
-func (repo *projectRepository) CreateProject(project *domain.Project) (*domain.Project, error) {
+func (repo *projectRepository) CreateProject(ctx context.Context, project *domain.Project) (*domain.Project, error) {
 	repo.projects[project.ID] = project
 	return project, nil
 }
 
-func (repo *projectRepository) UpdateProject(project *domain.Project) error {
+func (repo *projectRepository) UpdateProject(ctx context.Context, project *domain.Project) error {
 	if _, exists := repo.projects[project.ID]; !exists {
 		return domain.NewErrProjectDoesNotExist(project.ID)
 	}
@@ -55,7 +56,7 @@ func (repo *projectRepository) UpdateProject(project *domain.Project) error {
 	return nil
 }
 
-func (repo *projectRepository) DeleteProject(id string) error {
+func (repo *projectRepository) DeleteProject(ctx context.Context, id string) error {
 	if _, exists := repo.projects[id]; !exists {
 		return domain.NewErrProjectDoesNotExist(id)
 	}

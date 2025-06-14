@@ -1,6 +1,7 @@
 package in_memory
 
 import (
+	"context"
 	"sort"
 
 	"github.com/ScruffyPete/gologbook/internal/domain"
@@ -20,7 +21,7 @@ func NewEntryRepository(entries []*domain.Entry) *entryRepository {
 	return &entryRepository{entries: data}
 }
 
-func (repo *entryRepository) ListEntries(projectID string) ([]*domain.Entry, error) {
+func (repo *entryRepository) ListEntries(ctx context.Context, projectID string) ([]*domain.Entry, error) {
 	entries := repo.entries[projectID]
 
 	sorted := make([]*domain.Entry, len(entries))
@@ -33,14 +34,14 @@ func (repo *entryRepository) ListEntries(projectID string) ([]*domain.Entry, err
 	return sorted, nil
 }
 
-func (repo *entryRepository) CreateEntry(entry *domain.Entry) (*domain.Entry, error) {
+func (repo *entryRepository) CreateEntry(ctx context.Context, entry *domain.Entry) (*domain.Entry, error) {
 	entries := repo.entries[entry.ProjectID]
 	entries = append(entries, entry)
 	repo.entries[entry.ProjectID] = entries
 	return entry, nil
 }
 
-func (repo *entryRepository) DeleteEntries(projectID string) error {
+func (repo *entryRepository) DeleteEntries(ctx context.Context, projectID string) error {
 	if _, exists := repo.entries[projectID]; !exists {
 		return domain.NewErrProjectDoesNotExist(projectID)
 	}

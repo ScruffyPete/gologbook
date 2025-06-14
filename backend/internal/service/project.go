@@ -33,7 +33,7 @@ func (s *ProjectService) ListProjects(ctx context.Context) ([]*domain.Project, e
 
 	err := s.uow.WithTx(ctx, func(repos domain.RepoBundle) error {
 		var err error
-		result, err = repos.Projects.ListProjects()
+		result, err = repos.Projects.ListProjects(ctx)
 		return err
 	})
 
@@ -48,7 +48,7 @@ func (s *ProjectService) GetProject(ctx context.Context, id string) (*domain.Pro
 
 	err := s.uow.WithTx(ctx, func(repos domain.RepoBundle) error {
 		var err error
-		result, err = repos.Projects.GetProject(id)
+		result, err = repos.Projects.GetProject(ctx, id)
 		return err
 	})
 
@@ -64,7 +64,7 @@ func (s *ProjectService) CreateProject(ctx context.Context, input *CreateProject
 	err := s.uow.WithTx(ctx, func(repos domain.RepoBundle) error {
 		var err error
 		new_project := domain.NewProject(input.Title)
-		result, err = repos.Projects.CreateProject(new_project)
+		result, err = repos.Projects.CreateProject(ctx, new_project)
 		return err
 	})
 
@@ -81,11 +81,11 @@ func (s *ProjectService) UpdateProject(
 	input *CreateProjectInput,
 ) error {
 	err := s.uow.WithTx(ctx, func(repos domain.RepoBundle) error {
-		if project, err := repos.Projects.GetProject(id); err != nil {
+		if project, err := repos.Projects.GetProject(ctx, id); err != nil {
 			return err
 		} else {
 			project.Title = input.Title
-			return repos.Projects.UpdateProject(project)
+			return repos.Projects.UpdateProject(ctx, project)
 		}
 
 	})
@@ -99,7 +99,7 @@ func (s *ProjectService) UpdateProject(
 
 func (s *ProjectService) DeleteProject(ctx context.Context, id string) error {
 	err := s.uow.WithTx(ctx, func(repos domain.RepoBundle) error {
-		return repos.Projects.DeleteProject(id)
+		return repos.Projects.DeleteProject(ctx, id)
 	})
 
 	if err != nil {

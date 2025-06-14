@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/ScruffyPete/gologbook/internal/domain"
@@ -14,8 +15,9 @@ func NewEntryRepository(db *sql.DB) *entryRepository {
 	return &entryRepository{db: db}
 }
 
-func (repo *entryRepository) ListEntries(projectID string) ([]*domain.Entry, error) {
-	rows, err := repo.db.Query(
+func (repo *entryRepository) ListEntries(ctx context.Context, projectID string) ([]*domain.Entry, error) {
+	rows, err := repo.db.QueryContext(
+		ctx,
 		"SELECT id, created_at, project_id, body FROM entries WHERE project_id = $1 ORDER BY created_at DESC",
 		projectID,
 	)
@@ -36,8 +38,9 @@ func (repo *entryRepository) ListEntries(projectID string) ([]*domain.Entry, err
 	return entries, nil
 }
 
-func (repo *entryRepository) CreateEntry(entry *domain.Entry) (*domain.Entry, error) {
-	_, err := repo.db.Exec(
+func (repo *entryRepository) CreateEntry(ctx context.Context, entry *domain.Entry) (*domain.Entry, error) {
+	_, err := repo.db.ExecContext(
+		ctx,
 		"INSERT INTO entries (id, created_at, project_id, body) VALUES ($1, $2, $3, $4)",
 		entry.ID,
 		entry.CreatedAt,
@@ -51,8 +54,9 @@ func (repo *entryRepository) CreateEntry(entry *domain.Entry) (*domain.Entry, er
 	return entry, nil
 }
 
-func (repo *entryRepository) DeleteEntries(projectID string) error {
-	_, err := repo.db.Exec(
+func (repo *entryRepository) DeleteEntries(ctx context.Context, projectID string) error {
+	_, err := repo.db.ExecContext(
+		ctx,
 		"DELETE FROM entries WHERE project_id = $1",
 		projectID,
 	)

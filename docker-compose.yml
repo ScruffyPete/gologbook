@@ -58,8 +58,8 @@ services:
         condition: service_healthy
       test-redis:
         condition: service_healthy
-      migrate-test:
-        condition: service_completed_successfully
+      # migrate-test:
+      #   condition: service_completed_successfully
 
   test-insights:
     extends:
@@ -98,7 +98,7 @@ services:
     environment:
       - DATABASE_URL=postgres://${TEST_DB_USER}:${TEST_DB_PASSWORD}@${TEST_DB_HOST}:${TEST_DB_PORT}/${TEST_DB_NAME}?sslmode=${TEST_DB_SSLMODE}
       - REDIS_HOST=test-redis
-    command: sh -c "./migrate && go test -tags=integration ./..."
+    command: sh -c "./migrate && go test -timeout=10s -tags=integration ./..."
     depends_on:
       test-redis:
         condition: service_healthy

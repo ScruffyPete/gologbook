@@ -1,4 +1,6 @@
 import os
+import uuid
+from httpx import stream
 import pytest
 import pytest_asyncio
 from apps.queue.redis import RedisQueue
@@ -13,8 +15,13 @@ def lock_prefix() -> str:
     return os.getenv("REDIS_PROJECT_LOCK_PREFIX")
 
 
+@pytest.fixture
+def stream_prefix() -> str:
+    return os.getenv("REDIS_LLM_STREAM_CHANNEL_PREFIX")
+
+
 @pytest_asyncio.fixture
-async def queue(key: str, lock_prefix: str):
+async def queue(key: str, lock_prefix: str, stream_prefix: str):
     mapping = {
         "one": 1,
         "two": 2, 
@@ -25,6 +32,7 @@ async def queue(key: str, lock_prefix: str):
         yield q
         for project_id in mapping.keys():
             await q.redis_client.delete(f"{lock_prefix}:{project_id}")
+            await q.redis_client.delete(f"{stream_prefix}:{project_id}")
 
 
 @pytest.mark.asyncio
@@ -55,4 +63,20 @@ async def test_remove_processed_projects(queue: RedisQueue):
         batch_size=10,
     )
     assert new_project_ids == tuple()
-    
+   
+
+@pytest.mark.asyncio
+@pytest.mark.queue 
+async def test_publish_project_token(queue: RedisQueue, stream_prefix: str):
+    project_id = uuid.uuid4()
+    stream_key = f"{stream_prefix}:{project_id}" 
+    tokens = ["hello", "world", "[[STOP]]"]
+
+    for token in tokens:
+        await queue.publish_project_token(project_id, token)
+
+    messages = await queue.redis_client.xrange(name=stream_key, count=10)
+
+    assert len(messages) == len(tokens)
+    extracted_tokens = [msg[1][b"token"].decode() for msg in messages]
+    assert extracted_tokens == tokens

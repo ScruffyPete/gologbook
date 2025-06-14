@@ -3,6 +3,7 @@
 package postgres
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -20,7 +21,11 @@ func TestDocumentRepository_GetDocument(t *testing.T) {
 			testutil.NewDocument(project.ID, []string{}, "Document 1", &createdAt),
 			testutil.NewDocument(project.ID, []string{}, "Document 2", &createdAt2),
 		}
-		db, _ := testutil.NewTestDB(nil, []*domain.Project{project}, nil, documents)
+
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+
+		db, _ := testutil.NewTestDB(ctx, nil, []*domain.Project{project}, nil, documents)
 		defer db.Close()
 
 		repo := NewDocumentRepository(db)
@@ -33,7 +38,10 @@ func TestDocumentRepository_GetDocument(t *testing.T) {
 	})
 
 	t.Run("returns an error if the database connection fails", func(t *testing.T) {
-		db, _ := testutil.NewTestDB(nil, nil, nil, nil)
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+
+		db, _ := testutil.NewTestDB(ctx, nil, nil, nil, nil)
 		repo := NewDocumentRepository(db)
 		db.Close()
 		_, err := repo.ListDocuments("project_id")
@@ -41,8 +49,11 @@ func TestDocumentRepository_GetDocument(t *testing.T) {
 	})
 
 	t.Run("returns an empty slice if no documents are found", func(t *testing.T) {
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+
 		project := domain.NewProject("Build a treehouse")
-		db, _ := testutil.NewTestDB(nil, []*domain.Project{project}, nil, nil)
+		db, _ := testutil.NewTestDB(ctx, nil, []*domain.Project{project}, nil, nil)
 		defer db.Close()
 
 		repo := NewDocumentRepository(db)

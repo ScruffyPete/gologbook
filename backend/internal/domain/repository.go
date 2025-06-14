@@ -1,17 +1,19 @@
 package domain
 
+import "context"
+
 type ProjectReporitory interface {
-	ListProjects() ([]*Project, error)
-	GetProject(id string) (*Project, error)
-	CreateProject(project *Project) (*Project, error)
-	UpdateProject(project *Project) error
-	DeleteProject(id string) error
+	ListProjects(ctx context.Context) ([]*Project, error)
+	GetProject(ctx context.Context, id string) (*Project, error)
+	CreateProject(ctx context.Context, project *Project) (*Project, error)
+	UpdateProject(ctx context.Context, project *Project) error
+	DeleteProject(ctx context.Context, id string) error
 }
 
 type EntryRepository interface {
-	ListEntries(projectID string) ([]*Entry, error)
-	CreateEntry(entry *Entry) (*Entry, error)
-	DeleteEntries(projectID string) error
+	ListEntries(ctx context.Context, projectID string) ([]*Entry, error)
+	CreateEntry(ctx context.Context, entry *Entry) (*Entry, error)
+	DeleteEntries(ctx context.Context, projectID string) error
 }
 
 type UserRepository interface {
