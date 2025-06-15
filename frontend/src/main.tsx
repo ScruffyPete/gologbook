@@ -7,7 +7,7 @@ import { loader as projectLoader, ProjectPage } from './components/ProjectPage.t
 import { LoginPage } from './components/LoginPage.tsx'
 import { SignupPage } from './components/SignupPage.tsx'
 import { LayoutWrapper } from './components/Layout.tsx'
-import { RootPage } from './components/RootPage.tsx'
+import { authLoader, redirectIfAuthedLoader, rootRedirectLoader } from './lib/auth.ts'
 
 const router = createBrowserRouter([
   {
@@ -16,11 +16,12 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        Component: RootPage,
+        loader: rootRedirectLoader,
       },
       {
         path: '/login',
         Component: LoginPage,
+        loader: redirectIfAuthedLoader,
       },
       {
         path: '/signup',
@@ -29,9 +30,10 @@ const router = createBrowserRouter([
       {
         path: '/projects',
         Component: LayoutWrapper,
+        loader: authLoader,
         children: [
           {
-            path: '/projects/:projectId',
+            path: ':projectId',
             Component: ProjectPage,
             loader: projectLoader,
           },
