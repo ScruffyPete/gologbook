@@ -11,7 +11,7 @@ import { Insight } from "@/types/Insight";
 
 export async function loader({ params }: LoaderFunctionArgs) {
     try {
-        const [projectRes, entriesRes, insightsRes] = await Promise.all([
+        const [projectRes, entriesRes, documentsRes] = await Promise.all([
             fetch(`/api/projects/${params.projectId}`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -22,24 +22,24 @@ export async function loader({ params }: LoaderFunctionArgs) {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
             }),
-            fetch(`/api/insights/?project_id=${params.projectId}`, {
+            fetch(`/api/documents/?project_id=${params.projectId}`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
             })
         ]);
 
-        if (!projectRes.ok || !entriesRes.ok || !insightsRes.ok) {
+        if (!projectRes.ok || !entriesRes.ok || !documentsRes.ok) {
             throw new Error('Failed to load data');
         }
 
-        const [project, entries, insights] = await Promise.all([
+        const [project, entries, documents] = await Promise.all([
             projectRes.json(),
             entriesRes.json(),
-            insightsRes.json()
+            documentsRes.json()
         ]);
 
-        return { project, entries, insights };
+        return { project, entries, documents };
     } catch (error) {
         console.error(error);
         throw new Response('Failed to load project', { status: 500 });
@@ -47,10 +47,10 @@ export async function loader({ params }: LoaderFunctionArgs) {
 }
 
 export function ProjectPage() {
-    const { project, entries, insights } = useLoaderData<{ project: Project, entries: Entry[], insights: Insight[] }>()
+    const { project, entries, documents } = useLoaderData<{ project: Project, entries: Entry[], documents: Insight[] }>()
 
     const [entriesState, setEntriesState] = useState<Entry[]>(entries)
-    const [insightsByEntryId, setInsightsByEntryId] = useState<Record<string, Insight>>({})
+    const [documentsByEntryId, setdocumentsByEntryId] = useState<Record<string, Insight>>({})
     const [newEntryBody, setNewEntryBody] = useState("")
 
     const scrollAnchorRef = useRef<HTMLDivElement | null>(null)
@@ -61,14 +61,14 @@ export function ProjectPage() {
     }, [project.id, entries])
 
     useEffect(() => {
-        setInsightsByEntryId(insights.reduce((acc, insight) => {
+        setdocumentsByEntryId(documents.reduce((acc, insight) => {
             insight.entry_ids.forEach(entryID => {
                 acc[entryID] = insight
             })
             return acc
         }, {} as Record<string, Insight>))
-    }, [insights])
-    
+    }, [documents])
+
     useEffect(() => {
         scrollAnchorRef.current?.scrollIntoView({ behavior: "smooth" })
     }, [entriesState])
@@ -103,14 +103,14 @@ export function ProjectPage() {
                 {entriesState.map(entry => (
                     <div key={entry.id} className="flex gap-4">
                         <div className="w-2/5">
-                            {insightsByEntryId[entry.id] ? (
+                            {documentsByEntryId[entry.id] ? (
                                 <Card className="bg-muted-foreground/10 p-2 text-sm">
-                                    <CardContent>{insightsByEntryId[entry.id].body}</CardContent>
+                                    <CardContent>{documentsByEntryId[entry.id].body}</CardContent>
                                     <CardFooter className="px-4 pb-4 text-xs text-muted-foreground justify-end">
-                                        {new Date(insightsByEntryId[entry.id].created_at).toLocaleString()}
+                                        {new Date(documentsByEntryId[entry.id].created_at).toLocaleString()}
                                     </CardFooter>
                                 </Card>
-                                
+
                             ) : (
                                 <div className="text-xs text-muted-foreground italic">No insight</div>
                             )}
