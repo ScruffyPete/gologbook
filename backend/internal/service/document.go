@@ -16,12 +16,12 @@ func NewDocumentService(uow domain.UnitOfWork, queue domain.Queue) *DocumentServ
 	return &DocumentService{uow: uow, queue: queue}
 }
 
-func (s *DocumentService) ListDocuments(ctx context.Context, projectID string) ([]*domain.Document, error) {
-	var result []*domain.Document
+func (s *DocumentService) GetLatestDocument(ctx context.Context, projectID string) (*domain.Document, error) {
+	var result *domain.Document
 
 	err := s.uow.WithTx(ctx, func(repos domain.RepoBundle) error {
 		var err error
-		result, err = repos.Documents.ListDocuments(projectID)
+		result, err = repos.Documents.GetLatestDocument(ctx, projectID)
 		return err
 	})
 	if err != nil {

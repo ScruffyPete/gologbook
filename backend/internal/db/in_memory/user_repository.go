@@ -1,6 +1,8 @@
 package in_memory
 
 import (
+	"context"
+
 	"github.com/ScruffyPete/gologbook/internal/domain"
 )
 
@@ -18,7 +20,7 @@ func NewUserRepository(users []*domain.User) *UserRepository {
 	return &UserRepository{users: data}
 }
 
-func (repo *UserRepository) CreateUser(user *domain.User) (*domain.User, error) {
+func (repo *UserRepository) CreateUser(ctx context.Context, user *domain.User) (*domain.User, error) {
 	if _, ok := repo.users[user.Email]; ok {
 		return nil, domain.NewErrUserAlreadyExists(user.Email)
 	}
@@ -26,7 +28,7 @@ func (repo *UserRepository) CreateUser(user *domain.User) (*domain.User, error) 
 	return user, nil
 }
 
-func (repo *UserRepository) GetUserByEmail(email string) (*domain.User, error) {
+func (repo *UserRepository) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
 	user, ok := repo.users[email]
 	if !ok {
 		return nil, domain.NewErrUserDoesNotExist(email)

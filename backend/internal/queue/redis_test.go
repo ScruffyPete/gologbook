@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
@@ -24,7 +25,9 @@ func TestRedisQueue_Subscribe(t *testing.T) {
 	assert.Nil(t, err)
 
 	projectID := uuid.NewString()
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
 	msgCh := queue.SubscribeForDocumentTokens(ctx, projectID)
 	prefix := os.Getenv("REDIS_LLM_STREAM_CHANNEL_PREFIX")
 	streamName := fmt.Sprintf("%s:%s", prefix, projectID)
@@ -41,15 +44,17 @@ func TestRedisQueue_Subscribe(t *testing.T) {
 	}).Result()
 	assert.NoError(t, err)
 
-	_, err = queue.client.XAdd(ctx, &redis.XAddArgs{
-		Stream: streamName,
-		Values: map[string]any{"token": "[[STOP]]"},
-	}).Result()
-	assert.NoError(t, err)
-
 	var received []string
-	for msg := range msgCh {
-		received = append(received, msg)
+	for len(received) < 2 {
+		select {
+		case <-ctx.Done():
+			t.Fatal("timeout waiting for Redis messages")
+		case msg, ok := <-msgCh:
+			if !ok {
+				t.Fatal("channel closed before expected")
+			}
+			received = append(received, msg)
+		}
 	}
 	assert.Equal(t, 2, len(received))
 	assert.Equal(t, "first message", received[0])

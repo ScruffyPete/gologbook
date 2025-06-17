@@ -1,7 +1,8 @@
 package in_memory
 
 import (
-	"sort"
+	"context"
+	"errors"
 
 	"github.com/ScruffyPete/gologbook/internal/domain"
 )
@@ -20,15 +21,19 @@ func NewDocumentRepository(documents []*domain.Document) *InMemoryDocumentReposi
 	return &InMemoryDocumentRepository{documents: data}
 }
 
-func (repo *InMemoryDocumentRepository) ListDocuments(projectID string) ([]*domain.Document, error) {
+func (repo *InMemoryDocumentRepository) GetLatestDocument(ctx context.Context, projectID string) (*domain.Document, error) {
 	documents := repo.documents[projectID]
 
-	sorted := make([]*domain.Document, len(documents))
-	copy(sorted, documents)
+	if len(documents) == 0 {
+		return nil, errors.New("no document found")
+	}
 
-	sort.Slice(sorted, func(i, j int) bool {
-		return sorted[i].CreatedAt < sorted[j].CreatedAt
-	})
+	latest := documents[0]
+	for _, doc := range documents[1:] {
+		if doc.CreatedAt > latest.CreatedAt {
+			latest = doc
+		}
+	}
 
-	return sorted, nil
+	return latest, nil
 }

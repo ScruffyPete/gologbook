@@ -1,6 +1,7 @@
 package in_memory
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -9,29 +10,27 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestInMemoryDocumentRepository_ListDocuments(t *testing.T) {
-	t.Run("project wide documents", func(t *testing.T) {
+func TestInMemoryDocumentRepository_GetLatestDocument(t *testing.T) {
+	t.Run("valid data", func(t *testing.T) {
 		project := domain.NewProject("Hunt a boar")
 		createdAt := time.Now().UTC()
 		createdAt2 := createdAt.Add(time.Second)
-		documents := []*domain.Document{
-			testutil.NewDocument(project.ID, []string{}, "Document 1", &createdAt),
-			testutil.NewDocument(project.ID, []string{}, "Document 2", &createdAt2),
-		}
+		document1 := testutil.NewDocument(project.ID, []string{}, "Document 1", &createdAt)
+		document2 := testutil.NewDocument(project.ID, []string{}, "Document 2", &createdAt2)
+		documents := []*domain.Document{document1, document2}
 		repo := NewDocumentRepository(documents)
-		documents, err := repo.ListDocuments(project.ID)
+
+		outputDocument, err := repo.GetLatestDocument(context.Background(), project.ID)
 		assert.Nil(t, err)
-		assert.Equal(t, len(documents), 2)
-		assert.Equal(t, documents[0].Body, "Document 1")
-		assert.Equal(t, documents[1].Body, "Document 2")
+		assert.Equal(t, document2, outputDocument)
 	})
 
 	t.Run("empty data", func(t *testing.T) {
 		project := domain.NewProject("Hunt a boar")
 		documents := []*domain.Document{}
 		repo := NewDocumentRepository(documents)
-		documents, err := repo.ListDocuments(project.ID)
-		assert.Nil(t, err)
-		assert.Equal(t, len(documents), 0)
+		document, err := repo.GetLatestDocument(context.Background(), project.ID)
+		assert.NotNil(t, err)
+		assert.Nil(t, document)
 	})
 }

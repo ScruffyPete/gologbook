@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDocumentAPIHandler_ListDocuments(t *testing.T) {
+func TestDocumentAPIHandler_GetLatestDocument(t *testing.T) {
 	t.Run("valid data", func(t *testing.T) {
 		project := domain.NewProject("Dig a hole")
 		entry := domain.NewEntry(project.ID, "Dig a hole in the hole")
@@ -29,7 +29,7 @@ func TestDocumentAPIHandler_ListDocuments(t *testing.T) {
 		mux := http.NewServeMux()
 		apiHandler.Register(mux)
 
-		url := fmt.Sprintf("/api/documents/?project_id=%s", project.ID)
+		url := fmt.Sprintf("/api/documents/%s/output/", project.ID)
 		req := httptest.NewRequest(http.MethodGet, url, nil)
 		w := httptest.NewRecorder()
 
@@ -51,31 +51,13 @@ func TestDocumentAPIHandler_ListDocuments(t *testing.T) {
 		mux := http.NewServeMux()
 		apiHandler.Register(mux)
 
-		url := fmt.Sprintf("/api/documents/?project_id=%s", project.ID)
+		url := fmt.Sprintf("/api/documents/%s/output/", project.ID)
 		req := httptest.NewRequest(http.MethodGet, url, nil)
 		w := httptest.NewRecorder()
 
 		mux.ServeHTTP(w, req)
 
-		assert.Equal(t, http.StatusOK, w.Code)
-	})
-
-	t.Run("missing project id", func(t *testing.T) {
-		documentRepo := in_memory.NewDocumentRepository([]*domain.Document{})
-		uow := in_memory.InMemoryUnitOfWork{
-			Documents: documentRepo,
-		}
-		apiHandler := NewDocumentAPIHandler(&uow, nil)
-
-		mux := http.NewServeMux()
-		apiHandler.Register(mux)
-
-		req := httptest.NewRequest(http.MethodGet, "/api/documents/", nil)
-		w := httptest.NewRecorder()
-
-		mux.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.Equal(t, http.StatusNotFound, w.Code)
 	})
 }
 

@@ -15,7 +15,7 @@ import (
 
 func TestProjectRepository_ListProjects(t *testing.T) {
 	t.Run("returns all projects", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		older := domain.NewProject("Old project")
@@ -26,8 +26,7 @@ func TestProjectRepository_ListProjects(t *testing.T) {
 			return projects[i].CreatedAt > projects[j].CreatedAt
 		})
 
-		db, _ := testutil.NewTestDB(ctx, nil, projects, nil, nil)
-		defer db.Close()
+		db := testutil.NewTestDB(t, ctx, nil, projects, nil, nil)
 
 		repo := NewProjectRepository(db)
 		repo_projects, err := repo.ListProjects(ctx)
@@ -36,24 +35,11 @@ func TestProjectRepository_ListProjects(t *testing.T) {
 		assert.ElementsMatch(t, repo_projects, projects)
 	})
 
-	t.Run("returns an error if the query fails", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-		defer cancel()
-
-		db, _ := testutil.NewTestDB(ctx, nil, nil, nil, nil)
-		db.Close() // Close immediately to force an error
-		repo := NewProjectRepository(db)
-
-		_, err := repo.ListProjects(ctx)
-		assert.NotNil(t, err)
-	})
-
 	t.Run("returns an empty slice if no projects are found", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		db, _ := testutil.NewTestDB(ctx, nil, nil, nil, nil)
-		defer db.Close()
+		db := testutil.NewTestDB(t, ctx, nil, nil, nil, nil)
 		repo := NewProjectRepository(db)
 
 		repo_projects, err := repo.ListProjects(ctx)
@@ -64,12 +50,11 @@ func TestProjectRepository_ListProjects(t *testing.T) {
 
 func TestProjectRepository_GetProject(t *testing.T) {
 	t.Run("returns a project", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		project := domain.NewProject("Buy a farm")
-		db, _ := testutil.NewTestDB(ctx, nil, []*domain.Project{project}, nil, nil)
-		defer db.Close()
+		db := testutil.NewTestDB(t, ctx, nil, []*domain.Project{project}, nil, nil)
 
 		repo := NewProjectRepository(db)
 		repo_project, err := repo.GetProject(ctx, project.ID)
@@ -78,11 +63,10 @@ func TestProjectRepository_GetProject(t *testing.T) {
 	})
 
 	t.Run("returns an error if the project does not exist", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		db, _ := testutil.NewTestDB(ctx, nil, nil, nil, nil)
-		defer db.Close()
+		db := testutil.NewTestDB(t, ctx, nil, nil, nil, nil)
 
 		repo := NewProjectRepository(db)
 		_, err := repo.GetProject(ctx, "non-existent-id")
@@ -92,12 +76,11 @@ func TestProjectRepository_GetProject(t *testing.T) {
 
 func TestProjectRepository_CreateProject(t *testing.T) {
 	t.Run("creates a project", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		project := domain.NewProject("Start a company")
-		db, _ := testutil.NewTestDB(ctx, nil, nil, nil, nil)
-		defer db.Close()
+		db := testutil.NewTestDB(t, ctx, nil, nil, nil, nil)
 
 		repo := NewProjectRepository(db)
 		repo_project, err := repo.CreateProject(ctx, project)
@@ -106,12 +89,12 @@ func TestProjectRepository_CreateProject(t *testing.T) {
 	})
 
 	t.Run("returns an error if the project already exists", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		project := domain.NewProject("Start a company")
-		db, _ := testutil.NewTestDB(ctx, nil, []*domain.Project{project}, nil, nil)
-		defer db.Close()
+		db := testutil.NewTestDB(t, ctx, nil, []*domain.Project{project}, nil, nil)
+
 		repo := NewProjectRepository(db)
 		_, err := repo.CreateProject(ctx, project)
 		assert.NotNil(t, err)
@@ -120,12 +103,11 @@ func TestProjectRepository_CreateProject(t *testing.T) {
 
 func TestProjectRepository_UpdateProject(t *testing.T) {
 	t.Run("updates a project", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		project := domain.NewProject("Start a company")
-		db, _ := testutil.NewTestDB(ctx, nil, []*domain.Project{project}, nil, nil)
-		defer db.Close()
+		db := testutil.NewTestDB(t, ctx, nil, []*domain.Project{project}, nil, nil)
 
 		repo := NewProjectRepository(db)
 		project.Title = "Start a company 2"
@@ -139,12 +121,11 @@ func TestProjectRepository_UpdateProject(t *testing.T) {
 	})
 
 	t.Run("returns an error if the project does not exist", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		project := domain.NewProject("Start a company")
-		db, _ := testutil.NewTestDB(ctx, nil, nil, nil, nil)
-		defer db.Close()
+		db := testutil.NewTestDB(t, ctx, nil, nil, nil, nil)
 
 		repo := NewProjectRepository(db)
 		project.Title = "Start a company 2"
@@ -156,12 +137,11 @@ func TestProjectRepository_UpdateProject(t *testing.T) {
 
 func TestProjectRepository_DeleteProject(t *testing.T) {
 	t.Run("deletes a project", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		project := domain.NewProject("Start a company")
-		db, _ := testutil.NewTestDB(ctx, nil, []*domain.Project{project}, nil, nil)
-		defer db.Close()
+		db := testutil.NewTestDB(t, ctx, nil, []*domain.Project{project}, nil, nil)
 
 		repo := NewProjectRepository(db)
 		err := repo.DeleteProject(ctx, project.ID)

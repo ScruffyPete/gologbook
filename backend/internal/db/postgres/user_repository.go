@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/ScruffyPete/gologbook/internal/domain"
@@ -14,7 +15,7 @@ func NewUserRepository(db *sql.DB) *userRepository {
 	return &userRepository{db: db}
 }
 
-func (repo *userRepository) CreateUser(user *domain.User) (*domain.User, error) {
+func (repo *userRepository) CreateUser(ctx context.Context, user *domain.User) (*domain.User, error) {
 	_, err := repo.db.Exec(
 		"INSERT INTO users (id, created_at, email, password) VALUES ($1, $2, $3, $4)",
 		user.ID,
@@ -28,22 +29,18 @@ func (repo *userRepository) CreateUser(user *domain.User) (*domain.User, error) 
 	return user, nil
 }
 
-func (repo *userRepository) GetUserByEmail(email string) (*domain.User, error) {
-	row, err := repo.db.Query(
+func (repo *userRepository) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
+	row := repo.db.QueryRowContext(
+		ctx,
 		"SELECT id, created_at, email, password FROM users WHERE email = $1",
 		email,
 	)
-	if err != nil {
-		return nil, err
-	}
-	defer row.Close()
-
-	if !row.Next() {
-		return nil, domain.NewErrUserDoesNotExist(email)
-	}
 
 	var user domain.User
 	if err := row.Scan(&user.ID, &user.CreatedAt, &user.Email, &user.Password); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, domain.NewErrUserDoesNotExist(email)
+		}
 		return nil, err
 	}
 	return &user, nil

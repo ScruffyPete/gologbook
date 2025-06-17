@@ -27,7 +27,7 @@ func (s *AuthService) SignUp(ctx context.Context, email string, password string)
 	user := domain.NewUser(email, string(hashedPassword))
 
 	err = s.uow.WithTx(ctx, func(repos domain.RepoBundle) error {
-		_, err = repos.Users.CreateUser(user)
+		_, err = repos.Users.CreateUser(ctx, user)
 		return err
 	})
 
@@ -43,7 +43,7 @@ func (s *AuthService) Login(ctx context.Context, email string, password string) 
 
 	err := s.uow.WithTx(ctx, func(repos domain.RepoBundle) error {
 		var err error
-		user, err = repos.Users.GetUserByEmail(email)
+		user, err = repos.Users.GetUserByEmail(ctx, email)
 		if err != nil {
 			return err
 		}

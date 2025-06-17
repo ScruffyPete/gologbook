@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDocumentService_ListDocuments(t *testing.T) {
+func TestDocumentService_GetLatestDocument(t *testing.T) {
 	project := domain.NewProject("Test Project")
 	projectRepo := in_memory.NewProjectRepository([]*domain.Project{project})
 	entry := domain.NewEntry("Test Entry", project.ID)
@@ -29,17 +29,17 @@ func TestDocumentService_ListDocuments(t *testing.T) {
 		}
 		svc := NewDocumentService(&uow, nil)
 
-		documents, err := svc.ListDocuments(ctx, project.ID)
+		outputDocument, err := svc.GetLatestDocument(ctx, project.ID)
 		assert.Nil(t, err)
-		assert.Equal(t, []*domain.Document{document}, documents)
+		assert.Equal(t, document, outputDocument)
 	})
 
-	t.Run("should return empty list if no docuements", func(t *testing.T) {
+	t.Run("no docuements", func(t *testing.T) {
 		uow := in_memory.NewInMemoryUnitOfWork()
 		svc := NewDocumentService(uow, nil)
 
-		documents, err := svc.ListDocuments(ctx, project.ID)
-		assert.Nil(t, err)
-		assert.Equal(t, []*domain.Document{}, documents)
+		outputDocument, err := svc.GetLatestDocument(ctx, project.ID)
+		assert.NotNil(t, err)
+		assert.Nil(t, outputDocument)
 	})
 }

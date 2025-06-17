@@ -4,29 +4,35 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"os"
+	"testing"
 
 	"github.com/ScruffyPete/gologbook/internal/domain"
 	_ "github.com/lib/pq"
 )
 
 func NewTestDB(
+	t testing.TB,
 	ctx context.Context,
 	users []*domain.User,
 	projects []*domain.Project,
 	entries []*domain.Entry,
 	documents []*domain.Document,
-) (*sql.DB, error) {
+) *sql.DB {
+	t.Helper()
+
 	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to database: %w", err)
+		t.Fatalf("failed to connect to database: %v", err)
 	}
+
+	t.Cleanup(func() {
+		db.Close()
+	})
 
 	// Ensure clean state before inserting test data
 	if _, err := db.ExecContext(ctx, "TRUNCATE TABLE users, projects, entries, documents RESTART IDENTITY CASCADE;"); err != nil {
-		db.Close()
-		return nil, fmt.Errorf("failed to clean up database: %w", err)
+		t.Fatalf("failed to clean up database: %v", err)
 	}
 
 	for _, user := range users {
@@ -39,8 +45,7 @@ func NewTestDB(
 			user.Password,
 		)
 		if err != nil {
-			db.Close()
-			return nil, fmt.Errorf("failed to insert user: %w", err)
+			t.Fatalf("failed to insert user: %v", err)
 		}
 	}
 
@@ -53,8 +58,7 @@ func NewTestDB(
 			project.CreatedAt,
 		)
 		if err != nil {
-			db.Close()
-			return nil, fmt.Errorf("failed to insert project: %w", err)
+			t.Fatalf("failed to insert project: %v", err)
 		}
 	}
 
@@ -68,8 +72,7 @@ func NewTestDB(
 			entry.Body,
 		)
 		if err != nil {
-			db.Close()
-			return nil, fmt.Errorf("failed to insert entry: %w", err)
+			t.Fatalf("failed to insert entry: %v", err)
 		}
 	}
 
@@ -77,7 +80,7 @@ func NewTestDB(
 		entryIDsJSON, err := json.Marshal(document.EntryIDs)
 		if err != nil {
 			db.Close()
-			return nil, fmt.Errorf("failed to marshal entry IDs: %w", err)
+			t.Fatalf("failed to marshal entry IDs: %v", err)
 		}
 		_, err = db.ExecContext(
 			ctx,
@@ -89,10 +92,9 @@ func NewTestDB(
 			document.Body,
 		)
 		if err != nil {
-			db.Close()
-			return nil, fmt.Errorf("failed to insert document: %w", err)
+			t.Fatalf("failed to insert document: %v", err)
 		}
 	}
 
-	return db, nil
+	return db
 }

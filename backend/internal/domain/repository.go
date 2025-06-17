@@ -17,12 +17,12 @@ type EntryRepository interface {
 }
 
 type UserRepository interface {
-	CreateUser(user *User) (*User, error)
-	GetUserByEmail(email string) (*User, error)
+	CreateUser(ctx context.Context, user *User) (*User, error)
+	GetUserByEmail(ctx context.Context, email string) (*User, error)
 }
 
 type DocumentRepository interface {
-	ListDocuments(projectID string) ([]*Document, error)
+	GetLatestDocument(ctx context.Context, projectID string) (*Document, error)
 }
 
 type RepoBundle struct {

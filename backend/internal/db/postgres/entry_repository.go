@@ -18,7 +18,7 @@ func NewEntryRepository(db *sql.DB) *entryRepository {
 func (repo *entryRepository) ListEntries(ctx context.Context, projectID string) ([]*domain.Entry, error) {
 	rows, err := repo.db.QueryContext(
 		ctx,
-		"SELECT id, created_at, project_id, body FROM entries WHERE project_id = $1 ORDER BY created_at DESC",
+		"SELECT id, created_at, project_id, body FROM entries WHERE project_id = $1 ORDER BY created_at ASC",
 		projectID,
 	)
 	if err != nil {

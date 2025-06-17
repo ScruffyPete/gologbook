@@ -14,15 +14,14 @@ import (
 
 func TestUserRepository_CreateUser(t *testing.T) {
 	t.Run("creates a user", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		user := domain.NewUser("test@example.com", "password")
-		db, _ := testutil.NewTestDB(ctx, nil, nil, nil, nil)
-		defer db.Close()
+		db := testutil.NewTestDB(t, ctx, nil, nil, nil, nil)
 
 		repo := NewUserRepository(db)
-		repo_user, err := repo.CreateUser(user)
+		repo_user, err := repo.CreateUser(ctx, user)
 
 		assert.Nil(t, err)
 		assert.Equal(t, user.ID, repo_user.ID)
@@ -32,15 +31,14 @@ func TestUserRepository_CreateUser(t *testing.T) {
 	})
 
 	t.Run("returns an error if the user already exists", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		user := domain.NewUser("test@example.com", "password")
-		db, _ := testutil.NewTestDB(ctx, []*domain.User{user}, nil, nil, nil)
-		defer db.Close()
+		db := testutil.NewTestDB(t, ctx, []*domain.User{user}, nil, nil, nil)
 
 		repo := NewUserRepository(db)
-		_, err := repo.CreateUser(user)
+		_, err := repo.CreateUser(ctx, user)
 
 		assert.NotNil(t, err)
 	})
@@ -48,15 +46,14 @@ func TestUserRepository_CreateUser(t *testing.T) {
 
 func TestUserRepository_GetUserByEmail(t *testing.T) {
 	t.Run("returns a user", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		user := domain.NewUser("test@example.com", "password")
-		db, _ := testutil.NewTestDB(ctx, []*domain.User{user}, nil, nil, nil)
-		defer db.Close()
+		db := testutil.NewTestDB(t, ctx, []*domain.User{user}, nil, nil, nil)
 
 		repo := NewUserRepository(db)
-		repo_user, err := repo.GetUserByEmail(user.Email)
+		repo_user, err := repo.GetUserByEmail(ctx, user.Email)
 
 		assert.Nil(t, err)
 		assert.Equal(t, user.ID, repo_user.ID)
@@ -66,30 +63,28 @@ func TestUserRepository_GetUserByEmail(t *testing.T) {
 	})
 
 	t.Run("returns an error if the user does not exist", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		email := "test@example.com"
-		db, _ := testutil.NewTestDB(ctx, nil, nil, nil, nil)
-		defer db.Close()
+		db := testutil.NewTestDB(t, ctx, nil, nil, nil, nil)
 
 		repo := NewUserRepository(db)
-		_, err := repo.GetUserByEmail(email)
+		_, err := repo.GetUserByEmail(ctx, email)
 
 		assert.NotNil(t, err)
 		assert.True(t, domain.NewErrUserDoesNotExist(email).Is(err))
 	})
 
 	t.Run("returns an error if the query fails", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		email := "test@example.com"
-		db, _ := testutil.NewTestDB(ctx, nil, nil, nil, nil)
-		db.Close()
+		db := testutil.NewTestDB(t, ctx, nil, nil, nil, nil)
 
 		repo := NewUserRepository(db)
-		_, err := repo.GetUserByEmail(email)
+		_, err := repo.GetUserByEmail(ctx, email)
 
 		assert.NotNil(t, err)
 	})

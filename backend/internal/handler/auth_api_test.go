@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -66,7 +67,7 @@ func TestAuthAPIHandler_SignUp(t *testing.T) {
 		password := "password"
 		user := domain.NewUser(email, password)
 		uow := in_memory.NewInMemoryUnitOfWork()
-		uow.Users.CreateUser(user)
+		uow.Users.CreateUser(context.Background(), user)
 		apiHandler := NewAuthAPIHandler(uow)
 		mux := http.NewServeMux()
 		apiHandler.Register(mux)
@@ -89,7 +90,7 @@ func TestAuthAPIHandler_Login(t *testing.T) {
 		hashedPassword, _ := service.HashPassword(password)
 		user := domain.NewUser(email, hashedPassword)
 		uow := in_memory.NewInMemoryUnitOfWork()
-		uow.Users.CreateUser(user)
+		uow.Users.CreateUser(context.Background(), user)
 		apiHandler := NewAuthAPIHandler(uow)
 		mux := http.NewServeMux()
 		apiHandler.Register(mux)

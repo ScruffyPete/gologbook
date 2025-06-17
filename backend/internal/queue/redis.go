@@ -54,26 +54,34 @@ func (q *RedisQueue) SubscribeForDocumentTokens(ctx context.Context, projectID s
 		lastID := "0"
 
 		for {
-			streams, err := q.client.XRead(ctx, &redis.XReadArgs{
-				Streams: []string{streamName, lastID},
-				Block:   5 * time.Second,
-			}).Result()
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				streams, err := q.client.XRead(ctx, &redis.XReadArgs{
+					Streams: []string{streamName, lastID},
+					Block:   1 * time.Second,
+				}).Result()
 
-			if err != nil {
-				slog.Error("XREAD error", "error", err)
-			}
+				if err != nil && err != redis.Nil {
+					slog.Error("XREAD error", "error", err)
+					time.Sleep(500 * time.Millisecond)
+					continue
+				}
 
-			for _, stream := range streams {
-				for _, msg := range stream.Messages {
-					token, ok := msg.Values["token"].(string)
-					if !ok {
-						continue
+				if len(streams) == 0 {
+					continue
+				}
+
+				for _, stream := range streams {
+					for _, msg := range stream.Messages {
+						token, ok := msg.Values["token"].(string)
+						if !ok {
+							continue
+						}
+						out <- token
+						lastID = msg.ID
 					}
-					if token == "[[STOP]]" {
-						return
-					}
-					out <- token
-					lastID = msg.ID
 				}
 			}
 		}
