@@ -1,4 +1,5 @@
 import json
+import os
 import time
 import pytest
 import requests  # type: ignore
@@ -75,7 +76,8 @@ def test_entry_flow(api_client, insights_client):
     assert entries[0]["project_id"] == project_id
 
     # new entry cooldown    
-    time.sleep(10 + 1)
+    cooldown = int(os.getenv("REDIS_PENDING_PROJECTS_COOLDOWN", 10))
+    time.sleep(cooldown + 1)
 
     # Check that the insights service has processed the entry
     document_reponse = insights_client.get("/status")

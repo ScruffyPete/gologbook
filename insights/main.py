@@ -2,6 +2,7 @@ import argparse
 import asyncio
 from contextlib import AsyncExitStack
 import logging
+import os
 import time
 import signal
 
@@ -92,7 +93,8 @@ async def run_service(state: ServiceState, in_memory: bool):
         queue = await stack.enter_async_context(Queue.create())
         
         work_queue = asyncio.Queue(maxsize=100)
-        dispatcher_task = asyncio.create_task(dispatcher(queue, work_queue, cooldown=10, batch_size=10))
+        cooldown = int(os.getenv("REDIS_PENDING_PROJECTS_COOLDOWN", 10))
+        dispatcher_task = asyncio.create_task(dispatcher(queue, work_queue, cooldown=cooldown, batch_size=10))
         worker_count = 5
         worker_tasks = [
             asyncio.create_task(worker(str(n), queue, work_queue, repo, llm, state))

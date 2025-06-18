@@ -16,7 +16,8 @@ func NewUserRepository(db *sql.DB) *userRepository {
 }
 
 func (repo *userRepository) CreateUser(ctx context.Context, user *domain.User) (*domain.User, error) {
-	_, err := repo.db.Exec(
+	_, err := repo.db.ExecContext(
+		ctx,
 		"INSERT INTO users (id, created_at, email, password) VALUES ($1, $2, $3, $4)",
 		user.ID,
 		user.CreatedAt,

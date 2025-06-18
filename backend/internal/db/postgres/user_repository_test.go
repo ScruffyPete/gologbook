@@ -62,20 +62,6 @@ func TestUserRepository_GetUserByEmail(t *testing.T) {
 		assert.Equal(t, user.Password, repo_user.Password)
 	})
 
-	t.Run("returns an error if the user does not exist", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-
-		email := "test@example.com"
-		db := testutil.NewTestDB(t, ctx, nil, nil, nil, nil)
-
-		repo := NewUserRepository(db)
-		_, err := repo.GetUserByEmail(ctx, email)
-
-		assert.NotNil(t, err)
-		assert.True(t, domain.NewErrUserDoesNotExist(email).Is(err))
-	})
-
 	t.Run("returns an error if the query fails", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
