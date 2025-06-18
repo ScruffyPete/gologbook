@@ -164,6 +164,18 @@ func main() {
 	db := connectDB()
 	defer db.Close()
 
+	// Ensure the migrations table exists before querying it
+	_, err := db.Exec(`
+		CREATE TABLE IF NOT EXISTS migrations (
+			id SERIAL PRIMARY KEY,
+			name VARCHAR(255) NOT NULL UNIQUE,
+			applied_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+		)
+	`)
+	if err != nil {
+		log.Fatalf("Failed to ensure migrations table exists: %v", err)
+	}
+
 	migrations := getMigrationFiles()
 	applied := getAppliedMigrations(db)
 	applyMigrations(db, migrations, applied)
