@@ -33,3 +33,7 @@ class InMemoryQueue:
 
     async def publish_project_token(self, project_id: UUID, token: str):
         await self.project_token_channels[project_id].put(token)
+
+    async def clear_project_stream(self, project_id: UUID) -> None:
+        if self.key in self.pending_projects_zset and project_id in self.pending_projects_zset[self.key]:
+            del self.pending_projects_zset[self.key][project_id]

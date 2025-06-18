@@ -42,6 +42,8 @@ async def dispatcher(
             
             for project_id in project_ids:
                 await work_queue.put(project_id)
+            
+            await queue_interface.remove_processed_projects(project_ids)
                 
         except Exception as e:
             logger.exception("Dispatcher error: %s", e)

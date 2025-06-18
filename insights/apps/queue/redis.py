@@ -67,3 +67,7 @@ class RedisQueue:
             name=stream_key,
             fields={"token": token},
         )
+
+    async def clear_project_stream(self, project_id: uuid.UUID) -> None:
+        stream_key = f"{self.llm_stream_channel_prefix}:{project_id}"
+        await self.redis_client.xtrim(stream_key, 0, approximate=False)

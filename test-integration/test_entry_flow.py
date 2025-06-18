@@ -78,29 +78,33 @@ def test_entry_flow(api_client, insights_client):
     time.sleep(10 + 1)
 
     # Check that the insights service has processed the entry
-    insights_response = insights_client.get("/status")
-    assert insights_response.status_code == 200
-    insights_data = insights_response.json()
+    document_reponse = insights_client.get("/status")
+    assert document_reponse.status_code == 200
+    insights_data = document_reponse.json()
     assert insights_data["has_started"]    
     assert insights_data["last_processed"] is not None
     assert insights_data["last_processed"] > 0
     assert insights_data["last_processed_project_id"] == project_id
 
     # Check that the insights service has added new insights
-    insights_response = api_client.get(
-        f"/api/documents?project_id={project_id}", headers=headers
+    document_reponse = api_client.get(
+        f"/api/documents/{project_id}/output/", headers=headers
     )
-    assert insights_response.status_code == 200
-    insights = insights_response.json()
-    assert len(insights) == 1
-    assert insights[0]["body"] == f"Insight for entry {entry_id}: {entry['body'][:100]}\n\n"
-    assert insights[0]["project_id"] == project_id
+    assert document_reponse.status_code == 200
+    document_data = document_reponse.json()
+    assert document_data["body"] == f"Insight for entry {entry_id}: {entry['body'][:100]}\n\n"
+    assert document_data["project_id"] == project_id
 
-    response = api_client.get(f"/api/documents/{project_id}/stream/", headers=headers, stream=True, timeout=(3,5))
+    response = api_client.get(
+        f"/api/documents/{project_id}/stream/", headers=headers, stream=True, timeout=(3,5)
+    )
     expected_tokens = [
         f"Insight for entry {entry_id}: {entry['body'][:100]}",
     ]
     for i, line in enumerate(response.iter_lines()):
+        if i >= len(expected_tokens):
+            break
+
         decoded = line.decode()
         if not decoded.strip():
             continue
