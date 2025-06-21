@@ -31,6 +31,7 @@ async def queue(key: str, lock_prefix: str, stream_prefix: str):
         await q.redis_client.zadd(name=key, mapping=mapping)
         yield q
         for project_id in mapping.keys():
+            await q.redis_client.zrem(key, project_id)
             await q.redis_client.delete(f"{lock_prefix}:{project_id}")
             await q.redis_client.delete(f"{stream_prefix}:{project_id}")
 
