@@ -8,15 +8,15 @@ import (
 )
 
 type entryRepository struct {
-	db *sql.DB
+	tx *sql.Tx
 }
 
-func NewEntryRepository(db *sql.DB) *entryRepository {
-	return &entryRepository{db: db}
+func NewEntryRepository(tx *sql.Tx) *entryRepository {
+	return &entryRepository{tx: tx}
 }
 
 func (repo *entryRepository) ListEntries(ctx context.Context, projectID string) ([]*domain.Entry, error) {
-	rows, err := repo.db.QueryContext(
+	rows, err := repo.tx.QueryContext(
 		ctx,
 		"SELECT id, created_at, project_id, body FROM entries WHERE project_id = $1 ORDER BY created_at ASC",
 		projectID,
@@ -39,7 +39,7 @@ func (repo *entryRepository) ListEntries(ctx context.Context, projectID string) 
 }
 
 func (repo *entryRepository) CreateEntry(ctx context.Context, entry *domain.Entry) (*domain.Entry, error) {
-	_, err := repo.db.ExecContext(
+	_, err := repo.tx.ExecContext(
 		ctx,
 		"INSERT INTO entries (id, created_at, project_id, body) VALUES ($1, $2, $3, $4)",
 		entry.ID,
@@ -55,7 +55,7 @@ func (repo *entryRepository) CreateEntry(ctx context.Context, entry *domain.Entr
 }
 
 func (repo *entryRepository) DeleteEntries(ctx context.Context, projectID string) error {
-	_, err := repo.db.ExecContext(
+	_, err := repo.tx.ExecContext(
 		ctx,
 		"DELETE FROM entries WHERE project_id = $1",
 		projectID,

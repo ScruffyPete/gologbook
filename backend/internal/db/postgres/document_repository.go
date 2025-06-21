@@ -4,22 +4,44 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"errors"
+	"fmt"
 
 	"github.com/ScruffyPete/gologbook/internal/domain"
 	_ "github.com/lib/pq"
 )
 
 type DocumentRepository struct {
-	db *sql.DB
+	tx *sql.Tx
 }
 
-func NewDocumentRepository(db *sql.DB) *DocumentRepository {
-	return &DocumentRepository{db: db}
+func NewDocumentRepository(tx *sql.Tx) *DocumentRepository {
+	return &DocumentRepository{tx: tx}
+}
+
+func (repo *DocumentRepository) CreateDocument(ctx context.Context, document *domain.Document) (*domain.Document, error) {
+	// For test purposes
+	entryIDsJSON, err := json.Marshal(document.EntryIDs)
+	if err != nil {
+		return nil, err
+	}
+	_, err = repo.tx.ExecContext(
+		ctx,
+		"INSERT INTO documents (id, created_at, project_id, entry_ids, body) VALUES ($1, $2, $3, $4, $5)",
+		document.ID,
+		document.CreatedAt,
+		document.ProjectID,
+		entryIDsJSON,
+		document.Body,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return document, nil
 }
 
 func (repo *DocumentRepository) GetLatestDocument(ctx context.Context, projectID string) (*domain.Document, error) {
-	row := repo.db.QueryRowContext(
+	row := repo.tx.QueryRowContext(
 		ctx,
 		`SELECT id, created_at, project_id, entry_ids, body 
 		 FROM documents 
@@ -33,7 +55,7 @@ func (repo *DocumentRepository) GetLatestDocument(ctx context.Context, projectID
 	var entryIDsRaw []byte
 	if err := row.Scan(&document.ID, &document.CreatedAt, &document.ProjectID, &entryIDsRaw, &document.Body); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, errors.New("no document found")
+			return nil, fmt.Errorf("no documents found for projectID: %s", projectID)
 		}
 		return nil, err
 	}

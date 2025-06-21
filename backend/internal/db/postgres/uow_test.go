@@ -6,22 +6,21 @@ import (
 	"os"
 
 	"github.com/ScruffyPete/gologbook/internal/domain"
-	_ "github.com/lib/pq"
 )
 
-type PostgresUnitOfWork struct {
+type TestUnitOfWork struct {
 	db *sql.DB
 }
 
-func NewPostgresUnitOfWork() (*PostgresUnitOfWork, error) {
+func NewTestUnitOfWork() (*TestUnitOfWork, error) {
 	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		return nil, err
 	}
-	return &PostgresUnitOfWork{db: db}, nil
+	return &TestUnitOfWork{db: db}, nil
 }
 
-func (uow *PostgresUnitOfWork) WithTx(ctx context.Context, fn func(repos domain.RepoBundle) error) error {
+func (uow *TestUnitOfWork) WithTx(ctx context.Context, fn func(repos domain.RepoBundle) error) error {
 	tx, err := uow.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -34,14 +33,9 @@ func (uow *PostgresUnitOfWork) WithTx(ctx context.Context, fn func(repos domain.
 		Entries:   NewEntryRepository(tx),
 		Documents: NewDocumentRepository(tx),
 	}
-
-	if err := fn(repos); err != nil {
-		return err
-	}
-
-	return tx.Commit()
+	return fn(repos)
 }
 
-func (uow *PostgresUnitOfWork) Close() error {
+func (uow *TestUnitOfWork) Close() error {
 	return uow.db.Close()
 }

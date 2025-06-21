@@ -1,6 +1,8 @@
 package domain
 
-import "context"
+import (
+	"context"
+)
 
 type ProjectReporitory interface {
 	ListProjects(ctx context.Context) ([]*Project, error)
@@ -22,6 +24,7 @@ type UserRepository interface {
 }
 
 type DocumentRepository interface {
+	CreateDocument(ctx context.Context, document *Document) (*Document, error)
 	GetLatestDocument(ctx context.Context, projectID string) (*Document, error)
 }
 

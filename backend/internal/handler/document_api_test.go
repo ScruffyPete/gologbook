@@ -18,10 +18,12 @@ import (
 func TestDocumentAPIHandler_GetLatestDocument(t *testing.T) {
 	t.Run("valid data", func(t *testing.T) {
 		project := domain.NewProject("Dig a hole")
+		projectRepo := in_memory.NewProjectRepository([]*domain.Project{project})
 		entry := domain.NewEntry(project.ID, "Dig a hole in the hole")
 		document := testutil.NewDocument(project.ID, []string{entry.ID}, "Test Document", nil)
 		documentRepo := in_memory.NewDocumentRepository([]*domain.Document{document})
 		uow := in_memory.InMemoryUnitOfWork{
+			Projects:  projectRepo,
 			Documents: documentRepo,
 		}
 		apiHandler := NewDocumentAPIHandler(&uow, nil)

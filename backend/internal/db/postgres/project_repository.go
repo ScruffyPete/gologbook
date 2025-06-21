@@ -8,15 +8,15 @@ import (
 )
 
 type projectRepository struct {
-	db *sql.DB
+	tx *sql.Tx
 }
 
-func NewProjectRepository(db *sql.DB) *projectRepository {
-	return &projectRepository{db: db}
+func NewProjectRepository(tx *sql.Tx) *projectRepository {
+	return &projectRepository{tx: tx}
 }
 
 func (repo *projectRepository) ListProjects(ctx context.Context) ([]*domain.Project, error) {
-	rows, err := repo.db.QueryContext(
+	rows, err := repo.tx.QueryContext(
 		ctx,
 		"SELECT id, title, created_at FROM projects ORDER BY created_at DESC",
 	)
@@ -38,7 +38,7 @@ func (repo *projectRepository) ListProjects(ctx context.Context) ([]*domain.Proj
 }
 
 func (repo *projectRepository) GetProject(ctx context.Context, id string) (*domain.Project, error) {
-	row, err := repo.db.QueryContext(
+	row, err := repo.tx.QueryContext(
 		ctx,
 		"SELECT id, title, created_at FROM projects WHERE id = $1",
 		id,
@@ -61,7 +61,7 @@ func (repo *projectRepository) GetProject(ctx context.Context, id string) (*doma
 }
 
 func (repo *projectRepository) CreateProject(ctx context.Context, project *domain.Project) (*domain.Project, error) {
-	_, err := repo.db.ExecContext(
+	_, err := repo.tx.ExecContext(
 		ctx,
 		"INSERT INTO projects (id, title, created_at) VALUES ($1, $2, $3)",
 		project.ID,
@@ -76,7 +76,7 @@ func (repo *projectRepository) CreateProject(ctx context.Context, project *domai
 }
 
 func (repo *projectRepository) UpdateProject(ctx context.Context, project *domain.Project) error {
-	result, err := repo.db.ExecContext(
+	result, err := repo.tx.ExecContext(
 		ctx,
 		"UPDATE projects SET title = $1 WHERE id = $2",
 		project.Title,
@@ -99,7 +99,7 @@ func (repo *projectRepository) UpdateProject(ctx context.Context, project *domai
 }
 
 func (repo *projectRepository) DeleteProject(ctx context.Context, id string) error {
-	result, err := repo.db.ExecContext(ctx, "DELETE FROM projects WHERE id = $1", id)
+	result, err := repo.tx.ExecContext(ctx, "DELETE FROM projects WHERE id = $1", id)
 	if err != nil {
 		return err
 	}

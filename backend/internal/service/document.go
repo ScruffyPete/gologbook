@@ -21,6 +21,9 @@ func (s *DocumentService) GetLatestDocument(ctx context.Context, projectID strin
 
 	err := s.uow.WithTx(ctx, func(repos domain.RepoBundle) error {
 		var err error
+		if _, err = repos.Projects.GetProject(ctx, projectID); err != nil {
+			return err
+		}
 		result, err = repos.Documents.GetLatestDocument(ctx, projectID)
 		return err
 	})

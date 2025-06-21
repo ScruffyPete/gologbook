@@ -8,15 +8,15 @@ import (
 )
 
 type userRepository struct {
-	db *sql.DB
+	tx *sql.Tx
 }
 
-func NewUserRepository(db *sql.DB) *userRepository {
-	return &userRepository{db: db}
+func NewUserRepository(tx *sql.Tx) *userRepository {
+	return &userRepository{tx: tx}
 }
 
 func (repo *userRepository) CreateUser(ctx context.Context, user *domain.User) (*domain.User, error) {
-	_, err := repo.db.ExecContext(
+	_, err := repo.tx.ExecContext(
 		ctx,
 		"INSERT INTO users (id, created_at, email, password) VALUES ($1, $2, $3, $4)",
 		user.ID,
@@ -31,7 +31,7 @@ func (repo *userRepository) CreateUser(ctx context.Context, user *domain.User) (
 }
 
 func (repo *userRepository) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
-	row := repo.db.QueryRowContext(
+	row := repo.tx.QueryRowContext(
 		ctx,
 		"SELECT id, created_at, email, password FROM users WHERE email = $1",
 		email,

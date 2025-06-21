@@ -13,73 +13,122 @@ import (
 )
 
 func TestEntryRepository_ListEntries(t *testing.T) {
+	uow, err := NewTestUnitOfWork()
+	if err != nil {
+		t.Fatalf("failed to create unit of work: %v", err)
+	}
+	defer uow.Close()
+
+	project := domain.NewProject("Hunt a boar")
+	entries := testutil.MakeDummyEntries(project)
+
 	t.Run("returns all entries", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		project := domain.NewProject("Hunt a boar")
-		entries := testutil.MakeDummyEntries(project)
+		var gotEntries []*domain.Entry
+		err := uow.WithTx(ctx, func(repos domain.RepoBundle) error {
+			if _, err := repos.Projects.CreateProject(ctx, project); err != nil {
+				return err
+			}
+			for _, e := range entries {
+				if _, err := repos.Entries.CreateEntry(ctx, e); err != nil {
+					return err
+				}
+			}
 
-		db := testutil.NewTestDB(t, ctx, nil, []*domain.Project{project}, entries, nil)
+			var err error
+			gotEntries, err = repos.Entries.ListEntries(ctx, project.ID)
+			return err
+		})
+		if err != nil {
+			t.Fatalf("WithTx error: %v", err)
+		}
 
-		repo := NewEntryRepository(db)
-		entries, err := repo.ListEntries(ctx, project.ID)
-
-		assert.Nil(t, err)
-		assert.Equal(t, len(entries), len(entries))
+		assert.Equal(t, len(entries), len(gotEntries))
 	})
 
 	t.Run("returns an empty slice if no entries are found", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		project := domain.NewProject("Hunt a boar")
-		db := testutil.NewTestDB(t, ctx, nil, []*domain.Project{project}, nil, nil)
+		var gotEntries []*domain.Entry
+		err := uow.WithTx(ctx, func(repos domain.RepoBundle) error {
+			if _, err := repos.Projects.CreateProject(ctx, project); err != nil {
+				return err
+			}
 
-		repo := NewEntryRepository(db)
-		entries, err := repo.ListEntries(ctx, project.ID)
-		assert.Nil(t, err)
-		assert.Equal(t, len(entries), 0)
+			gotEntries, err = repos.Entries.ListEntries(ctx, project.ID)
+			return err
+		})
+		if err != nil {
+			t.Fatalf("WithTx error: %v", err)
+		}
+
+		assert.Equal(t, 0, len(gotEntries))
 	})
 }
 
 func TestEntryRepository_CreateEntry(t *testing.T) {
-	t.Run("creates an entry", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
+	uow, err := NewTestUnitOfWork()
+	if err != nil {
+		t.Fatalf("failed to create unit of work: %v", err)
+	}
+	defer uow.Close()
 
-		project := domain.NewProject("Hunt a boar")
-		entry := domain.NewEntry(project.ID, "Get an axe")
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-		db := testutil.NewTestDB(t, ctx, nil, []*domain.Project{project}, nil, nil)
+	project := domain.NewProject("Hunt a boar")
+	entry := domain.NewEntry(project.ID, "Get an axe")
 
-		repo := NewEntryRepository(db)
-		createdEntry, err := repo.CreateEntry(ctx, entry)
-
-		assert.Nil(t, err)
-		assert.Equal(t, createdEntry, entry)
+	var createdEntry *domain.Entry
+	err = uow.WithTx(ctx, func(repos domain.RepoBundle) error {
+		if _, err := repos.Projects.CreateProject(ctx, project); err != nil {
+			return err
+		}
+		createdEntry, err = repos.Entries.CreateEntry(ctx, entry)
+		return err
 	})
+	if err != nil {
+		t.Fatalf("WithTx error: %v", err)
+	}
+	assert.Equal(t, entry, createdEntry)
 }
 
 func TestEntryRepository_DeleteEntries(t *testing.T) {
-	t.Run("deletes an entry", func(t *testing.T) {
-		project := domain.NewProject("Hunt a boar")
-		entry_1 := domain.NewEntry(project.ID, "Get an axe")
-		entry_2 := domain.NewEntry(project.ID, "Get a bow")
-		entries := []*domain.Entry{entry_1, entry_2}
+	uow, err := NewTestUnitOfWork()
+	if err != nil {
+		t.Fatalf("failed to create unit of work: %v", err)
+	}
+	defer uow.Close()
 
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
+	project := domain.NewProject("Hunt a boar")
+	entry_1 := domain.NewEntry(project.ID, "Get an axe")
+	entry_2 := domain.NewEntry(project.ID, "Get a bow")
+	entries := []*domain.Entry{entry_1, entry_2}
 
-		db := testutil.NewTestDB(t, ctx, nil, []*domain.Project{project}, entries, nil)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-		repo := NewEntryRepository(db)
-		err := repo.DeleteEntries(ctx, project.ID)
-
-		assert.Nil(t, err)
-
-		repo_entries, err := repo.ListEntries(ctx, project.ID)
-		assert.Nil(t, err)
-		assert.Equal(t, len(repo_entries), 0)
+	var repoEntries []*domain.Entry
+	err = uow.WithTx(ctx, func(repos domain.RepoBundle) error {
+		if _, err := repos.Projects.CreateProject(ctx, project); err != nil {
+			return err
+		}
+		for _, e := range entries {
+			if _, err := repos.Entries.CreateEntry(ctx, e); err != nil {
+				return err
+			}
+		}
+		if err := repos.Entries.DeleteEntries(ctx, project.ID); err != nil {
+			return err
+		}
+		repoEntries, err = repos.Entries.ListEntries(ctx, project.ID)
+		return err
 	})
+	if err != nil {
+		t.Fatalf("WithTx error: %v", err)
+	}
+	assert.Equal(t, len(repoEntries), 0)
 }

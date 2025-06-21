@@ -21,6 +21,12 @@ func NewDocumentRepository(documents []*domain.Document) *InMemoryDocumentReposi
 	return &InMemoryDocumentRepository{documents: data}
 }
 
+func (repo *InMemoryDocumentRepository) CreateDocument(ctx context.Context, document *domain.Document) (*domain.Document, error) {
+	repo.documents[document.ProjectID] = append(repo.documents[document.ProjectID], document)
+
+	return document, nil
+}
+
 func (repo *InMemoryDocumentRepository) GetLatestDocument(ctx context.Context, projectID string) (*domain.Document, error) {
 	documents := repo.documents[projectID]
 
