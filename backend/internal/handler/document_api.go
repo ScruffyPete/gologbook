@@ -34,7 +34,6 @@ func (h *DocumentAPIHandler) listDocuments(w http.ResponseWriter, r *http.Reques
 	documents, err := h.documentService.GetLatestDocument(r.Context(), projectID)
 	if err != nil {
 		http.Error(w, "failed to load documents: "+err.Error(), http.StatusNotFound)
-		// http.Error(w, "failed to load documents", http.StatusNotFound)
 		return
 	}
 	json.NewEncoder(w).Encode(documents)

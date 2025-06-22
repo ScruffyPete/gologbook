@@ -5,10 +5,11 @@ import logging
 import os
 import time
 import signal
+from typing import Type
 
-from apps.db.in_memory import InMemoryRepositoryBundle
-from apps.db.interface import RepositoryBundleInterface
-from apps.db.postgres import PGRepositoryBundle
+from apps.db.in_memory import InMemoryUnitOfWork
+from apps.db.interface import UnitOfWorkInterface
+from apps.db.postgres import PGUnitOfWork
 from apps.queue.in_memory import InMemoryQueue
 from apps.queue.interface import QueueInterface
 from apps.queue.redis import RedisQueue
@@ -56,7 +57,7 @@ async def worker(
     worker_id: str,
     queue_interface: QueueInterface,
     work_queue: asyncio.Queue,
-    repo: RepositoryBundleInterface, 
+    unit_of_work_cls: Type[UnitOfWorkInterface],
     llm: LLMInterface,
     state: ServiceState,
 ):
@@ -64,7 +65,8 @@ async def worker(
         try:
             project_id = await work_queue.get()
             logger.info(f"Worker-{worker_id} processing project {project_id}")
-            await process_project(project_id, repo, queue_interface, llm)
+            async with unit_of_work_cls.create() as uow:
+                await process_project(project_id, uow, queue_interface, llm)
             state.mark_processed(project_id)
             
         except Exception as e:
@@ -76,9 +78,9 @@ async def worker(
     
     
 async def run_service(state: ServiceState, in_memory: bool):
-    RepositoryBundle = InMemoryRepositoryBundle if in_memory else PGRepositoryBundle
     Queue = InMemoryQueue if in_memory else RedisQueue
     LLM = InMemoryLLM
+    UnitOfWork = InMemoryUnitOfWork if in_memory else PGUnitOfWork
 
     logger.info(
         "Running insights with %s storage and queue",
@@ -88,7 +90,6 @@ async def run_service(state: ServiceState, in_memory: bool):
     async with AsyncExitStack() as stack:
         await stack.enter_async_context(state_service(state))
 
-        repo = await stack.enter_async_context(RepositoryBundle.create())
         llm = await stack.enter_async_context(LLM.create())
         queue = await stack.enter_async_context(Queue.create())
         
@@ -97,7 +98,7 @@ async def run_service(state: ServiceState, in_memory: bool):
         dispatcher_task = asyncio.create_task(dispatcher(queue, work_queue, cooldown=cooldown, batch_size=10))
         worker_count = 5
         worker_tasks = [
-            asyncio.create_task(worker(str(n), queue, work_queue, repo, llm, state))
+            asyncio.create_task(worker(str(n), queue, work_queue, UnitOfWork, llm, state))
             for n in range(worker_count)
         ]
         

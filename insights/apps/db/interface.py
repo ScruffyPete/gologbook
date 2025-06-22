@@ -1,4 +1,5 @@
-from typing import Protocol
+from contextlib import asynccontextmanager
+from typing import Any, Protocol, AsyncContextManager, Tuple
 from apps.domain.entities import Entry, Document
 from uuid import UUID
 
@@ -16,3 +17,8 @@ class DocumentRepository(Protocol):
 class RepositoryBundleInterface(Protocol):
     entry_repo: EntryRepository
     document_repo: DocumentRepository
+
+
+class UnitOfWorkInterface(Protocol):
+    @asynccontextmanager
+    async def create(self) -> Tuple[AsyncContextManager[RepositoryBundleInterface], Any]: ...

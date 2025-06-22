@@ -2,9 +2,11 @@ import pytest
 import uuid
 from datetime import datetime
 
-from apps.db.in_memory import InMemoryRepositoryBundle
+import pytest_asyncio
+
+from apps.db.in_memory import InMemoryUnitOfWork
 from apps.domain.entities import Entry
-from apps.db.interface import RepositoryBundleInterface
+from apps.db.interface import UnitOfWorkInterface
 from apps.llm.interface import LLMInterface
 from apps.queue.in_memory import InMemoryQueue
 from apps.queue.interface import QueueInterface
@@ -32,18 +34,17 @@ def queue() -> InMemoryQueue:
     return InMemoryQueue()
 
 
-@pytest.fixture
-def repo(entry: Entry) -> InMemoryRepositoryBundle:
-    return InMemoryRepositoryBundle(entries=[entry])
-
+@pytest_asyncio.fixture
+async def uow(entry: Entry): 
+    async with InMemoryUnitOfWork.create(entries=[entry]) as _uow: 
+        yield _uow
+        
 
 @pytest.mark.asyncio
-async def test_processor(
-    repo: RepositoryBundleInterface, queue: QueueInterface, llm: LLMInterface, entry: Entry
-):
-    await process_project(entry.project_id, repo, queue, llm)
+async def test_processor(uow: UnitOfWorkInterface, queue: QueueInterface, llm: LLMInterface, entry: Entry):
+    await process_project(entry.project_id, uow, queue, llm)
 
-    documents = await repo.document_repo.get_documents_by_entry_id(entry.id)
+    documents = await uow.document_repo.get_documents_by_entry_id(entry.id)
     assert len(documents) == 1
 
     document = documents[0]

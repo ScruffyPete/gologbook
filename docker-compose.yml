@@ -58,8 +58,8 @@ services:
         condition: service_healthy
       test-redis:
         condition: service_healthy
-      # migrate-test:
-      #   condition: service_completed_successfully
+  # migrate-test:
+  #   condition: service_completed_successfully
 
   test-insights:
     extends:

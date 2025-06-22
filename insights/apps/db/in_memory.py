@@ -4,6 +4,17 @@ from apps.domain.entities import Entry, Document
 from uuid import UUID
 
 
+class InMemoryUnitOfWork:
+    def __init__(self, entries=None, documents=None):
+        self.entry_repo = InMemoryEntryRepository(entries or [])
+        self.document_repo = InMemoryDocumentRepository(documents or [])
+
+    @classmethod
+    @asynccontextmanager
+    async def create(cls, *args, **kwargs):
+        yield cls(*args, **kwargs)
+
+
 class InMemoryEntryRepository:
     entries: defaultdict[UUID, list[Entry]]
     

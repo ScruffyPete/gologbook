@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from typing import AsyncGenerator
 from uuid import UUID
 import asyncpg
 import json
@@ -7,13 +8,40 @@ import os
 from apps.domain.entities import Entry, Document, Project
 
 
+class RollbackException(Exception):
+    """Exception raised to indicate a transaction should be rolled back."""
+    pass
+
+
+class PGUnitOfWork:
+    def __init__(self, conn: asyncpg.Connection):
+        self.project_repo = PGProjectRepository(conn)
+        self.entry_repo = PGEntryRepository(conn)
+        self.document_repo = PGDocumentRepository(conn)
+
+    @classmethod
+    @asynccontextmanager
+    async def create(cls):
+        async with db_connection() as conn:
+            tx = conn.transaction()
+            await tx.start()
+            try:
+                yield cls(conn)
+                await tx.commit()
+            except RollbackException:
+                await tx.rollback()
+                return
+            except Exception:
+                await tx.rollback()
+                raise
+
+
 @asynccontextmanager
-async def db_connection(dsn: str | None = None):
+async def db_connection() -> AsyncGenerator[asyncpg.Connection]:
     """
     Context manager for a database connection.
     """
-    if dsn is None:
-        dsn = os.getenv("DATABASE_URL")
+    dsn = os.getenv("DATABASE_URL")
     if dsn is None:
         raise ValueError("DATABASE_URL is not set")
     conn = await asyncpg.connect(dsn)
@@ -82,19 +110,3 @@ class PGDocumentRepository(PGBaseRepository):
             json.dumps([str(entry_id) for entry_id in document.entry_ids]),
             document.body,
         )
-
-
-class PGRepositoryBundle:
-    def __init__(self, conn: asyncpg.Connection):
-        self.project_repo = PGProjectRepository(conn)
-        self.entry_repo = PGEntryRepository(conn)
-        self.document_repo = PGDocumentRepository(conn)
-
-    @classmethod
-    @asynccontextmanager
-    async def create(cls):
-        dsn = os.getenv("DATABASE_URL")
-        if dsn is None:
-            raise ValueError("DATABASE_URL is not set")
-        async with db_connection(dsn) as conn:
-            yield cls(conn)

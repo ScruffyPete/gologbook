@@ -80,10 +80,13 @@ def test_entry_flow(api_client, insights_client):
     time.sleep(cooldown + 1)
 
     # Check that the insights service has processed the entry
-    document_reponse = insights_client.get("/status")
-    assert document_reponse.status_code == 200
-    insights_data = document_reponse.json()
+    insights_reponse = insights_client.get("/status")
+    assert insights_reponse.status_code == 200
+    insights_data = insights_reponse.json()
     assert insights_data["has_started"]    
+    assert insights_data["last_error"] is None
+    assert insights_data["failure_count"] == 0
+    assert insights_data["last_failure"] is None
     assert insights_data["last_processed"] is not None
     assert insights_data["last_processed"] > 0
     assert insights_data["last_processed_project_id"] == project_id
