@@ -17,6 +17,10 @@ func (q *FailingQueue) SubscribeForDocumentTokens(ctx context.Context, channelNa
 	return make(<-chan string)
 }
 
+func (q *FailingQueue) ClearProjectStream(ctx context.Context, projectID string) error {
+	return ErrQueueFailed
+}
+
 func (q *FailingQueue) Close() error {
 	return nil
 }

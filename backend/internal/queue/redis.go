@@ -90,6 +90,12 @@ func (q *RedisQueue) SubscribeForDocumentTokens(ctx context.Context, projectID s
 	return out
 }
 
+func (q *RedisQueue) ClearProjectStream(ctx context.Context, projectID string) error {
+	streamNamePrefix := os.Getenv("REDIS_LLM_STREAM_CHANNEL_PREFIX")
+	streamName := fmt.Sprintf("%s:%s", streamNamePrefix, projectID)
+	return q.client.Del(ctx, streamName).Err()
+}
+
 func (q *RedisQueue) Close() error {
 	return q.client.Close()
 }

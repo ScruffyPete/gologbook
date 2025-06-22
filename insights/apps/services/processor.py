@@ -21,8 +21,6 @@ async def process_project(
     queue: QueueInterface,
     llm: LLMInterface,
 ):
-    await queue.clear_project_stream(project_id)
-
     entries = await unit_of_work.entry_repo.get_project_entries(project_id)
     if not entries:
         return

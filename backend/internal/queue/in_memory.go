@@ -69,6 +69,11 @@ func (q *InMemoryQueue) SubscribeForDocumentTokens(ctx context.Context, projectI
 	return out
 }
 
+func (q *InMemoryQueue) ClearProjectStream(ctx context.Context, projectID string) error {
+	delete(q.documentStream, projectID)
+	return nil
+}
+
 func (q *InMemoryQueue) Close() error {
 	return nil
 }

@@ -69,6 +69,11 @@ func (s *EntryService) CreateEntry(
 		return nil, fmt.Errorf("EntryService: queue cannot be nil")
 	}
 
+	if err := s.queue.ClearProjectStream(ctx, result.ProjectID); err != nil {
+		slog.Error("clear project stream", "error", err)
+		return nil, fmt.Errorf("clear project stream: %w", err)
+	}
+
 	key := os.Getenv("REDIS_PENDING_PROJECTS_KEY")
 	if err := s.queue.PushPendingProject(ctx, key, result.ProjectID); err != nil {
 		slog.Error("push message to queue", "error", err)
